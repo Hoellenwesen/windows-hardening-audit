@@ -1,0 +1,105 @@
+[
+  {
+    "id": "UPD-01",
+    "title": "Windows Update Dienst nicht deaktiviert",
+    "description": "Der Update-Dienst darf nicht deaktiviert sein.",
+    "category": "updates-maintenance",
+    "source": "MS Baseline",
+    "sourceId": "WU Service",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "NotEquals",
+      "expected": "Disabled",
+      "script": "(Get-Service -Name wuauserv -ErrorAction Stop).StartType"
+    },
+    "fixHint": "services.msc > Windows Update > Starttyp Automatisch oder Manuell (nicht Deaktiviert).",
+    "profil": "L1",
+    "kapitel": "MS Windows Update",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "UPD-02",
+    "title": "Kein NoAutoUpdate-Policy-Block",
+    "description": "Falls eine AU-Policy existiert, darf sie Updates nicht deaktivieren.",
+    "category": "updates-maintenance",
+    "source": "MS Baseline",
+    "sourceId": "WU AU Policy",
+    "severity": 2,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+      "valueName": "NoAutoUpdate",
+      "operator": "Equals",
+      "expected": "0",
+      "missingIs": "Passed"
+    },
+    "fixHint": "Falls Schlüssel fehlt, ist das OK (keine Block-Policy). GPO: Automatische Updates konfigurieren = 4.",
+    "profil": "L1",
+    "kapitel": "MS Windows Update",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "UPD-03",
+    "title": "UAC Virtualisierung für Datei/Registry",
+    "description": "Legacy-Apps werden pro-Benutzer virtualisiert statt systemweit zu schreiben.",
+    "category": "updates-maintenance",
+    "source": "CIS",
+    "sourceId": "CIS 2.3.x (L1)",
+    "severity": 1,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+      "valueName": "EnableVirtualization",
+      "operator": "Equals",
+      "expected": "1"
+    },
+    "fixHint": "Standard 1. Nur bei Kompatibilitätsproblemen anfassen.",
+    "profil": "L1",
+    "kapitel": "2.3 Security Options (UAC)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "UPD-04",
+    "title": "Letztes Qualitätsupdate max. 45 Tage alt",
+    "description": "Der neueste HotFix darf nicht älter als 45 Tage sein (Richtwert Patch-Tuesday + Puffer).",
+    "category": "updates-maintenance",
+    "source": "MS Baseline",
+    "sourceId": "Patchstand",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "LessOrEqual",
+      "expected": "45",
+      "script": "$h = Get-HotFix -ErrorAction Stop | Sort-Object InstalledOn -Descending | Select-Object -First 1; [int]((Get-Date) - $h.InstalledOn).TotalDays"
+    },
+    "fixHint": "Einstellungen > Windows Update > Updateverlauf. Ziel: max. 30 Tage hinter Patch-Tuesday.",
+    "profil": "L1",
+    "kapitel": "MS Patchstand",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "UPD-05",
+    "title": "Kein ausstehender Update-Neustart",
+    "description": "Es steht kein Neustart zum Abschließen von Updates aus.",
+    "category": "updates-maintenance",
+    "source": "CIS",
+    "sourceId": "Patchstand",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "False",
+      "script": "if (Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update\\RebootRequired') { 'True' } else { 'False' }"
+    },
+    "fixHint": "Ausstehenden Neustart durchführen, damit Updates (v.a. Kernel) wirksam werden.",
+    "profil": "L1",
+    "kapitel": "MS Patchstand",
+    "giltAb": "24H2",
+    "ziel": "both"
+  }
+]

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="WinHardeningAudit_App.Pages.ExportPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel Padding="24,16" Spacing="16" MaxWidth="800">
+        <TextBlock x:Uid="ExportTitle" Style="{StaticResource TitleTextBlockStyle}" Text="Export" />
+        <TextBlock x:Uid="ExportDesc" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Reports go to Documents\HardeningAudit. Requires at least one completed scan." />
+        <TextBlock x:Name="FilterText" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Text="" />
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <Button x:Uid="ExportHtmlButton" Content="Export HTML" Click="Html_Click" Style="{StaticResource AccentButtonStyle}" />
+            <Button x:Uid="ExportJsonButton" Content="Export JSON" Click="Json_Click" />
+            <Button x:Uid="ExportCsvButton" Content="Export CSV" Click="Csv_Click" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <Button x:Uid="ExportFullButton" Content="Full export HTML (all profiles)" Click="FullHtml_Click" />
+        </StackPanel>
+        <TextBlock x:Name="ResultText" TextWrapping="Wrap" Text="" />
+    </StackPanel>
+</Page>

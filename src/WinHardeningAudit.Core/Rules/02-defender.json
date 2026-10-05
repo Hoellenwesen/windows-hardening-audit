@@ -1,0 +1,123 @@
+[
+  {
+    "id": "DEF-01",
+    "title": "Defender Echtzeitschutz aktiv",
+    "description": "Real-Time Protection muss eingeschaltet sein.",
+    "category": "defender-malware",
+    "source": "MS Baseline",
+    "sourceId": "WD: RealTime",
+    "severity": 4,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "True",
+      "script": "(Get-MpComputerStatus -ErrorAction Stop).RealTimeProtectionEnabled"
+    },
+    "fixHint": "Windows-Sicherheit > Viren- & Bedrohungsschutz > Echtzeitschutz aktivieren.",
+    "kapitel": "MS Defender Baseline",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  },
+  {
+    "id": "DEF-02",
+    "title": "Defender Tamper Protection aktiv",
+    "description": "Manipulationsschutz verhindert Abschalten durch Malware.",
+    "category": "defender-malware",
+    "source": "MS Baseline",
+    "sourceId": "WD: TamperProtection",
+    "severity": 4,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Microsoft\\Windows Defender\\Features",
+      "valueName": "TamperProtection",
+      "operator": "GreaterOrEqual",
+      "expected": "1"
+    },
+    "fixHint": "Windows-Sicherheit > Viren- & Bedrohungsschutz > Einstellungen > Manipulationsschutz. Ggf. Intune/GPO.",
+    "kapitel": "MS Defender Baseline",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  },
+  {
+    "id": "DEF-03",
+    "title": "Defender Cloud-Schutz aktiv",
+    "description": "Cloud-delivered Protection + automatische Sample-Übermittlung.",
+    "category": "defender-malware",
+    "source": "MS Baseline",
+    "sourceId": "WD: MAPS",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "True",
+      "script": "(Get-MpComputerStatus -ErrorAction Stop).AntispywareEnabled"
+    },
+    "fixHint": "Windows-Sicherheit > Cloud-basierter Schutz aktivieren.",
+    "kapitel": "MS Defender Baseline",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  },
+  {
+    "id": "DEF-04",
+    "title": "Defender-Signaturen aktuell (< 7 Tage)",
+    "description": "Antimalware-Signaturen dürfen nicht älter als 7 Tage sein.",
+    "category": "defender-malware",
+    "source": "MS Baseline",
+    "sourceId": "WD: SignatureAge",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "LessOrEqual",
+      "expected": "7",
+      "script": "([datetime]::UtcNow - (Get-MpComputerStatus -ErrorAction Stop).AntivirusSignatureLastUpdated).Days"
+    },
+    "fixHint": "Windows Update ausführen bzw. Update-MpSignature.",
+    "kapitel": "MS Defender Baseline",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  },
+  {
+    "id": "DEF-05",
+    "title": "ASR-Regel: Office-Makros blockieren",
+    "description": "Mindestens die ASR-Regel gegen Office-Makro-Malware sollte enforced sein (GUID 75668c1f).",
+    "category": "defender-malware",
+    "source": "MS Baseline",
+    "sourceId": "ASR 75668c1f",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "1",
+      "script": "(Get-MpPreference -ErrorAction Stop).AttackSurfaceReductionRules_Actions[(Get-MpPreference -ErrorAction Stop).AttackSurfaceReductionRules_Ids.IndexOf('75668c1f-73b5-4cf0-bb93-3ecf5cb7cc84')]"
+    },
+    "fixHint": "GPO/Intune: ASR-Regeln konfigurieren (Block-Modus statt Audit).",
+    "kapitel": "MS Defender ASR",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  },
+  {
+    "id": "DEF-06",
+    "title": "Verhaltensüberwachung aktiv",
+    "description": "Behavior Monitoring erkennt verhaltensbasierte Malware.",
+    "category": "defender-malware",
+    "source": "MS Baseline",
+    "sourceId": "WD: BehaviorMonitor",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "True",
+      "script": "(Get-MpComputerStatus -ErrorAction Stop).BehaviorMonitorEnabled"
+    },
+    "fixHint": "Defender-Richtlinie prüfen; ggf. Fremd-AV ersetzt Defender (dann N/A).",
+    "kapitel": "MS Defender Baseline",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  }
+]

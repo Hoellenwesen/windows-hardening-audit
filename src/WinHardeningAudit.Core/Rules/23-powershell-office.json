@@ -1,0 +1,204 @@
+[
+  {
+    "id": "PS-01",
+    "title": "PowerShell Transkription aktiviert",
+    "description": "Sitzungs-Transkripte werden protokolliert (Forensik, Ergänzung zum Script Block Logging).",
+    "category": "audit-logging",
+    "source": "CIS + STIG",
+    "sourceId": "STIG SV-253415",
+    "severity": 2,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\PowerShell\\Transcription",
+      "valueName": "EnableTranscripting",
+      "operator": "Equals",
+      "expected": "1"
+    },
+    "fixHint": "GPO: PowerShell-Transkription aktivieren (EnableTranscripting=1).",
+    "profil": "L1",
+    "kapitel": "18.9 PowerShell Logging",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "PS-02",
+    "title": "PowerShell Modul-Protokollierung aktiviert",
+    "description": "Modul-Ladevorgänge werden protokolliert (Erkennung bösartiger Module).",
+    "category": "audit-logging",
+    "source": "CIS",
+    "sourceId": "CIS 18.9 (L1)",
+    "severity": 2,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\PowerShell\\ModuleLogging",
+      "valueName": "EnableModuleLogging",
+      "operator": "Equals",
+      "expected": "1"
+    },
+    "fixHint": "GPO: Modulprotokollierung aktivieren (EnableModuleLogging=1).",
+    "profil": "L1",
+    "kapitel": "18.9 PowerShell Logging",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "OFF-01",
+    "title": "Excel: Alle Makros ohne Benachrichtigung deaktiviert",
+    "description": "VBA-Makros in Excel sind vollständig blockiert (VBAWarnings=4). Ohne Office nicht anwendbar.",
+    "category": "system-hardening",
+    "source": "CIS M365",
+    "sourceId": "CIS Office Makros",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "4",
+      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Excel\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings; if ($null -eq $v) { $v = (Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Office\\16.0\\Excel\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings }; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
+    },
+    "fixHint": "GPO/Office-Richtlinie: Excel > Sicherheit > VBA-Makrobenachrichtigungseinstellungen = Alle ohne Benachrichtigung deaktivieren.",
+    "profil": "L1",
+    "kapitel": "Office-Härtung",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "OFF-02",
+    "title": "Word: Alle Makros ohne Benachrichtigung deaktiviert",
+    "description": "VBA-Makros in Word sind vollständig blockiert (VBAWarnings=4). Ohne Office nicht anwendbar.",
+    "category": "system-hardening",
+    "source": "CIS M365",
+    "sourceId": "CIS Office Makros",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "4",
+      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Word\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings; if ($null -eq $v) { $v = (Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Office\\16.0\\Word\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings }; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
+    },
+    "fixHint": "GPO/Office-Richtlinie: Word > Sicherheit > VBA-Makrobenachrichtigungseinstellungen = Alle ohne Benachrichtigung deaktivieren.",
+    "profil": "L1",
+    "kapitel": "Office-Härtung",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "OFF-03",
+    "title": "PowerPoint: Alle Makros ohne Benachrichtigung deaktiviert",
+    "description": "VBA-Makros in PowerPoint sind vollständig blockiert (VBAWarnings=4). Ohne Office nicht anwendbar.",
+    "category": "system-hardening",
+    "source": "CIS M365",
+    "sourceId": "CIS Office Makros",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "4",
+      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\PowerPoint\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings; if ($null -eq $v) { $v = (Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Office\\16.0\\PowerPoint\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings }; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
+    },
+    "fixHint": "GPO/Office-Richtlinie: PowerPoint > Sicherheit > VBA-Makrobenachrichtigungseinstellungen = Alle ohne Benachrichtigung deaktivieren.",
+    "profil": "L1",
+    "kapitel": "Office-Härtung",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "OFF-04",
+    "title": "Access: Alle Makros ohne Benachrichtigung deaktiviert",
+    "description": "VBA-Makros in Access sind vollständig blockiert (VBAWarnings=4). Ohne Office nicht anwendbar.",
+    "category": "system-hardening",
+    "source": "CIS M365",
+    "sourceId": "CIS Office Makros",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "4",
+      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Access\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings; if ($null -eq $v) { $v = (Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Office\\16.0\\Access\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings }; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
+    },
+    "fixHint": "GPO/Office-Richtlinie: Access > Sicherheit > VBA-Makrobenachrichtigungseinstellungen = Alle ohne Benachrichtigung deaktivieren.",
+    "profil": "L1",
+    "kapitel": "Office-Härtung",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "OFF-05",
+    "title": "Excel: Internet-Makros blockiert",
+    "description": "Makros in Dateien aus dem Internet werden in Excel blockiert. Ohne Office nicht anwendbar.",
+    "category": "system-hardening",
+    "source": "CIS M365",
+    "sourceId": "CIS Office Internet-Makros",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "1",
+      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Excel\\Security' -Name blockcontentexecutionfrominternet -ErrorAction SilentlyContinue).blockcontentexecutionfrominternet; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
+    },
+    "fixHint": "GPO: Excel > Blockieren, dass Makros in Office-Dateien aus dem Internet ausgeführt werden = Aktiviert.",
+    "profil": "L1",
+    "kapitel": "Office-Härtung",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "OFF-06",
+    "title": "Word: Internet-Makros blockiert",
+    "description": "Makros in Dateien aus dem Internet werden in Word blockiert. Ohne Office nicht anwendbar.",
+    "category": "system-hardening",
+    "source": "CIS M365",
+    "sourceId": "CIS Office Internet-Makros",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "1",
+      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Word\\Security' -Name blockcontentexecutionfrominternet -ErrorAction SilentlyContinue).blockcontentexecutionfrominternet; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
+    },
+    "fixHint": "GPO: Word > Blockieren, dass Makros in Office-Dateien aus dem Internet ausgeführt werden = Aktiviert.",
+    "profil": "L1",
+    "kapitel": "Office-Härtung",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "OFF-07",
+    "title": "PowerPoint: Internet-Makros blockiert",
+    "description": "Makros in Dateien aus dem Internet werden in PowerPoint blockiert. Ohne Office nicht anwendbar.",
+    "category": "system-hardening",
+    "source": "CIS M365",
+    "sourceId": "CIS Office Internet-Makros",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "1",
+      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\PowerPoint\\Security' -Name blockcontentexecutionfrominternet -ErrorAction SilentlyContinue).blockcontentexecutionfrominternet; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
+    },
+    "fixHint": "GPO: PowerPoint > Blockieren, dass Makros in Office-Dateien aus dem Internet ausgeführt werden = Aktiviert.",
+    "profil": "L1",
+    "kapitel": "Office-Härtung",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "OFF-08",
+    "title": "Access: Internet-Makros blockiert",
+    "description": "Makros in Dateien aus dem Internet werden in Access blockiert. Ohne Office nicht anwendbar.",
+    "category": "system-hardening",
+    "source": "CIS M365",
+    "sourceId": "CIS Office Internet-Makros",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "1",
+      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Access\\Security' -Name blockcontentexecutionfrominternet -ErrorAction SilentlyContinue).blockcontentexecutionfrominternet; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
+    },
+    "fixHint": "GPO: Access > Blockieren, dass Makros in Office-Dateien aus dem Internet ausgeführt werden = Aktiviert.",
+    "profil": "L1",
+    "kapitel": "Office-Härtung",
+    "giltAb": "24H2",
+    "ziel": "both"
+  }
+]

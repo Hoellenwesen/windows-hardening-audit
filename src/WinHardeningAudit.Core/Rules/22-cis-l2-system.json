@@ -1,0 +1,252 @@
+[
+  {
+    "id": "L2S-01",
+    "title": "SMBv1-Server deaktiviert",
+    "description": "Der veraltete SMBv1-Serverdienst muss deaktiviert sein (Server-Seite).",
+    "category": "firewall-network",
+    "source": "CIS Level 2 + STIG",
+    "sourceId": "CIS L2 / STIG SV-253287",
+    "severity": 3,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanServer\\Parameters",
+      "valueName": "SMB1",
+      "operator": "Equals",
+      "expected": "0"
+    },
+    "fixHint": "SMB1-Serverfeature entfernen bzw. SMB1=0 (DWORD). Client-Seite siehe NET-04.",
+    "profil": "L2",
+    "kapitel": "CIS L2 (SMB)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "L2S-02",
+    "title": "SMB-Signierung server-seitig erzwungen",
+    "description": "Der SMB-Server muss Paket-Signierung verlangen (Relay-Schutz, Server-Seite).",
+    "category": "firewall-network",
+    "source": "CIS Level 2 + STIG",
+    "sourceId": "CIS L2 / STIG SV-253451",
+    "severity": 3,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanManServer\\Parameters",
+      "valueName": "RequireSecuritySignature",
+      "operator": "Equals",
+      "expected": "1"
+    },
+    "fixHint": "LanManServer RequireSecuritySignature=1 (DWORD). Client-Seite siehe NET-05.",
+    "profil": "L2",
+    "kapitel": "CIS L2 (SMB)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "L2S-03",
+    "title": "Unsichere Gast-Anmeldung an SMB-Server aus",
+    "description": "Keine unverschlüsselten Gast-Anmeldungen an SMB-Freigaben (Client-Schutz).",
+    "category": "firewall-network",
+    "source": "CIS Level 2 + STIG",
+    "sourceId": "CIS L2 / STIG SV-253360",
+    "severity": 3,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\LanmanWorkstation",
+      "valueName": "AllowInsecureGuestAuth",
+      "operator": "Equals",
+      "expected": "0"
+    },
+    "fixHint": "LanmanWorkstation AllowInsecureGuestAuth=0 (DWORD) per GPO.",
+    "profil": "L2",
+    "kapitel": "CIS L2 (SMB)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "L2S-04",
+    "title": "Bluetooth-Funk deaktiviert",
+    "description": "Bluetooth muss aus sein, sofern organisatorisch nicht freigegeben (Funk-Angriffsfläche).",
+    "category": "system-hardening",
+    "source": "CIS Level 2 + STIG",
+    "sourceId": "CIS L2 / STIG SV-253291",
+    "severity": 2,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Microsoft\\PolicyManager\\current\\device\\Connectivity",
+      "valueName": "AllowBluetooth",
+      "operator": "Equals",
+      "expected": "0",
+      "missingIs": "Manual"
+    },
+    "fixHint": "Per Richtlinie AllowBluetooth=0 – oder dokumentierte Freigabe mit ISSO. Ohne Bluetooth-Hardware nicht anwendbar. Fehlt der Schlüssel und hat das Gerät kein Bluetooth, manuell als N/A werten.",
+    "profil": "L2",
+    "kapitel": "CIS L2 (Funk)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "L2S-05",
+    "title": "Angeforderte Remoteunterstützung verboten",
+    "description": "Solicited Remote Assistance muss deaktiviert sein (Helpdesk-Einfallstor).",
+    "category": "system-hardening",
+    "source": "CIS Level 2 + STIG",
+    "sourceId": "CIS L2 / STIG SV-253382",
+    "severity": 3,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\Terminal Services",
+      "valueName": "fAllowToGetHelp",
+      "operator": "Equals",
+      "expected": "0"
+    },
+    "fixHint": "GPO: Remoteunterstützung anfordern = Deaktiviert (fAllowToGetHelp=0).",
+    "profil": "L2",
+    "kapitel": "CIS L2 (Remote)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "L2S-06",
+    "title": "Autorun-Standardverhalten blockiert",
+    "description": "Autorun-Befehle generell unterbinden (NoAutorun, über NoDriveTypeAutoRun hinaus).",
+    "category": "system-hardening",
+    "source": "CIS Level 2 + STIG",
+    "sourceId": "CIS L2 / STIG SV-253387",
+    "severity": 2,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer",
+      "valueName": "NoAutorun",
+      "operator": "Equals",
+      "expected": "1"
+    },
+    "fixHint": "NoAutorun=1 (DWORD) per GPO. Ergänzt SYS-01 (NoDriveTypeAutoRun).",
+    "profil": "L2",
+    "kapitel": "CIS L2 (Autoplay)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "L2S-07",
+    "title": "Remotedesktop deaktiviert",
+    "description": "L2-Härte: RDP ist vollständig deaktiviert (NLA allein genügt hier nicht).",
+    "category": "system-hardening",
+    "source": "CIS Level 2",
+    "sourceId": "CIS L2 (RDP)",
+    "severity": 3,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server",
+      "valueName": "fDenyTSConnections",
+      "operator": "Equals",
+      "expected": "1"
+    },
+    "fixHint": "fDenyTSConnections=1. Wer RDP braucht, bleibt auf L1 (SYS-04 mit NLA) – das ist der L2-Unterschied.",
+    "profil": "L2",
+    "kapitel": "CIS L2 (RDP)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "L2S-08",
+    "title": "Druckwarteschlange deaktiviert",
+    "description": "L2-Härte: Spooler ist aus (PrintNightmare-Angriffsfläche). Nur ohne Druckerbedarf.",
+    "category": "services",
+    "source": "CIS Level 2",
+    "sourceId": "CIS L2 (Dienste)",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "Disabled",
+      "script": "try { (Get-Service -Name Spooler -ErrorAction Stop).StartType } catch { 'Disabled' }"
+    },
+    "fixHint": "services.msc > Druckwarteschlange = Deaktiviert. Mit Druckerbedarf zurück auf L1-Ermessen (SVC-02).",
+    "profil": "L2",
+    "kapitel": "CIS L2 (Dienste)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "L2S-09",
+    "title": "Bluetooth-Audio-Gateway deaktiviert",
+    "description": "Bluetooth-Dienst BTAGService ist deaktiviert (Funk-Härtung).",
+    "category": "services",
+    "source": "CIS Level 2",
+    "sourceId": "CIS L2 (Dienste)",
+    "severity": 1,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "Disabled",
+      "script": "try { (Get-Service -Name BTAGService -ErrorAction Stop).StartType } catch { 'Disabled' }"
+    },
+    "fixHint": "services.msc > Bluetooth-Audio-Gatewaydienst = Deaktiviert. Ohne Bluetooth-Hardware automatisch erfüllt.",
+    "profil": "L2",
+    "kapitel": "CIS L2 (Dienste)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "L2S-10",
+    "title": "Bluetooth-Unterstützungsdienst deaktiviert",
+    "description": "Bluetooth-Dienst Bthserv ist deaktiviert (Funk-Härtung).",
+    "category": "services",
+    "source": "CIS Level 2",
+    "sourceId": "CIS L2 (Dienste)",
+    "severity": 1,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "Disabled",
+      "script": "try { (Get-Service -Name Bthserv -ErrorAction Stop).StartType } catch { 'Disabled' }"
+    },
+    "fixHint": "services.msc > Bluetooth-Unterstützungsdienst = Deaktiviert. Ohne Bluetooth-Hardware automatisch erfüllt.",
+    "profil": "L2",
+    "kapitel": "CIS L2 (Dienste)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "L2S-11",
+    "title": "Recall-Snapshots deaktiviert",
+    "description": "Windows Recall darf keine Snapshots speichern (Screenshot-Verlauf, Copilot+-Geräte).",
+    "category": "system-hardening",
+    "source": "CIS Level 2",
+    "sourceId": "CIS L2 (KI)",
+    "severity": 2,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+      "valueName": "DisableAIDataAnalysis",
+      "operator": "Equals",
+      "expected": "1"
+    },
+    "fixHint": "GPO: Recall-Snapshots deaktivieren (DisableAIDataAnalysis=1).",
+    "profil": "L2",
+    "kapitel": "CIS L2 (KI)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "L2S-12",
+    "title": "Standortzugriff per Richtlinie aus",
+    "description": "Windows-Standortbestimmung ist richtlinienseitig deaktiviert.",
+    "category": "system-hardening",
+    "source": "CIS Level 2",
+    "sourceId": "CIS L2 (Privacy)",
+    "severity": 1,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\LocationAndSensors",
+      "valueName": "DisableLocation",
+      "operator": "Equals",
+      "expected": "1"
+    },
+    "fixHint": "GPO: Standort deaktivieren (DisableLocation=1).",
+    "profil": "L2",
+    "kapitel": "CIS L2 (Privacy)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  }
+]

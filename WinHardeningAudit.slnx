@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/WinHardeningAudit.App/WinHardeningAudit.App.csproj" />
+    <Project Path="src/WinHardeningAudit.Core/WinHardeningAudit.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/WinHardeningAudit.Core.Tests/WinHardeningAudit.Core.Tests.csproj" />
+  </Folder>
+</Solution>

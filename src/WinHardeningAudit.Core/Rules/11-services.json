@@ -1,0 +1,59 @@
+[
+  {
+    "id": "SVC-01",
+    "title": "Remoteregistrierung deaktiviert",
+    "description": "Der RemoteRegistry-Dienst erlaubt Remote-Zugriff auf die Registry und wird nicht benötigt.",
+    "category": "services",
+    "source": "CIS Stand-alone + STIG",
+    "sourceId": "CIS 5.x (L1)",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "Disabled",
+      "script": "(Get-Service -Name RemoteRegistry -ErrorAction Stop).StartType"
+    },
+    "fixHint": "services.msc > Remoteregistrierung > Starttyp Deaktiviert.",
+    "profil": "L1",
+    "kapitel": "5.x System Services",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "SVC-02",
+    "title": "Druckwarteschlange nur bei Bedarf (manuell prüfen)",
+    "description": "Der Spooler-Dienst war mehrfach Angriffsvektor (PrintNightmare). Ohne Drucker deaktivieren, sonst auf Automatically belassen.",
+    "category": "services",
+    "source": "CIS + STIG Hinweis",
+    "sourceId": "Spooler-Hinweis",
+    "severity": 2,
+    "check": {
+      "provider": "manual"
+    },
+    "fixHint": "services.msc > Druckwarteschlange: Deaktiviert, wenn kein Drucker/kein Drucken nötig. (Bewusste Ermessensprüfung: nur du weißt, ob gedruckt wird.)",
+    "profil": "L1",
+    "kapitel": "5.x System Services",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "SVC-03",
+    "title": "Xbox-Dienste deaktiviert (Baseline)",
+    "description": "Auf Arbeitsgeräten unnötige Xbox-Dienste sind per Baseline deaktiviert.",
+    "category": "services",
+    "source": "MS Baseline",
+    "sourceId": "MS-W11-25H2 Dienste",
+    "severity": 1,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "Disabled",
+      "script": "try { $s = (Get-Service -DisplayName 'Xbox*' -ErrorAction Stop | Where-Object { $_.StartType -ne 'Disabled' }); if ($s) { ($s.Name -join ', ') } else { 'Disabled' } } catch { 'Disabled' }"
+    },
+    "fixHint": "services.msc > Xbox-Dienste (Zubehörverwaltung, Auth Manager, Game Save, Netzwerkdienst) = Deaktiviert.",
+    "profil": "L1",
+    "kapitel": "MS 25H2 (Dienste)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  }
+]

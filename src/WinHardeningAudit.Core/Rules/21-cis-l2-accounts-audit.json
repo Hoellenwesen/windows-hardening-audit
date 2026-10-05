@@ -1,0 +1,247 @@
+[
+  {
+    "id": "L2A-01",
+    "title": "UAC Admin Approval für eingebauten Administrator",
+    "description": "Auch das eingebaute Administratorkonto läuft im Admin Approval Mode (Defense in Depth).",
+    "category": "accounts-uac",
+    "source": "CIS Level 2 + STIG",
+    "sourceId": "CIS L2 / STIG SV-253468",
+    "severity": 3,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+      "valueName": "FilterAdministratorToken",
+      "operator": "Equals",
+      "expected": "1"
+    },
+    "fixHint": "secpol.msc > Sicherheitsoptionen > UAC: Admin Approval Mode für das integrierte Administratorkonto = Aktiviert.",
+    "profil": "L2",
+    "kapitel": "CIS L2 (UAC)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "L2A-02",
+    "title": "UAC: Nur signierte Programme erhöhen",
+    "description": "Nur signierte und verifizierte ausführbare Dateien dürfen Rechte erhöhen.",
+    "category": "accounts-uac",
+    "source": "CIS Level 2",
+    "sourceId": "CIS L2 (UAC)",
+    "severity": 3,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+      "valueName": "ValidateAdminCodeSignatures",
+      "operator": "Equals",
+      "expected": "1"
+    },
+    "fixHint": "secpol.msc > Sicherheitsoptionen > UAC: Nur signierte UIAccess-Anwendungen erhöhen = Aktiviert.",
+    "profil": "L2",
+    "kapitel": "CIS L2 (UAC)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "L2A-03",
+    "title": "Zwischengespeicherte Anmeldungen max. 10",
+    "description": "Anzahl zwischengespeicherter Domänenanmeldungen begrenzt (nur domänengebunden wirksam, Standard 10).",
+    "category": "accounts-uac",
+    "source": "CIS Level 2 + STIG",
+    "sourceId": "CIS L2 / STIG SV-253447",
+    "severity": 2,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon",
+      "valueName": "CachedLogonsCount",
+      "operator": "LessOrEqual",
+      "expected": "10"
+    },
+    "fixHint": "secpol.msc > Sicherheitsoptionen > Interaktive Anmeldung: Anzahl zwischenzuspeichernder Anmeldungen = 10 oder weniger. Nur Domäne.",
+    "profil": "L2",
+    "kapitel": "CIS L2 (Logon)",
+    "giltAb": "24H2",
+    "ziel": "enterprise"
+  },
+  {
+    "id": "L2A-04",
+    "title": "Computerkonto-Kennwortwechsel erlaubt",
+    "description": "Das Zurücksetzen des Computerkonto-Kennworts darf nicht verhindert werden.",
+    "category": "accounts-uac",
+    "source": "CIS Level 2 + STIG",
+    "sourceId": "CIS L2 / STIG SV-253441",
+    "severity": 1,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Netlogon\\Parameters",
+      "valueName": "DisablePasswordChange",
+      "operator": "Equals",
+      "expected": "0",
+      "missingIs": "Passed"
+    },
+    "fixHint": "Standard ist 0 (erlaubt). Nur relevant für domänengebundene Geräte.",
+    "profil": "L2",
+    "kapitel": "CIS L2 (Logon)",
+    "giltAb": "24H2",
+    "ziel": "enterprise"
+  },
+  {
+    "id": "L2A-05",
+    "title": "Erweiterte Überwachung: DPAPI-Aktivität",
+    "description": "Schutz von DPAPI-Geheimnissen erfordert lückenlose Prüfung (Erfolg + Fehler).",
+    "category": "audit-logging",
+    "source": "CIS Level 2",
+    "sourceId": "CIS L2 (17.x)",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "Contains",
+      "expected": "Success and Failure",
+      "script": "# 0cce922d-69ae-11d9-bed3-505054503030\n$o = auditpol /get /subcategory:'DPAPI Activity' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; ($o | Select-String '0cce922d-69ae-11d9-bed3-505054503030').Line"
+    },
+    "fixHint": "auditpol /set /subcategory:'DPAPI Activity' /success:enable /failure:enable (Admin).",
+    "profil": "L2",
+    "kapitel": "CIS L2 (Detailed Tracking)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "L2A-06",
+    "title": "Erweiterte Überwachung: RPC-Ereignisse",
+    "description": "RPC-Aufrufe auditieren (Erfolg + Fehler) zur Erkennung lateraler Bewegung.",
+    "category": "audit-logging",
+    "source": "CIS Level 2",
+    "sourceId": "CIS L2 (17.x)",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "Contains",
+      "expected": "Success and Failure",
+      "script": "# 0cce922e-69ae-11d9-bed3-505054503030\n$o = auditpol /get /subcategory:'RPC Events' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; ($o | Select-String '0cce922e-69ae-11d9-bed3-505054503030').Line"
+    },
+    "fixHint": "auditpol /set /subcategory:'RPC Events' /success:enable /failure:enable (Admin). Erzeugt spürbares Log-Volumen.",
+    "profil": "L2",
+    "kapitel": "CIS L2 (Detailed Tracking)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "L2A-07",
+    "title": "Erweiterte Überwachung: Token-Rechte angepasst",
+    "description": "Anpassungen von Token-Rechten auditieren (Privilege Escalation-Spuren).",
+    "category": "audit-logging",
+    "source": "CIS Level 2",
+    "sourceId": "CIS L2 (17.x)",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "Contains",
+      "expected": "Success and Failure",
+      "script": "# 0cce924a-69ae-11d9-bed3-505054503030\n$o = auditpol /get /subcategory:'Token Right Adjusted Events' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; ($o | Select-String '0cce924a-69ae-11d9-bed3-505054503030').Line"
+    },
+    "fixHint": "auditpol /set /subcategory:'Token Right Adjusted Events' /success:enable /failure:enable (Admin).",
+    "profil": "L2",
+    "kapitel": "CIS L2 (Detailed Tracking)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "L2A-08",
+    "title": "Erweiterte Überwachung: Prozessbeendigung (Fehler)",
+    "description": "Fehlgeschlagene Prozessbeendigungen auditieren (Defense Evasion).",
+    "category": "audit-logging",
+    "source": "CIS Level 2",
+    "sourceId": "CIS L2 (17.x)",
+    "severity": 1,
+    "check": {
+      "provider": "script",
+      "operator": "Contains",
+      "expected": "Failure",
+      "script": "# 0cce922c-69ae-11d9-bed3-505054503030\n$o = auditpol /get /subcategory:'Process Termination' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; ($o | Select-String '0cce922c-69ae-11d9-bed3-505054503030').Line"
+    },
+    "fixHint": "auditpol /set /subcategory:'Process Termination' /failure:enable (Admin).",
+    "profil": "L2",
+    "kapitel": "CIS L2 (Detailed Tracking)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "L2A-09",
+    "title": "Erweiterte Überwachung: Verzeichnisdienstzugriff",
+    "description": "Zugriffe auf den Verzeichnisdienst auditieren (nur Domäne sinnvoll).",
+    "category": "audit-logging",
+    "source": "CIS Level 2",
+    "sourceId": "CIS L2 (17.x DS)",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "NotEquals",
+      "expected": "No Auditing",
+      "script": "# 0cce923b-69ae-11d9-bed3-505054503030\n$o = auditpol /get /subcategory:'Directory Service Access' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; (($o | Select-String '0cce923b-69ae-11d9-bed3-505054503030').Line.Split(',')[4]).Trim()"
+    },
+    "fixHint": "auditpol /set /subcategory:'Directory Service Access' /success:enable /failure:enable (Admin, Domäne).",
+    "profil": "L2",
+    "kapitel": "CIS L2 (DS Access)",
+    "giltAb": "24H2",
+    "ziel": "enterprise"
+  },
+  {
+    "id": "L2A-10",
+    "title": "Erweiterte Überwachung: Verzeichnisdienständerungen",
+    "description": "Änderungen im Verzeichnisdienst auditieren (nur Domäne sinnvoll).",
+    "category": "audit-logging",
+    "source": "CIS Level 2",
+    "sourceId": "CIS L2 (17.x DS)",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "NotEquals",
+      "expected": "No Auditing",
+      "script": "# 0cce923c-69ae-11d9-bed3-505054503030\n$o = auditpol /get /subcategory:'Directory Service Changes' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; (($o | Select-String '0cce923c-69ae-11d9-bed3-505054503030').Line.Split(',')[4]).Trim()"
+    },
+    "fixHint": "auditpol /set /subcategory:'Directory Service Changes' /success:enable /failure:enable (Admin, Domäne).",
+    "profil": "L2",
+    "kapitel": "CIS L2 (DS Access)",
+    "giltAb": "24H2",
+    "ziel": "enterprise"
+  },
+  {
+    "id": "L2A-11",
+    "title": "Erweiterte Überwachung: Kerberos-Ticketvorgänge",
+    "description": "Kerberos Service Ticket Operations auditieren (nur Domäne sinnvoll).",
+    "category": "audit-logging",
+    "source": "CIS Level 2",
+    "sourceId": "CIS L2 (17.x)",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "Contains",
+      "expected": "Success and Failure",
+      "script": "# 0cce9240-69ae-11d9-bed3-505054503030\n$o = auditpol /get /subcategory:'Kerberos Service Ticket Operations' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; ($o | Select-String '0cce9240-69ae-11d9-bed3-505054503030').Line"
+    },
+    "fixHint": "auditpol /set /subcategory:'Kerberos Service Ticket Operations' /success:enable /failure:enable (Admin, Domäne).",
+    "profil": "L2",
+    "kapitel": "CIS L2 (Account Logon)",
+    "giltAb": "24H2",
+    "ziel": "enterprise"
+  },
+  {
+    "id": "L2A-12",
+    "title": "Erweiterte Überwachung: Filterplattform-Verbindungen (Fehler)",
+    "description": "Blockierte Firewall-Verbindungen auditieren (Defense in Depth zum Logging).",
+    "category": "audit-logging",
+    "source": "CIS Level 2",
+    "sourceId": "CIS L2 (17.x)",
+    "severity": 1,
+    "check": {
+      "provider": "script",
+      "operator": "Contains",
+      "expected": "Failure",
+      "script": "# 0cce9226-69ae-11d9-bed3-505054503030\n$o = auditpol /get /subcategory:'Filtering Platform Connection' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; ($o | Select-String '0cce9226-69ae-11d9-bed3-505054503030').Line"
+    },
+    "fixHint": "auditpol /set /subcategory:'Filtering Platform Connection' /failure:enable (Admin).",
+    "profil": "L2",
+    "kapitel": "CIS L2 (Object Access)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  }
+]

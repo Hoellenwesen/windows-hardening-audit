@@ -1,0 +1,103 @@
+[
+  {
+    "id": "AUD-01",
+    "title": "PowerShell Script Block Logging aktiv",
+    "description": "Protokolliert ausgeführte Script-Blöcke (wichtig für Forensik).",
+    "category": "audit-logging",
+    "source": "MS Baseline + CIS",
+    "sourceId": "CIS 18.9 (L1)",
+    "severity": 2,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\PowerShell\\ScriptBlockLogging",
+      "valueName": "EnableScriptBlockLogging",
+      "operator": "Equals",
+      "expected": "1"
+    },
+    "fixHint": "GPO: Administrative Vorlagen > Windows-Komponenten > PowerShell > Scriptblock-Protokollierung.",
+    "profil": "L1",
+    "kapitel": "18.9 PowerShell Logging",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "AUD-02",
+    "title": "Anmelde-Audit: Erfolg + Fehler",
+    "description": "Unterkategorie 'Logon' muss Erfolg und Fehler auditieren (GUID-Abgleich, sprachunabhängig).",
+    "category": "audit-logging",
+    "source": "CIS",
+    "sourceId": "CIS 17.1 (L1)",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "Contains",
+      "expected": "Success and Failure",
+      "script": "$o = auditpol /get /subcategory:'Logon' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; ($o | Select-String '0cce9215-69ae-11d9-bed3-505054503030').Line"
+    },
+    "fixHint": "auditpol /set /subcategory:Logon /success:enable /failure:enable (Admin).",
+    "profil": "L1",
+    "kapitel": "17.1 Logon Audit",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "AUD-03",
+    "title": "Audit: Kontenabmeldung erfassen",
+    "description": "Unterkategorie 'Logoff' sollte mindestens Erfolg protokollieren (GUID-Abgleich, sprachunabhängig).",
+    "category": "audit-logging",
+    "source": "CIS",
+    "sourceId": "CIS 17.1 (L1)",
+    "severity": 1,
+    "check": {
+      "provider": "script",
+      "operator": "Contains",
+      "expected": "Success",
+      "script": "$o = auditpol /get /subcategory:'Logoff' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; ($o | Select-String '0cce9216-69ae-11d9-bed3-505054503030').Line"
+    },
+    "fixHint": "auditpol /set /subcategory:Logoff /success:enable (Admin).",
+    "profil": "L1",
+    "kapitel": "17.1 Logoff Audit",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "AUD-04",
+    "title": "Audit: Privilegiennutzung (Sensitive Privilege Use)",
+    "description": "Erkennt Missbrauch sensibler Rechte (z.B. Debug, Backup). GUID-Abgleich, sprachunabhängig.",
+    "category": "audit-logging",
+    "source": "CIS",
+    "sourceId": "CIS 17.5 (L1)",
+    "severity": 1,
+    "check": {
+      "provider": "script",
+      "operator": "Contains",
+      "expected": "Success",
+      "script": "$o = auditpol /get /subcategory:'Sensitive Privilege Use' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; ($o | Select-String '0cce9228-69ae-11d9-bed3-505054503030').Line"
+    },
+    "fixHint": "auditpol /set /subcategory:\"Sensitive Privilege Use\" /success:enable /failure:enable.",
+    "profil": "L1",
+    "kapitel": "17.5 Privilege Use",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "AUD-05",
+    "title": "Security-Eventlog Größe >= 64 MB",
+    "description": "Zu kleine Logs werden zu schnell überschrieben.",
+    "category": "audit-logging",
+    "source": "CIS",
+    "sourceId": "CIS 19.x (L1)",
+    "severity": 1,
+    "check": {
+      "provider": "script",
+      "operator": "GreaterOrEqual",
+      "expected": "67108864",
+      "script": "(Get-WinEvent -ListLog Security -ErrorAction Stop).MaximumSizeInBytes"
+    },
+    "fixHint": "GPO: Ereignisprotokollgröße Security auf 196608 KB+ setzen.",
+    "profil": "L1",
+    "kapitel": "19.x Event Log",
+    "giltAb": "24H2",
+    "ziel": "both"
+  }
+]

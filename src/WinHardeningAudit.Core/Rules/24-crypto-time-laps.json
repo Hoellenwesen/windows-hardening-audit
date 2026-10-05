@@ -1,0 +1,236 @@
+[
+  {
+    "id": "TLS-01",
+    "title": ".NET: Starke Kryptografie erzwungen (64-Bit)",
+    "description": ".NET Framework nutzt starke TLS-Kryptografie (SchUseStrongCrypto). Standard ab 4.6 bereits sicher.",
+    "category": "system-hardening",
+    "source": "CIS + MS Guidance",
+    "sourceId": "TLS-Härtung",
+    "severity": 2,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Microsoft\\.NETFramework\\v4.0.30319",
+      "valueName": "SchUseStrongCrypto",
+      "operator": "Equals",
+      "expected": "1",
+      "missingIs": "Passed"
+    },
+    "fixHint": "SchUseStrongCrypto=1 (DWORD) explizit setzen. Fehlender Wert = sicherer Standard ab .NET 4.6.",
+    "profil": "L1",
+    "kapitel": "TLS-Härtung",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "TLS-02",
+    "title": ".NET: Starke Kryptografie erzwungen (32-Bit)",
+    "description": ".NET Framework (WoW64) nutzt starke TLS-Kryptografie.",
+    "category": "system-hardening",
+    "source": "CIS + MS Guidance",
+    "sourceId": "TLS-Härtung",
+    "severity": 2,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Wow6432Node\\Microsoft\\.NETFramework\\v4.0.30319",
+      "valueName": "SchUseStrongCrypto",
+      "operator": "Equals",
+      "expected": "1",
+      "missingIs": "Passed"
+    },
+    "fixHint": "SchUseStrongCrypto=1 (DWORD) im WoW64-Zweig explizit setzen.",
+    "profil": "L1",
+    "kapitel": "TLS-Härtung",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "TLS-03",
+    "title": ".NET: System-Standard-TLS (64-Bit)",
+    "description": ".NET folgt den OS-TLS-Standards statt eigener Defaults.",
+    "category": "system-hardening",
+    "source": "CIS + MS Guidance",
+    "sourceId": "TLS-Härtung",
+    "severity": 1,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Microsoft\\.NETFramework\\v4.0.30319",
+      "valueName": "SystemDefaultTlsVersions",
+      "operator": "Equals",
+      "expected": "1",
+      "missingIs": "Passed"
+    },
+    "fixHint": "SystemDefaultTlsVersions=1 (DWORD) explizit setzen.",
+    "profil": "L1",
+    "kapitel": "TLS-Härtung",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "TLS-04",
+    "title": ".NET: System-Standard-TLS (32-Bit)",
+    "description": ".NET (WoW64) folgt den OS-TLS-Standards.",
+    "category": "system-hardening",
+    "source": "CIS + MS Guidance",
+    "sourceId": "TLS-Härtung",
+    "severity": 1,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Wow6432Node\\Microsoft\\.NETFramework\\v4.0.30319",
+      "valueName": "SystemDefaultTlsVersions",
+      "operator": "Equals",
+      "expected": "1",
+      "missingIs": "Passed"
+    },
+    "fixHint": "SystemDefaultTlsVersions=1 (DWORD) im WoW64-Zweig explizit setzen.",
+    "profil": "L1",
+    "kapitel": "TLS-Härtung",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "NTLM-01",
+    "title": "Eingehender NTLM-Verkehr wird auditiert",
+    "description": "Eingehende NTLM-Authentifizierung wird protokolliert (mind. Domänenkonten).",
+    "category": "accounts-uac",
+    "source": "CIS",
+    "sourceId": "CIS 2.3.11 (L1)",
+    "severity": 3,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa\\MSV1_0",
+      "valueName": "AuditReceivingNTLMTraffic",
+      "operator": "GreaterOrEqual",
+      "expected": "1"
+    },
+    "fixHint": "secpol.msc > Netzwerksicherheit: Eingehenden NTLM-Verkehr überwachen = Für Domänenkonten aktivieren (1) oder höher.",
+    "profil": "L1",
+    "kapitel": "2.3 NTLM",
+    "giltAb": "24H2",
+    "ziel": "both",
+    "notiz26H2": "Ab 25H2 protokolliert Windows NTLM zusätzlich im Operational-Log (Kanal Microsoft-Windows-NTLM/Operational)."
+  },
+  {
+    "id": "NTLM-02",
+    "title": "Ausgehender NTLM-Verkehr wird auditiert oder blockiert",
+    "description": "Ausgehender NTLM-Verkehr steht mind. auf 'Alle überwachen' (1), besser 'Alle verweigern' (2).",
+    "category": "accounts-uac",
+    "source": "CIS",
+    "sourceId": "CIS 2.3.11.12 (L1)",
+    "severity": 3,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa\\MSV1_0",
+      "valueName": "RestrictSendingNTLMTraffic",
+      "operator": "GreaterOrEqual",
+      "expected": "1"
+    },
+    "fixHint": "secpol.msc > Netzwerksicherheit: Ausgehenden NTLM-Verkehr = Alle überwachen (1) oder Alle verweigern (2, vorher testen).",
+    "profil": "L1",
+    "kapitel": "2.3 NTLM",
+    "giltAb": "24H2",
+    "ziel": "both",
+    "notiz26H2": "Ab 25H2 protokolliert Windows NTLM zusätzlich im Operational-Log (Kanal Microsoft-Windows-NTLM/Operational)."
+  },
+  {
+    "id": "LAP-01",
+    "title": "Lokales Admin-Kennwort rotiert (max. 60 Tage)",
+    "description": "Eingebautes Admin-Konto (SID 500): deaktiviert oder Kennwort max. 60 Tage alt – z.B. via Windows LAPS.",
+    "category": "accounts-uac",
+    "source": "CIS + STIG",
+    "sourceId": "STIG SV-253476",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "OK",
+      "script": "$a = Get-LocalUser -ErrorAction Stop | Where-Object { $_.SID -eq 'S-1-5-500' }; if ($null -eq $a -or -not $a.Enabled) { 'OK' } elseif (((Get-Date) - $a.PasswordLastSet).TotalDays -le 60) { 'OK' } else { 'VERALTET' }"
+    },
+    "fixHint": "Windows LAPS einrichten (Kennwortverwaltung lokaler Admins) oder Konto deaktivieren.",
+    "profil": "L1",
+    "kapitel": "1.x Admin-Konten",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "NTP-01",
+    "title": "Windows-Zeitdienst läuft",
+    "description": "W32Time-Dienst ist aktiv (Kerberos braucht max. 5 Min. Zeitabweichung).",
+    "category": "system-hardening",
+    "source": "CIS",
+    "sourceId": "Zeit-Sync",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "Running",
+      "script": "(Get-Service -Name W32Time -ErrorAction Stop).Status"
+    },
+    "fixHint": "services.msc > Windows-Zeitgeber = Automatisch + Gestartet.",
+    "profil": "L1",
+    "kapitel": "Zeit-Sync",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "NTP-02",
+    "title": "Zeit-Sync via NTP (Stand-alone)",
+    "description": "Stand-alone-Geräte synchronisieren per NTP (kein Domänen-Modus).",
+    "category": "system-hardening",
+    "source": "CIS",
+    "sourceId": "Zeit-Sync",
+    "severity": 1,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\W32Time\\Parameters",
+      "valueName": "Type",
+      "operator": "Equals",
+      "expected": "NTP"
+    },
+    "fixHint": "W32Time\\Parameters\\Type = NTP (Stand-alone). Domäne nutzt NT5DS (Enterprise-Ansicht).",
+    "profil": "L1",
+    "kapitel": "Zeit-Sync",
+    "giltAb": "24H2",
+    "ziel": "standalone"
+  },
+  {
+    "id": "NTP-03",
+    "title": "Zeit-Sync via Domänen-Hierarchie (Enterprise)",
+    "description": "Domänen-Geräte synchronisieren via NT5DS (Domänen-Hierarchie).",
+    "category": "system-hardening",
+    "source": "CIS",
+    "sourceId": "Zeit-Sync",
+    "severity": 1,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\W32Time\\Parameters",
+      "valueName": "Type",
+      "operator": "Equals",
+      "expected": "NT5DS"
+    },
+    "fixHint": "W32Time\\Parameters\\Type = NT5DS (Domäne). Stand-alone nutzt NTP.",
+    "profil": "L1",
+    "kapitel": "Zeit-Sync",
+    "giltAb": "24H2",
+    "ziel": "enterprise"
+  },
+  {
+    "id": "WDAC-01",
+    "title": "Anwendungs-Allowlisting aktiv (WDAC oder AppLocker)",
+    "description": "Deny-by-default für ausführbare Software via WDAC-Richtlinie oder AppLocker-Regeln. Ohne Freigabe-Konzept nicht erfüllbar.",
+    "category": "system-hardening",
+    "source": "CIS + STIG",
+    "sourceId": "STIG SV-253262",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "Enforced",
+      "script": "$wdac = @(Get-ChildItem 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\CI\\Policy' -ErrorAction Stop | Where-Object { $_.PSChildName -match '^\\{[0-9a-fA-F-]{36}\\}$' }).Count; $al = 0; try { $al = ((Get-AppLockerPolicy -Effective -ErrorAction Stop).RuleCollections | ForEach-Object { @($_.Rules).Count } | Measure-Object -Sum).Sum } catch {}; if ($wdac -gt 0 -or $al -gt 0) { 'Enforced' } else { exit 1 }"
+    },
+    "fixHint": "WDAC-Richtlinie (auch Pro möglich) oder AppLocker-Regeln (Enterprise) mit dokumentierter Freigabe einführen.",
+    "profil": "L1",
+    "kapitel": "Allowlisting",
+    "giltAb": "24H2",
+    "ziel": "both"
+  }
+]

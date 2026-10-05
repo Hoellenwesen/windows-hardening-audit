@@ -1,0 +1,129 @@
+[
+  {
+    "id": "SYS-01",
+    "title": "Autoplay/Autorun deaktiviert",
+    "description": "Kein automatisches Ausführen von Wechseldatenträgern.",
+    "category": "system-hardening",
+    "source": "MS Baseline + CIS",
+    "sourceId": "CIS 18.1 (L1)",
+    "severity": 3,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer",
+      "valueName": "NoDriveTypeAutoRun",
+      "operator": "Equals",
+      "expected": "255"
+    },
+    "fixHint": "GPO: Automatische Wiedergabe deaktivieren = Alle Laufwerke.",
+    "kapitel": "18.1 Autoplay",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  },
+  {
+    "id": "SYS-02",
+    "title": "Anonyme SAM-Aufzählung verhindern",
+    "description": "RestrictAnonymousSAM = 1 blockiert anonyme Kontenauflistung.",
+    "category": "system-hardening",
+    "source": "CIS",
+    "sourceId": "CIS 2.3.7 (L1)",
+    "severity": 3,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa",
+      "valueName": "restrictanonymoussam",
+      "operator": "Equals",
+      "expected": "1"
+    },
+    "fixHint": "GPO Sicherheitsoptionen > Netzwerkzugriff: Anonyme Aufzählung von SAM-Konten nicht zulassen.",
+    "kapitel": "2.3 Security Options",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  },
+  {
+    "id": "SYS-03",
+    "title": "Anonymer Zugriff einschränken (RestrictAnonymous)",
+    "description": "Keine anonymen Verbindungen mit SID-/Namen-Auflösung.",
+    "category": "system-hardening",
+    "source": "CIS",
+    "sourceId": "CIS 2.3.6 (L1)",
+    "severity": 2,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa",
+      "valueName": "restrictanonymous",
+      "operator": "Equals",
+      "expected": "1"
+    },
+    "fixHint": "GPO: Netzwerkzugriff: Anonyme SID-/Namen-Übersetzung nicht zulassen.",
+    "kapitel": "2.3 Security Options",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  },
+  {
+    "id": "SYS-04",
+    "title": "RDP mit Network Level Authentication",
+    "description": "Falls RDP aktiv ist, muss NLA erzwungen werden. Ist RDP deaktiviert, gilt der Check als erfüllt (Defense in Depth).",
+    "category": "system-hardening",
+    "source": "MS Baseline",
+    "sourceId": "RDP NLA",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "OK",
+      "script": "$f=(Get-ItemProperty 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server' -Name fDenyTSConnections -ErrorAction Stop).fDenyTSConnections; $n=(Get-ItemProperty 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp' -Name UserAuthentication -ErrorAction SilentlyContinue).UserAuthentication; if ($f -eq 1) { 'OK' } elseif ($n -eq 1) { 'OK' } else { 'NOK' }"
+    },
+    "fixHint": "Entweder RDP deaktivieren (fDenyTSConnections=1) oder NLA erzwingen (UserAuthentication=1).",
+    "kapitel": "MS RDP NLA",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  },
+  {
+    "id": "SYS-05",
+    "title": "Windows Installer: AlwaysInstallElevated aus",
+    "description": "Verhindert Privilege Escalation über MSI-Pakete.",
+    "category": "system-hardening",
+    "source": "CIS",
+    "sourceId": "CIS 18.5 (L1)",
+    "severity": 2,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Installer",
+      "valueName": "AlwaysInstallElevated",
+      "operator": "Equals",
+      "expected": "0",
+      "missingIs": "Passed"
+    },
+    "fixHint": "Falls Schlüssel fehlt, ist das gut (nicht konfiguriert = aus). GPO explizit auf Deaktiviert setzen.",
+    "kapitel": "18.5 Installer",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  },
+  {
+    "id": "SYS-06",
+    "title": "Automatische Admin-Anmeldung deaktiviert",
+    "description": "AutoAdminLogon darf nicht aktiv sein.",
+    "category": "system-hardening",
+    "source": "CIS",
+    "sourceId": "CIS 18.3 (L1)",
+    "severity": 2,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon",
+      "valueName": "AutoAdminLogon",
+      "operator": "Equals",
+      "expected": "0",
+      "missingIs": "Passed"
+    },
+    "fixHint": "AutoAdminLogon=0. Fehlender Wert = ebenfalls OK, wird als offen gewertet â€“ dann manuell prüfen.",
+    "kapitel": "18.3 Winlogon",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  }
+]

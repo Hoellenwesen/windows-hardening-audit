@@ -1,0 +1,83 @@
+[
+  {
+    "id": "SO-01",
+    "title": "Anmelde-Hinweistext konfiguriert",
+    "description": "Rechtlicher Hinweis vor der Anmeldung (Titel und Text gesetzt).",
+    "category": "accounts-uac",
+    "source": "CIS",
+    "sourceId": "CIS 2.3.5 (L1)",
+    "severity": 1,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "Gesetzt",
+      "script": "$c = (Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System' -ErrorAction SilentlyContinue).legalnoticecaption; $t = (Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System' -ErrorAction SilentlyContinue).legalnoticetext; if ([string]::IsNullOrWhiteSpace($c) -or [string]::IsNullOrWhiteSpace($t)) { 'Leer' } else { 'Gesetzt' }"
+    },
+    "fixHint": "secpol.msc > Sicherheitsoptionen > Interaktive Anmeldung: Meldungstext/-titel für Anmeldeversuche festlegen.",
+    "profil": "L1",
+    "kapitel": "2.3 Security Options",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "SO-02",
+    "title": "Letzter Benutzername wird nicht angezeigt",
+    "description": "Der Anmeldebildschirm zeigt nicht den zuletzt angemeldeten Benutzer.",
+    "category": "accounts-uac",
+    "source": "CIS",
+    "sourceId": "CIS 2.3.5 (L1)",
+    "severity": 2,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+      "valueName": "dontdisplaylastusername",
+      "operator": "Equals",
+      "expected": "1"
+    },
+    "fixHint": "secpol.msc > Interaktive Anmeldung: Letzten Benutzernamen nicht anzeigen = Aktiviert.",
+    "profil": "L1",
+    "kapitel": "2.3 Security Options",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "SVC-04",
+    "title": "SSDP-Suche deaktiviert",
+    "description": "SSDP Discovery-Dienst (UPnP-Erkennung) ist deaktiviert.",
+    "category": "services",
+    "source": "CIS",
+    "sourceId": "CIS 5.x (L1)",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "Disabled",
+      "script": "try { (Get-Service -Name SSDPSRV -ErrorAction Stop).StartType } catch { 'Disabled' }"
+    },
+    "fixHint": "services.msc > SSDP-Suche = Deaktiviert. Ohne UPnP-Bedarf unbedenklich.",
+    "profil": "L1",
+    "kapitel": "5.x System Services",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "SVC-05",
+    "title": "UPnP-Gerätehost deaktiviert",
+    "description": "UPnP Device Host-Dienst ist deaktiviert.",
+    "category": "services",
+    "source": "CIS",
+    "sourceId": "CIS 5.x (L1)",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "Disabled",
+      "script": "try { (Get-Service -Name upnphost -ErrorAction Stop).StartType } catch { 'Disabled' }"
+    },
+    "fixHint": "services.msc > UPnP-Gerätehost = Deaktiviert.",
+    "profil": "L1",
+    "kapitel": "5.x System Services",
+    "giltAb": "24H2",
+    "ziel": "both"
+  }
+]

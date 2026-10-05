@@ -1,0 +1,82 @@
+[
+  {
+    "id": "BOOT-01",
+    "title": "Secure Boot aktiviert",
+    "description": "UEFI Secure Boot verhindert Boot-Malware.",
+    "category": "secureboot-vbs",
+    "source": "MS Baseline",
+    "sourceId": "SecureBoot",
+    "severity": 4,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "True",
+      "script": "Confirm-SecureBootUEFI"
+    },
+    "fixHint": "UEFI: Secure Boot aktivieren. Auf VMs ggf. in Hyper-V-Einstellungen. In VMs ohne Secure-Boot-Unterstützung nicht anwendbar.",
+    "profil": "L1",
+    "kapitel": "MS Secure Boot",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "BOOT-02",
+    "title": "Virtualization Based Security (VBS) aktiv",
+    "description": "VBS isoliert sicherheitskritische Prozesse (Effektiv-Status, nicht nur Richtlinie).",
+    "category": "secureboot-vbs",
+    "source": "MS Baseline",
+    "sourceId": "DeviceGuard VBS",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "2",
+      "script": "(Get-CimInstance -ClassName Win32_DeviceGuard -Namespace root\\Microsoft\\Windows\\DeviceGuard -ErrorAction Stop).VirtualizationBasedSecurityStatus"
+    },
+    "fixHint": "GPO: Device Guard > Virtualisierungsbasierte Sicherheit aktivieren (Status 2 = aktiviert und laufend). Erfordert UEFI + Virtualisierungs-Support.",
+    "profil": "L1",
+    "kapitel": "MS Device Guard (VBS)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "BOOT-03",
+    "title": "Speicher-Integrität (HVCI) erzwungen",
+    "description": "Hypervisor-geschützte Codeintegrität gegen Treiber-Malware (Effektiv-Status).",
+    "category": "secureboot-vbs",
+    "source": "MS Baseline",
+    "sourceId": "HVCI",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "2",
+      "script": "(Get-CimInstance -ClassName Win32_DeviceGuard -Namespace root\\Microsoft\\Windows\\DeviceGuard -ErrorAction Stop).CodeIntegrityPolicyEnforcementStatus"
+    },
+    "fixHint": "Windows-Sicherheit > Gerätesicherheit > Kernisolierung > Speicher-Integrität einschalten (2 = erzwungen).",
+    "profil": "L1",
+    "kapitel": "MS Device Guard (HVCI)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "BOOT-04",
+    "title": "Credential Guard läuft",
+    "description": "Isoliert LSASS-Geheimnisse via Virtualisierung (Effektiv-Status). Erfordert Enterprise/Education.",
+    "category": "secureboot-vbs",
+    "source": "MS Baseline",
+    "sourceId": "CredentialGuard",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "Contains",
+      "expected": "1",
+      "script": "$os = (Get-CimInstance Win32_OperatingSystem -ErrorAction Stop).Caption; if ($os -notmatch 'Enterprise|Education') { 'N/A' } else { ((Get-CimInstance -ClassName Win32_DeviceGuard -Namespace root\\Microsoft\\Windows\\DeviceGuard -ErrorAction Stop).SecurityServicesRunning -join ' ') }"
+    },
+    "fixHint": "Erfordert Windows Enterprise/Education + UEFI + TPM + VBS. Auf anderen Editionen nicht anwendbar (wird als N/A gewertet).",
+    "profil": "L1",
+    "kapitel": "MS Credential Guard",
+    "giltAb": "24H2",
+    "ziel": "both"
+  }
+]

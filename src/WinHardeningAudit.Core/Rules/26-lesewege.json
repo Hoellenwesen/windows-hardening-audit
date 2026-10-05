@@ -1,0 +1,182 @@
+[
+  {
+    "id": "GPO-01",
+    "title": "Domänen-GPOs werden angewendet",
+    "description": "Das Gerät bezieht Richtlinien aus Domänen-GPOs (nur Enterprise-Kontext, reine Info).",
+    "category": "system-hardening",
+    "source": "CIS",
+    "sourceId": "GPO-Herkunft",
+    "severity": 0,
+    "check": {
+      "provider": "script",
+      "operator": "NotEquals",
+      "expected": "Keine",
+      "script": "try { $g = @(Get-ChildItem 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Group Policy\\State\\Machine\\GPO-List' -ErrorAction Stop | Get-ItemProperty -ErrorAction Stop | Where-Object { $_.DisplayName -ne 'Local Group Policy' } | Select-Object -ExpandProperty DisplayName); if ($g.Count -eq 0) { 'Keine' } else { ($g -join '; ') } } catch { exit 1 }"
+    },
+    "fixHint": "Nur relevant für domänengebundene Geräte (gpresult /R zur Kontrolle).",
+    "profil": "L1",
+    "kapitel": "GPO-Herkunft",
+    "giltAb": "24H2",
+    "ziel": "enterprise"
+  },
+  {
+    "id": "CERT-01",
+    "title": "Keine abgelaufenen Root-Zertifikate",
+    "description": "Der Machine-Root-Speicher enthält keine abgelaufenen Zertifikate.",
+    "category": "system-hardening",
+    "source": "CIS",
+    "sourceId": "Zertifikatshygiene",
+    "severity": 1,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "0",
+      "script": "try { $n = @(Get-ChildItem 'Cert:\\LocalMachine\\Root' -ErrorAction Stop | Where-Object { $_.NotAfter -lt (Get-Date) }).Count; [string]$n } catch { exit 1 }"
+    },
+    "fixHint": "Abgelaufene Roots entfernen (certlm.msc > Vertrauenswürdige Stammzertifizierungstellen).",
+    "profil": "L1",
+    "kapitel": "Zertifikatshygiene",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "DEF-07",
+    "title": "Defender Antimalware-Dienst aktiv",
+    "description": "Der Antimalware-Dienst (AMService) läuft (Effektiv-Status).",
+    "category": "defender-malware",
+    "source": "MS Baseline",
+    "sourceId": "WD: AMService",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "True",
+      "script": "(Get-MpComputerStatus -ErrorAction Stop).AMServiceEnabled"
+    },
+    "fixHint": "Windows-Sicherheit > Viren- & Bedrohungsschutz prüfen; ggf. Fremd-AV der Grund.",
+    "profil": "L1",
+    "kapitel": "MS Defender Baseline",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "DEF-08",
+    "title": "Defender Antivirus-Engine aktiv",
+    "description": "Die Antivirus-Engine ist aktiviert (Effektiv-Status).",
+    "category": "defender-malware",
+    "source": "MS Baseline",
+    "sourceId": "WD: AntivirusEnabled",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "True",
+      "script": "(Get-MpComputerStatus -ErrorAction Stop).AntivirusEnabled"
+    },
+    "fixHint": "Windows-Sicherheit > Viren- & Bedrohungsschutz prüfen.",
+    "profil": "L1",
+    "kapitel": "MS Defender Baseline",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "DEF-09",
+    "title": "Defender Netzwerkschutz-Engine aktiv",
+    "description": "Network Inspection System (NIS) läuft (Effektiv-Status).",
+    "category": "defender-malware",
+    "source": "MS Baseline",
+    "sourceId": "WD: NIS",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "True",
+      "script": "(Get-MpComputerStatus -ErrorAction Stop).NISEnabled"
+    },
+    "fixHint": "Windows-Sicherheit > Firewall- & Netzwerkschutz bzw. Defender-Richtlinie prüfen.",
+    "profil": "L1",
+    "kapitel": "MS Defender Baseline",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "FW-D1",
+    "title": "Keine Legacy-Dienst-Freigaben (Telnet/TFTP/rsh)",
+    "description": "Keine aktivierten eingehenden Allow-Regeln für veraltete Klartext-Dienste (namensbasierte Heuristik).",
+    "category": "firewall-network",
+    "source": "CIS",
+    "sourceId": "Firewall-Regeldetails",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "Keine",
+      "script": "try { $hit = @(Get-NetFirewallRule -Direction Inbound -Enabled True -Action Allow -ErrorAction Stop | Where-Object { $_.DisplayName -match 'Telnet|TFTP|\\brsh\\b|Remote Shell|Finger' }); if ($hit.Count -eq 0) { 'Keine' } else { (($hit | Select-Object -First 5 DisplayName).DisplayName -join '; ') } } catch { exit 1 }"
+    },
+    "fixHint": "wf.msc > Eingehende Regeln: Legacy-Regeln (Telnet/TFTP/rsh) deaktivieren bzw. löschen.",
+    "profil": "L1",
+    "kapitel": "9.x Firewall-Regeln",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "FW-D2",
+    "title": "Edge-Traversal-Ausnahmen prüfen",
+    "description": "Anzahl aktivierter Allow-Regeln mit Edge-Traversal (Teredo-Tunnel) – sollte 0 sein, Liste prüfen.",
+    "category": "firewall-network",
+    "source": "CIS",
+    "sourceId": "Firewall-Regeldetails",
+    "severity": 1,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "0",
+      "script": "try { $c = (Get-NetFirewallRule -Direction Inbound -Enabled True -ErrorAction Stop | Where-Object { $_.EdgeTraversalPolicy -eq 'Allow' } | Measure-Object).Count; [string]$c } catch { exit 1 }"
+    },
+    "fixHint": "wf.msc > Eingehende Regeln: Edge-Traversal auf Block/Defer setzen, außer begründet nötig.",
+    "profil": "L1",
+    "kapitel": "9.x Firewall-Regeln",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "SHR-01",
+    "title": "Keine Freigabe mit Jeder-Vollzugriff",
+    "description": "Keine (nicht-administrative) Freigabe gewährt Jeder/Gästen Vollzugriff.",
+    "category": "firewall-network",
+    "source": "CIS + STIG",
+    "sourceId": "Share-Rechte",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "Keine",
+      "script": "try { $s = Get-SmbShare -ErrorAction Stop | Where-Object { $_.Name -notlike '*$' }; $bad = @($s | Get-SmbShareAccess -ErrorAction Stop | Where-Object { $_.AccessRight -eq 'Full' -and $_.AccountName -match 'Everyone|Jeder|Guests|Gäste' }); if ($bad.Count -eq 0) { 'Keine' } else { (($bad | Select-Object -First 5 Name).Name -join '; ') } } catch { exit 1 }"
+    },
+    "fixHint": "fsmgmt.msc > Freigaben: Jeder-Vollzugriff entfernen (erfordert Admin zum Prüfen).",
+    "profil": "L1",
+    "kapitel": "Share-Rechte",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "SHR-02",
+    "title": "Keine unerwarteten versteckten Freigaben",
+    "description": "Außer C$, ADMIN$, IPC$ und print$ existieren keine versteckten Freigaben.",
+    "category": "firewall-network",
+    "source": "CIS",
+    "sourceId": "Share-Rechte",
+    "severity": 1,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "Keine",
+      "script": "try { $h = @(Get-SmbShare -ErrorAction Stop | Where-Object { $_.Name -like '*$' -and @('C$','ADMIN$','IPC$','print$') -notcontains $_.Name }); if ($h.Count -eq 0) { 'Keine' } else { (($h | Select-Object -ExpandProperty Name) -join '; ') } } catch { exit 1 }"
+    },
+    "fixHint": "fsmgmt.msc > Unerwartete $-Freigaben entfernen (erfordert Admin zum Prüfen).",
+    "profil": "L1",
+    "kapitel": "Share-Rechte",
+    "giltAb": "24H2",
+    "ziel": "both"
+  }
+]

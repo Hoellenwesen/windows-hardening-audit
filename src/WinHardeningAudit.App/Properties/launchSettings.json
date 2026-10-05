@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "WinHardeningAudit.App (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "WinHardeningAudit.App (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

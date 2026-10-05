@@ -1,0 +1,120 @@
+[
+  {
+    "id": "EDGE-01",
+    "title": "Edge SmartScreen aktiviert",
+    "description": "Schutz vor Phishing/Malware-Downloads im Edge.",
+    "category": "browser-edge",
+    "source": "MS Edge Baseline",
+    "sourceId": "SmartScreenEnabled",
+    "severity": 2,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge",
+      "valueName": "SmartScreenEnabled",
+      "operator": "Equals",
+      "expected": "1",
+      "missingIs": "Manual"
+    },
+    "fixHint": "GPO Edge: Microsoft Defender SmartScreen erzwingen. Ohne Richtlinie ist SmartScreen im Standard aktiv – in Edge unter edge://settings/privacy gegenprüfen.",
+    "kapitel": "MS Edge Baseline",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  },
+  {
+    "id": "EDGE-02",
+    "title": "Edge Enhanced Security Mode",
+    "description": "Härtet JIT / Browserschutz (Balanced oder Strict).",
+    "category": "browser-edge",
+    "source": "MS Edge Baseline",
+    "sourceId": "EnhancedSecurityMode",
+    "severity": 1,
+    "check": {
+      "provider": "manual"
+    },
+    "fixHint": "Edge > Einstellungen > Datenschutz > Erweiterten Sicherheitsmodus auf Ausgewogen/Streng. (Bewusste Ermessensprüfung, kein Auto-Check.)",
+    "kapitel": "MS Edge Baseline",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  },
+  {
+    "id": "EDGE-03",
+    "title": "Edge Typosquatting-Schutz (manuell)",
+    "description": "Warnung vor look-alike Domains. Policy-Status je Version unterschiedlich.",
+    "category": "browser-edge",
+    "source": "MS Edge Baseline",
+    "sourceId": "Typosquatting",
+    "severity": 1,
+    "check": {
+      "provider": "manual"
+    },
+    "fixHint": "Edge-Sicherheitsbaseline aus Security Compliance Toolkit importieren. (Bewusste Ermessensprüfung, kein Auto-Check.)",
+    "kapitel": "MS Edge Baseline",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  },
+  {
+    "id": "EDGE-04",
+    "title": "Edge automatische Updates (manuell)",
+    "description": "Edge-Updater-Dienst sollte automatisch laufen.",
+    "category": "browser-edge",
+    "source": "MS Edge Baseline",
+    "sourceId": "Edge Update",
+    "severity": 1,
+    "check": {
+      "provider": "script",
+      "operator": "Contains",
+      "expected": "Auto",
+      "script": "(Get-Service -Name edgeupdate -ErrorAction Stop).StartType"
+    },
+    "fixHint": "services.msc > Microsoft Edge Update > Automatisch.",
+    "kapitel": "MS Edge Baseline",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  },
+  {
+    "id": "EDGE-05",
+    "title": "Edge: SmartScreen-Umgehung für Sites verboten",
+    "description": "Nutzer können SmartScreen-Warnungen für Websites nicht umgehen.",
+    "category": "browser-edge",
+    "source": "MS Edge Baseline",
+    "sourceId": "PreventSmartScreenPromptOverride",
+    "severity": 2,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge",
+      "valueName": "PreventSmartScreenPromptOverride",
+      "operator": "Equals",
+      "expected": "1"
+    },
+    "fixHint": "Edge-Richtlinie: Umgehen von SmartScreen-Eingabeaufforderungen für Sites verhindern = Aktiviert.",
+    "profil": "L1",
+    "kapitel": "MS Edge Baseline",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "EDGE-06",
+    "title": "Edge: SmartScreen-Umgehung für Dateien verboten",
+    "description": "Nutzer können SmartScreen-Warnungen für Downloads nicht umgehen.",
+    "category": "browser-edge",
+    "source": "MS Edge Baseline",
+    "sourceId": "PreventSmartScreenPromptOverrideForFiles",
+    "severity": 2,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge",
+      "valueName": "PreventSmartScreenPromptOverrideForFiles",
+      "operator": "Equals",
+      "expected": "1"
+    },
+    "fixHint": "Edge-Richtlinie: Umgehen von SmartScreen-Eingabeaufforderungen für Dateien verhindern = Aktiviert.",
+    "profil": "L1",
+    "kapitel": "MS Edge Baseline",
+    "giltAb": "24H2",
+    "ziel": "both"
+  }
+]

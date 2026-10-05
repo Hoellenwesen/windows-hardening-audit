@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="WinHardeningAudit_App.Pages.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer Padding="24,16,24,24">
+        <StackPanel Spacing="16" MaxWidth="900">
+            <TextBlock x:Uid="SettingsTitle" Style="{StaticResource TitleTextBlockStyle}" Text="Settings" />
+
+            <TextBlock x:Uid="LanguageHeader" Style="{StaticResource SubtitleTextBlockStyle}" Text="Language" />
+            <StackPanel Padding="16" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="12" Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <ComboBox x:Name="LanguageBox" SelectionChanged="LanguageBox_Changed" MinWidth="240" />
+                    <Button x:Uid="RestartButton" Content="Restart app" Click="RestartButton_Click" />
+                </StackPanel>
+                <TextBlock x:Uid="LanguageRestartNote" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Changing the language takes effect after restarting the app." />
+            </StackPanel>
+
+            <TextBlock x:Uid="SettingsExportHeader" Style="{StaticResource SubtitleTextBlockStyle}" Text="Report folder" />
+            <StackPanel Padding="16" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="12" Spacing="8">
+                <TextBlock x:Name="ExportFolderText" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="" />
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Button x:Uid="ExportFolderOpen" Content="Open folder" Click="ExportFolderOpen_Click" />
+                </StackPanel>
+            </StackPanel>
+
+            <TextBlock x:Uid="SettingsResetHeader" Style="{StaticResource SubtitleTextBlockStyle}" Text="Reset" />
+            <StackPanel Padding="16" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="12" Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Button x:Uid="ResetButton" Content="Reset settings" Click="ResetButton_Click" />
+                </StackPanel>
+                <TextBlock x:Name="ResetResultText" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="" />
+            </StackPanel>
+
+            <TextBlock x:Uid="SettingsVersionHeader" Style="{StaticResource SubtitleTextBlockStyle}" Text="Version" />
+            <StackPanel Padding="16" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="12" Spacing="6">
+                <TextBlock x:Name="VersionText" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="" />
+                <TextBlock x:Name="CisText" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="" />
+                <TextBlock x:Name="MsText" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

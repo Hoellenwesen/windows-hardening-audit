@@ -1,0 +1,107 @@
+[
+  {
+    "id": "ACCT-01",
+    "title": "UAC: Admin Approval Mode für Administratoren",
+    "description": "Alle Administratoren laufen im Admin Approval Mode.",
+    "category": "accounts-uac",
+    "source": "MS Baseline",
+    "sourceId": "UAC: EnableLUA",
+    "severity": 3,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+      "valueName": "EnableLUA",
+      "operator": "Equals",
+      "expected": "1"
+    },
+    "fixHint": "Systemsteuerung > Benutzerkonten > UAC auf Standard oder höher.",
+    "kapitel": "2.3 Security Options",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  },
+  {
+    "id": "ACCT-02",
+    "title": "UAC: Secure-Desktop-Abfrage für Admins",
+    "description": "Consent-Prompt auf Secure Desktop (Verhalten 2 = Zustimmung anfordern).",
+    "category": "accounts-uac",
+    "source": "CIS",
+    "sourceId": "CIS 2.3.1.1 (L1)",
+    "severity": 3,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+      "valueName": "ConsentPromptBehaviorAdmin",
+      "operator": "Equals",
+      "expected": "2"
+    },
+    "fixHint": "GPO: Computerkonfiguration > Windows-Einstellungen > Sicherheitseinstellungen > Lokale Richtlinien > Sicherheitsoptionen.",
+    "kapitel": "2.3 Security Options",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  },
+  {
+    "id": "ACCT-03",
+    "title": "UAC: Secure Desktop erzwingen",
+    "description": "UAC-Eingabeaufforderung auf Secure Desktop anzeigen.",
+    "category": "accounts-uac",
+    "source": "CIS",
+    "sourceId": "CIS 2.3.1.2 (L1)",
+    "severity": 2,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+      "valueName": "PromptOnSecureDesktop",
+      "operator": "Equals",
+      "expected": "1"
+    },
+    "fixHint": "GPO Sicherheitsoptionen > UAC: Nur UIAccess-Anwendungen â€¦ / Secure Desktop.",
+    "kapitel": "2.3 Security Options",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  },
+  {
+    "id": "ACCT-04",
+    "title": "Leere Kennwörter nur an Konsole",
+    "description": "Konten mit leerem Kennwort dürfen sich nur lokal anmelden.",
+    "category": "accounts-uac",
+    "source": "CIS",
+    "sourceId": "CIS 2.3.1.5 (L1)",
+    "severity": 3,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+      "valueName": "LimitBlankPasswordUse",
+      "operator": "Equals",
+      "expected": "1",
+      "missingIs": "Passed"
+    },
+    "fixHint": "Standard ist 1 (aktiviert). Falls 0: per GPO/Registry korrigieren.",
+    "kapitel": "2.3 Security Options",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  },
+  {
+    "id": "ACCT-05",
+    "title": "Gastkonto deaktiviert",
+    "description": "Das eingebaute Gastkonto muss deaktiviert sein.",
+    "category": "accounts-uac",
+    "source": "MS Baseline + CIS",
+    "sourceId": "CIS 2.2.2 (L1)",
+    "severity": 3,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "False",
+      "script": "try { (Get-LocalUser -Name 'Gast' -ErrorAction Stop).Enabled } catch { try { (Get-LocalUser -Name 'Guest' -ErrorAction Stop).Enabled } catch { 'False' } }"
+    },
+    "fixHint": "lusrmgr.msc > Benutzer > Gast > Konto ist deaktiviert.",
+    "kapitel": "2.3 Security Options",
+    "profil": "L1",
+    "ziel": "both",
+    "giltAb": "24H2"
+  }
+]

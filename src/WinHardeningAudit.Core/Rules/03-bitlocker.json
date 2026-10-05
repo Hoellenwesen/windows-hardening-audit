@@ -1,0 +1,106 @@
+[
+  {
+    "id": "ENC-01",
+    "title": "BitLocker Systemlaufwerk verschlüsselt",
+    "description": "Das OS-Volume sollte vollständig verschlüsselt sein.",
+    "category": "bitlocker-encryption",
+    "source": "MS Baseline + CIS",
+    "sourceId": "CIS 2.10 (L1)",
+    "severity": 4,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "On",
+      "script": "(Get-BitLockerVolume -MountPoint $env:SystemDrive -ErrorAction Stop).ProtectionStatus"
+    },
+    "fixHint": "manage-bde -on C: bzw. Einstellungen > Datenschutz & Sicherheit > Geräteverschlüsselung. Erfordert Pro/Enterprise.",
+    "profil": "L1",
+    "kapitel": "MS BitLocker / CIS 2.10",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "ENC-02",
+    "title": "TPM bereit und aktiviert",
+    "description": "TPM 2.0 ist Voraussetzung für BitLocker + Secure Boot + Credential Guard. Ohne TPM-Chip nicht anwendbar.",
+    "category": "bitlocker-encryption",
+    "source": "MS Baseline",
+    "sourceId": "TPM 2.0",
+    "severity": 4,
+    "check": {
+      "provider": "script",
+      "operator": "Equals",
+      "expected": "True",
+      "script": "try { $t = Get-Tpm -ErrorAction Stop; if ($t.TpmPresent -eq $false) { 'N/A' } elseif ($t.TpmReady -eq $true) { 'True' } else { exit 1 } } catch { exit 1 }"
+    },
+    "fixHint": "UEFI: TPM/Security Device aktivieren; tpm.msc prüfen. Ohne TPM-Chip (z.B. VM) nicht anwendbar.",
+    "profil": "L1",
+    "kapitel": "MS TPM / Secure Boot",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "ENC-03",
+    "title": "WDigest-Authentifizierung deaktiviert",
+    "description": "Verhindert Klartext-Credential-Ablage in LSASS (Standard seit 8.1 bereits aus).",
+    "category": "bitlocker-encryption",
+    "source": "MS Baseline + CIS",
+    "sourceId": "CIS 18.x / MS Security Guide",
+    "severity": 4,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\SecurityProviders\\WDigest",
+      "valueName": "UseLogonCredential",
+      "operator": "Equals",
+      "expected": "0",
+      "missingIs": "Passed"
+    },
+    "fixHint": "UseLogonCredential=0 setzen (DWORD). Fehlender Wert = sicherer Standard. Erfordert Neustart.",
+    "profil": "L1",
+    "kapitel": "MS Security Guide (WDigest)",
+    "giltAb": "24H2",
+    "ziel": "both",
+    "notiz26H2": "WDigest ist seit 8.1 Standard-aus und als Einstellung deprecated."
+  },
+  {
+    "id": "ENC-04",
+    "title": "LSA-Schutz (PPL) aktiviert",
+    "description": "LSASS läuft als Protected Process Light.",
+    "category": "bitlocker-encryption",
+    "source": "MS Baseline",
+    "sourceId": "LSA RunAsPPL",
+    "severity": 4,
+    "check": {
+      "provider": "registry",
+      "key": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa",
+      "valueName": "RunAsPPL",
+      "operator": "GreaterOrEqual",
+      "expected": "1"
+    },
+    "fixHint": "RunAsPPL=1 (DWORD) + Neustart. Auf älterer HW ggf. prüfen.",
+    "profil": "L1",
+    "kapitel": "MS Security Guide (LSA)",
+    "giltAb": "24H2",
+    "ziel": "both"
+  },
+  {
+    "id": "ENC-05",
+    "title": "Kernel DMA-Schutz verfügbar",
+    "description": "Schutz vor DMA-Angriffen über Thunderbolt/PCI (Effektiv-Status aus DeviceGuard).",
+    "category": "bitlocker-encryption",
+    "source": "MS Baseline",
+    "sourceId": "Kernel DMA Protection",
+    "severity": 2,
+    "check": {
+      "provider": "script",
+      "operator": "Contains",
+      "expected": "3",
+      "script": "((Get-CimInstance -ClassName Win32_DeviceGuard -Namespace root\\Microsoft\\Windows\\DeviceGuard -ErrorAction Stop).AvailableSecurityProperties -join ' ')"
+    },
+    "fixHint": "msinfo32 > Kernel-DMA-Schutz = Ein. UEFI: VT-d / IOMMU aktivieren (3 = DMA-Schutz verfügbar).",
+    "profil": "L1",
+    "kapitel": "MS Kernel DMA Protection",
+    "giltAb": "24H2",
+    "ziel": "both"
+  }
+]

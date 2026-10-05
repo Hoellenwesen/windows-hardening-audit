@@ -1,0 +1,44 @@
+## .NET / Visual Studio Build-Artefakte
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+*.nupkg
+*.snupkg
+
+## Test-Ergebnisse
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+coverage*/
+
+## Distribution (Build-Artefakt, wird per dist\Build-Package.ps1 erzeugt)
+dist/out/
+
+## Lokale/temporäre Dateien
+*.log
+*.tmp
+*.bak
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+## Keys, Secrets, Zertifikate (niemals committen)
+*.pfx
+*.p12
+*.key
+*.pem
+appsettings.*.json
+!appsettings.json
