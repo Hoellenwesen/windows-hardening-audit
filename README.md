@@ -94,16 +94,21 @@ powershell -ExecutionPolicy Bypass -File dist\Build-Package.ps1
 ```
 
 - `dotnet test` runs provider comparison tests, secedit parsing, rule validation (unique IDs, known categories/providers/operators), exporter checks, and localization checks (XAML `x:Uid` + code keys vs `Strings/en-US/Resources.resw`, no orphan keys).
-- `dist\Build-Package.ps1` publishes `win-x64` (framework-dependent, `SelfContained=false`), copies `Rules/*.json`, `LIESMICH.txt`, and `Start.bat` into `dist/out/WinHardeningAudit-1.0-win-x64`, writes `Version.txt` (date, rule count, baseline references), and zips it. `dist/out/` is git-ignored build output.
+- `dist\Build-Package.ps1` publishes `win-x64` (framework-dependent, `SelfContained=false`), copies `Rules/*.json` (plus `Rules/l10n/en.json`), `README.txt`, and `Start.bat` into `dist/out/WinHardeningAudit-<version>-win-x64`, writes `Version.txt` (date, rule count, baseline references), and zips it. `dist/out/` is git-ignored build output. The version defaults to `<Version>` from the App csproj (currently 1.1.0); override with `-Version 1.2.0`.
 
 Publish profiles live in `src/WinHardeningAudit.App/Properties/PublishProfiles/` (`win-x64`, `win-x86`, `win-arm64`) and are versioned on purpose — the packaging script depends on `win-x64.pubxml`.
+
+## Releases
+
+- End users download the portable ZIP from **GitHub Releases** (no install; needs .NET 10 Desktop Runtime + Windows App Runtime 2.5, see `dist/README.txt` in the package).
+- New release: bump `<Version>` in `src/WinHardeningAudit.App/WinHardeningAudit.App.csproj` (and `Identity Version` in `Package.appxmanifest`), commit, tag `v<version>` (e.g. `v1.1.0`), push including the tag. CI builds the package and attaches `WinHardeningAudit-<version>-win-x64.zip` plus `Version.txt` to the GitHub Release automatically.
 
 ## Repository layout
 
 ```text
 WinHardeningAudit.slnx
 src/
-  WinHardeningAudit.App/        # WinUI 3 app (Pages: Home, Dashboard, Category, Export, About)
+  WinHardeningAudit.App/        # WinUI 3 app (Pages: Dashboard, Category, Export, About, Settings)
     Assets/                     # Icons / splash / tiles
     Pages/                      # XAML + code-behind
     Services/                   # ScanService (filtering, scoring, export), Strings (L.Get/L.F)
@@ -122,7 +127,7 @@ tests/
 dist/
   Build-Package.ps1             # Portable zip builder
   Start.bat                     # Prerequisite check + launcher
-  LIESMICH.txt                  # German end-user notes shipped in the package
+  README.txt                    # English end-user notes shipped in the package
   out/                          # Generated package (ignored, not committed)
 ```
 

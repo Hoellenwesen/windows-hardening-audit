@@ -1,16 +1,16 @@
 @echo off
-REM Start.bat - prueft Voraussetzungen, startet dann die App.
+REM Start.bat - checks prerequisites, then starts the app.
 setlocal
 set "OK=1"
 
 if not exist "%ProgramFiles%\dotnet\shared\Microsoft.WindowsDesktop.App\10.*" (
-  echo FEHLT: .NET 10 Desktop Runtime x64 - siehe LIESMICH.txt
+  echo MISSING: .NET 10 Desktop Runtime x64 - see README.txt
   set "OK=0"
 )
 
 powershell -NoProfile -Command "if (-not (Get-AppxPackage -Name 'Microsoft.WindowsAppRuntime.*' -ErrorAction SilentlyContinue | Where-Object { $_.Version -like '2.5*' })) { exit 1 }" >nul 2>&1
 if errorlevel 1 (
-  echo FEHLT: Windows App Runtime 2.5 - siehe LIESMICH.txt
+  echo MISSING: Windows App Runtime 2.5 - see README.txt
   set "OK=0"
 )
 
