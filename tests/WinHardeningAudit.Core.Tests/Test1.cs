@@ -56,9 +56,9 @@ public sealed class CompareTests
             dir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "WinHardeningAudit.Core", "Rules"));
         }
         var rules = CheckRunner.LoadRulesFromDirectory(dir);
-        Assert.IsTrue(rules.Count >= 40, $"Erwartet >= 40 Regeln, gefunden: {rules.Count}");
+        Assert.IsGreaterThanOrEqualTo(40, rules.Count, $"Erwartet >= 40 Regeln, gefunden: {rules.Count}");
         var dupes = rules.GroupBy(r => r.Id).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
-        Assert.AreEqual(0, dupes.Count, "Doppelte IDs: " + string.Join(",", dupes));
+        Assert.IsEmpty(dupes, "Doppelte IDs: " + string.Join(",", dupes));
         foreach (var r in rules)
         {
             Assert.IsFalse(string.IsNullOrWhiteSpace(r.Id), "Regel ohne ID");
@@ -122,7 +122,7 @@ public sealed class SeceditTests
             dir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "WinHardeningAudit.Core", "Rules"));
         var rules = CheckRunner.LoadRulesFromDirectory(dir);
         var problems = CheckRunner.ValidateRules(rules);
-        Assert.AreEqual(0, problems.Count, "Validierungsfehler:\n" + string.Join("\n", problems.Take(20)));
+        Assert.IsEmpty(problems, "Validierungsfehler:\n" + string.Join("\n", problems.Take(20)));
     }
 
     [TestMethod]
@@ -146,7 +146,7 @@ public sealed class SeceditTests
         Assert.IsTrue(problems.Any(p => p.Contains("B3")), "Kategorie-Fehler B3 nicht erkannt");
         Assert.IsTrue(problems.Any(p => p.Contains("B4")), "secedit-Key-Fehler B4 nicht erkannt");
         var good = new[] { R("G1", "registry", "Equals"), R("G2", "manual", "Equals") };
-        Assert.AreEqual(0, CheckRunner.ValidateRules(good).Count);
+        Assert.IsEmpty(CheckRunner.ValidateRules(good));
     }
 
     [TestMethod]
@@ -199,11 +199,11 @@ public sealed class SeceditTests
         };
         var csv = ReportExporter.ToCsv(report);
         var lines = csv.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        Assert.AreEqual(3, lines.Length);
-        Assert.IsTrue(lines[0].StartsWith("Id;Title;Category;Status;"));
+        Assert.HasCount(3, lines);
+        Assert.StartsWith("Id;Title;Category;Status;", lines[0]);
         Assert.IsTrue(lines[1].Contains("Not met") && lines[1].Contains("X1"));
-        Assert.IsTrue(lines[2].Contains("Manual: Judgment"));
-        Assert.IsTrue(lines[1].Contains("Both"), "target key 'both' should render as Both");
+        Assert.Contains("Manual: Judgment", lines[2]);
+        Assert.Contains("Both", lines[1], "target key 'both' should render as Both");
     }
 
     [TestMethod]
@@ -232,12 +232,12 @@ public sealed class SeceditTests
         };
         var csv = ReportExporter.ToCsv(report, de);
         var lines = csv.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        Assert.IsTrue(lines[0].StartsWith("Id;Titel;Rubrik;Status;"));
+        Assert.StartsWith("Id;Titel;Rubrik;Status;", lines[0]);
         Assert.IsTrue(lines[1].Contains("Nicht erfüllt") && lines[1].Contains("X1"));
-        Assert.IsTrue(lines[2].Contains("Manuell: Ermessen"));
+        Assert.Contains("Manuell: Ermessen", lines[2]);
         var html = ReportExporter.ToHtml(report, de);
         Assert.IsTrue(html.Contains("Kapitel: Kap") && html.Contains("Hinweis 26H2: Notiz"));
-        Assert.IsTrue(html.Contains("Konten &amp; UAC"), "category label should be HTML-encoded");
+        Assert.Contains("Konten &amp; UAC", html, "category label should be HTML-encoded");
     }
 }
 
@@ -291,11 +291,11 @@ public sealed class LocalizationTests
     {
         var en = ReswKeys("en-US");
         var de = ReswKeys("de-DE");
-        Assert.IsTrue(en.Count > 50, $"zu wenige EN-Keys: {en.Count}");
-        Assert.IsTrue(de.Count > 50, $"zu wenige DE-Keys: {de.Count}");
+        Assert.IsGreaterThan(50, en.Count, $"zu wenige EN-Keys: {en.Count}");
+        Assert.IsGreaterThan(50, de.Count, $"zu wenige DE-Keys: {de.Count}");
         // Beide Sprachen müssen exakt dieselben Keys haben (Fallback wäre sonst unvollständig)
-        Assert.AreEqual(0, en.Except(de).Count(), "Nur in en-US: " + string.Join(", ", en.Except(de)));
-        Assert.AreEqual(0, de.Except(en).Count(), "Nur in de-DE: " + string.Join(", ", de.Except(en)));
+        Assert.HasCount(0, en.Except(de), "Nur in en-US: " + string.Join(", ", en.Except(de)));
+        Assert.HasCount(0, de.Except(en), "Nur in de-DE: " + string.Join(", ", de.Except(en)));
     }
 
     [TestMethod]
@@ -316,7 +316,7 @@ public sealed class LocalizationTests
                         problems.Add($"{culture}/{Path.GetFileName(xaml)}: x:Uid={uid} ohne resw-Key");
                 }
             }
-            Assert.AreEqual(0, problems.Count, string.Join("\n", problems.Take(15)));
+            Assert.HasCount(0, problems, string.Join("\n", problems.Take(15)));
         }
     }
 
@@ -340,7 +340,7 @@ public sealed class LocalizationTests
                         problems.Add($"{culture}/{Path.GetFileName(cs)}: L-Key={key} fehlt");
                 }
             }
-            Assert.AreEqual(0, problems.Count, string.Join("\n", problems.Take(15)));
+            Assert.HasCount(0, problems, string.Join("\n", problems.Take(15)));
         }
     }
 
@@ -357,7 +357,7 @@ public sealed class LocalizationTests
                 var uid = k.Contains('.') ? k[..k.IndexOf('.')] : k;
                 return !used.Contains(uid) && !used.Contains(k);
             }).ToList();
-            Assert.AreEqual(0, orphans.Count, $"{culture} verwaiste Keys: " + string.Join(", ", orphans));
+            Assert.IsEmpty(orphans, $"{culture} verwaiste Keys: " + string.Join(", ", orphans));
         }
     }
 }
@@ -383,7 +383,7 @@ public sealed class OverlayTests
         try
         {
             var rules = CheckRunner.LoadRulesFromDirectory(dir, "en");
-            Assert.AreEqual(1, rules.Count);
+            Assert.HasCount(1, rules);
             Assert.AreEqual("English title", rules[0].Title);
             Assert.AreEqual("English description", rules[0].Description);
             Assert.AreEqual("English hint", rules[0].FixHint);
@@ -420,18 +420,18 @@ public sealed class OverlayTests
     {
         var dir = ShippedRulesDir();
         var rules = CheckRunner.LoadRulesFromDirectory(dir);
-        Assert.IsTrue(rules.Count >= 40, $"Expected >= 40 rules, found: {rules.Count}");
+        Assert.IsGreaterThanOrEqualTo(40, rules.Count, $"Expected >= 40 rules, found: {rules.Count}");
         var overlayFile = Path.Combine(dir, "l10n", "en.json");
         Assert.IsTrue(File.Exists(overlayFile), $"overlay missing: {overlayFile}");
         var overlay = JsonSerializer.Deserialize<Dictionary<string, CheckRunner.RuleOverlay>>(
             File.ReadAllText(overlayFile), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         Assert.IsNotNull(overlay);
         var ids = rules.Select(r => r.Id).ToHashSet();
-        Assert.AreEqual(0, overlay.Keys.Except(ids).Count(), "Unknown overlay IDs: " + string.Join(",", overlay.Keys.Except(ids).Take(10)));
-        Assert.AreEqual(0, ids.Except(overlay.Keys).Count(), "Missing overlay IDs: " + string.Join(",", ids.Except(overlay.Keys).Take(10)));
+        Assert.HasCount(0, overlay.Keys.Except(ids), "Unknown overlay IDs: " + string.Join(",", overlay.Keys.Except(ids).Take(10)));
+        Assert.HasCount(0, ids.Except(overlay.Keys), "Missing overlay IDs: " + string.Join(",", ids.Except(overlay.Keys).Take(10)));
         var merged = CheckRunner.LoadRulesFromDirectory(dir, "en");
-        Assert.AreEqual(rules.Count, merged.Count);
-        Assert.AreEqual(0, CheckRunner.ValidateRules(merged).Count, "Merged EN rules invalid:\n" + string.Join("\n", CheckRunner.ValidateRules(merged).Take(10)));
+        Assert.HasCount(merged.Count, rules);
+        Assert.IsEmpty(CheckRunner.ValidateRules(merged), "Merged EN rules invalid:\n" + string.Join("\n", CheckRunner.ValidateRules(merged).Take(10)));
         Assert.IsTrue(merged.Any(r => r.Title.Contains("password", StringComparison.OrdinalIgnoreCase)), "Expected merged English titles");
     }
 }

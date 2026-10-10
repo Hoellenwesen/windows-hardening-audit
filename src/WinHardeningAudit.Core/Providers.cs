@@ -60,7 +60,7 @@ public static class CoreStrings
         return _en.TryGetValue(key, out var v) ? v : key;
     }
 
-    public static string F(string key, params object[] args)
+    public static string F(string key, params object?[] args)
     {
         try { return string.Format(Get(key), args); }
         catch { return Get(key); }

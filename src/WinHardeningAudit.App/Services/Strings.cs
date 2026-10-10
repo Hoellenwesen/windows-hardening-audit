@@ -71,8 +71,9 @@ public static class AppLanguage
         {
             var p = SettingsPath();
             Directory.CreateDirectory(Path.GetDirectoryName(p)!);
-            File.WriteAllText(p, System.Text.Json.JsonSerializer.Serialize(
-                new Dictionary<string, string> { [SettingKey] = choice }));
+            // Manual JSON: choice comes from a fixed set, no escaping needed.
+            // (Avoids System.Text.Json trimming warning IL2026 for two strings.)
+            File.WriteAllText(p, "{\"language\":\"" + choice + "\"}");
         }
         catch { }
     }

@@ -11,7 +11,7 @@
   <Identity
     Name="Hoellenwesen.WinHardeningAudit"
     Publisher="CN=Hoellenwesen"
-    Version="1.1.0.0" />
+    Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="E6A2D227-0E37-4030-B36C-BBD7FC454BB6" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 

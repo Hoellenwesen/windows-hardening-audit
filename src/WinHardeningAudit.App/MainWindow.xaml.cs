@@ -9,7 +9,7 @@ namespace WinHardeningAudit_App;
 
 public sealed partial class MainWindow : Window
 {
-    public static MainWindow? Current { get; private set; }
+    public static new MainWindow? Current { get; private set; }
 
     public MainWindow()
     {
