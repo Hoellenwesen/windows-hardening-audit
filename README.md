@@ -179,7 +179,7 @@ Validation (`CheckRunner.ValidateRules`) rejects duplicate IDs, unknown categori
 Each L1 finding shows up to two buttons on the category page:
 
 - **Automatisch beheben** — only for `mode: auto` findings with status Failed/Warning. Applies the typed actions (registry, service, account, auditpol, event log, firewall profile, SMB, `net accounts`, secedit), backs the previous values up to `%LOCALAPPDATA%\WinHardeningAudit\fixes\<timestamp>-<ruleId>.json`, then re-checks just that rule. Rules with `requiresReboot` show a restart note.
-- **Manuelle Behebung** — for every L1 rule with a `remediation` block. Opens the numbered guide; every embedded command has its own **Kopieren/Copy** button (narrative suffixes are stripped so the text pastes into a console as-is). Auto rules show the GUI path plus one technical line per action (whose exact fix script is likewise copyable); manual rules show the numbered steps (German in the rule file, English via the `en.json` overlay).
+- **Manuelle Behebung** — for every L1 rule with a `remediation` block. Opens the guide split into **Variante A: Grafische Oberfläche** (GUI path plus prose steps) and **Variante B: Befehlszeile** (every command with its own **Kopieren/Copy** button; narrative suffixes are stripped so the text pastes into a console as-is). Auto rules show the GUI path plus one technical line per action (whose exact fix script is likewise copyable); manual rules show the numbered steps (German in the rule file, English via the `en.json` overlay).
 
 Fixing requires admin rights: without elevation the button offers "Restart as admin" (uses the existing `RelaunchAsAdmin`). Undo and bulk-fix are intentionally deferred (Phase 2/3) — backups are already written for that.
 

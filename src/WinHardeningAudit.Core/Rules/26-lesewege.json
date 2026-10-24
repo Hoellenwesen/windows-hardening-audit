@@ -14,7 +14,7 @@
       "script": "try { $g=@(Get-ChildItem 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Group Policy\\State\\Machine\\GPO-List' -ErrorAction Stop | Get-ItemProperty -ErrorAction Stop | Where-Object { $_.GPOID -match '^\\{[0-9a-fA-F-]{36}\\}$' } | Select-Object -ExpandProperty DisplayName); if ($g.Count -eq 0) { 'Keine' } else { ($g -join '; ') } } catch { exit 1 }"
     },
     "fixHint": "Nur relevant für domänengebundene Geräte (gpresult /R zur Kontrolle).",
-    "remediation": {"mode":"manual","risk":"low","gui":"gpedit/gpresult","steps":["Prüfen, ob Domänen-GPOs ankommen: gpupdate /force (Admin) und gpresult /r (Admin).","Ohne Domäne ist dieser Fund nicht anwendbar (Regel zielt auf Enterprise-Geräte).","Prüfen: erneuter Scan nach gpupdate."]},
+    "remediation": {"mode":"manual","risk":"low","gui":"gpedit/gpresult","steps":["Domänen-GPOs anwenden: gpupdate /force (Admin).","Ergebnis prüfen: gpresult /r (Admin).","Ohne Domäne ist dieser Fund nicht anwendbar (Regel zielt auf Enterprise-Geräte).","Prüfen: erneuter Scan nach gpupdate."]},
     "profil": "L1",
     "kapitel": "GPO-Herkunft",
     "giltAb": "24H2",

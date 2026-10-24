@@ -446,7 +446,8 @@ public static class RemediationScript
                     foreach (var prefix in new[]
                     {
                         "Get-", "Set-", "New-", "Remove-", "Revoke-", "Enable-", "Disable-",
-                        "Update-", "auditpol", "secedit",
+                        "Update-", "Start-", "Stop-", "Test-", "Confirm-", "auditpol", "secedit",
+                        "gpupdate", "gpresult", "net ", "wevtutil",
                     })
                     {
                         if (tail.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
@@ -460,13 +461,16 @@ public static class RemediationScript
         }
         if (string.IsNullOrWhiteSpace(candidate)) return null;
         var cmd = candidate.Trim();
-        // Cut narrative suffixes: "; Neustart", "; danach ...", "; restart ...".
+        // Cut narrative suffixes: "; Neustart", "; danach ...", "; erneut scannen", ... .
         var cut = System.Text.RegularExpressions.Regex.Match(
-            cmd, @";\s*(neustart|danach|restart|then)\b.*$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            cmd, @";\s*(neustart|danach|restart|then|erneut|erneuter|verify|re-scan|rescan|prüfen|pruefen)\b.*$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         if (cut.Success) cmd = cmd[..cut.Index].Trim();
         // Strip prose parentheses (they contain whitespace; code parens like
         // "(Get-MpComputerStatus)" have none and are kept).
         cmd = System.Text.RegularExpressions.Regex.Replace(cmd, @"\([^()]*\s[^()]*\)", "").Trim();
+        // Strip "(Admin)"-style elevation markers.
+        cmd = System.Text.RegularExpressions.Regex.Replace(
+            cmd, @"\s*\((admin|administrator)\)", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Trim();
         // Strip a trailing "(...)" remark such as "(Admin)".
         cmd = System.Text.RegularExpressions.Regex.Replace(cmd, @"\s*\([^()]*\)\.?$", "").Trim();
         cmd = System.Text.RegularExpressions.Regex.Replace(cmd, @"\s{2,}", " ").Trim();

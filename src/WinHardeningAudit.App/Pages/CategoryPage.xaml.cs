@@ -200,25 +200,6 @@ public sealed partial class CategoryPage : Page
         var rem = result?.Rule.Remediation;
         if (rem is null) return;
 
-        // Rows of (display text, copyable command or null).
-        var rows = new List<(string Text, string? Copy)>();
-        if (!string.IsNullOrWhiteSpace(rem.Gui)) rows.Add(("• " + rem.Gui, null));
-        if (rem.Mode == "manual")
-        {
-            for (var i = 0; i < rem.Steps.Count; i++)
-                rows.Add(($"{i + 1}. {rem.Steps[i]}", RemediationScript.TryExtractCommand(rem.Steps[i])));
-        }
-        else
-        {
-            foreach (var a in rem.Actions)
-            {
-                string? copy = null;
-                try { copy = RemediationScript.Apply(a); } catch { }
-                rows.Add(("• " + RemediationScript.Describe(a), copy));
-            }
-        }
-        rows.Add((L.Get("GuideVerify"), null));
-
         var copyLabel = L.Get("CopyButtonLabel");
         var copiedNote = L.Get("CopiedNote");
         var status = new TextBlock
@@ -227,7 +208,18 @@ public sealed partial class CategoryPage : Page
             Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
         };
         var list = new StackPanel { Spacing = 8 };
-        foreach (var (text, copy) in rows)
+
+        void AddHeader(string text)
+        {
+            list.Children.Add(new TextBlock
+            {
+                Text = text,
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                FontSize = 15,
+            });
+        }
+
+        void AddRow(string text, string? copy)
         {
             var grid = new Grid { ColumnSpacing = 8 };
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -258,6 +250,46 @@ public sealed partial class CategoryPage : Page
             }
             list.Children.Add(grid);
         }
+
+        // Variante A: grafische Oberfläche (GUI-Pfad + Schritte ohne Befehle).
+        AddHeader(L.Get("GuideGuiHeader"));
+        if (!string.IsNullOrWhiteSpace(rem.Gui)) AddRow("• " + rem.Gui, null);
+        if (rem.Mode == "manual")
+        {
+            for (var i = 0; i < rem.Steps.Count; i++)
+            {
+                if (RemediationScript.TryExtractCommand(rem.Steps[i]) is null)
+                    AddRow($"{i + 1}. {rem.Steps[i]}", null);
+            }
+        }
+
+        // Variante B: Befehlszeile (jeder Befehl mit Kopieren-Button).
+        AddHeader(L.Get("GuideCliHeader"));
+        var cliRows = 0;
+        if (rem.Mode == "manual")
+        {
+            for (var i = 0; i < rem.Steps.Count; i++)
+            {
+                var cmd = RemediationScript.TryExtractCommand(rem.Steps[i]);
+                if (!string.IsNullOrWhiteSpace(cmd))
+                {
+                    AddRow($"{i + 1}. {rem.Steps[i]}", cmd);
+                    cliRows++;
+                }
+            }
+        }
+        else
+        {
+            foreach (var a in rem.Actions)
+            {
+                string? copy = null;
+                try { copy = RemediationScript.Apply(a); } catch { }
+                AddRow("• " + RemediationScript.Describe(a), copy);
+                if (!string.IsNullOrWhiteSpace(copy)) cliRows++;
+            }
+        }
+        if (cliRows == 0) AddRow(L.Get("GuideNoCli"), null);
+        if (rem.Mode == "auto") AddRow(L.Get("GuideVerify"), null);
         list.Children.Add(status);
 
         var dialog = new ContentDialog

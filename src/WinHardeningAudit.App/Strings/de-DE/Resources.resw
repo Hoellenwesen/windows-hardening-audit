@@ -183,6 +183,9 @@
   <data name="FixFailed"><value>Behebung fehlgeschlagen: {0}</value></data>
   <data name="FixBlocked"><value>Behebung nicht möglich: {0}</value></data>
   <data name="GuideTitle"><value>Manuelle Behebung</value></data>
+  <data name="GuideGuiHeader"><value>Variante A: Grafische Oberfläche</value></data>
+  <data name="GuideCliHeader"><value>Variante B: Befehlszeile (als Administrator)</value></data>
+  <data name="GuideNoCli"><value>Für diesen Fund gibt es keine Befehlszeilen-Schritte.</value></data>
   <data name="GuideVerify"><value>Nach der Änderung: erneut scannen.</value></data>
   <data name="FixRisk"><value>Risiko</value></data>
   <data name="CopyButtonLabel"><value>Kopieren</value></data>

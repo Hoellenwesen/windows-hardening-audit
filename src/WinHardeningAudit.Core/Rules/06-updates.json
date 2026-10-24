@@ -101,7 +101,7 @@
       "script": "if (Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update\\RebootRequired') { 'True' } else { 'False' }"
     },
     "fixHint": "Ausstehenden Neustart durchführen, damit Updates (v.a. Kernel) wirksam werden.",
-    "remediation": {"mode":"manual","risk":"low","gui":"Einstellungen > Windows Update","steps":["Einstellungen > Windows Update > Jetzt neu starten (ausstehenden Neustart ausführen).","Prüfen: erneuter Scan; PowerShell: Test-Path HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing\\RebootPending muss $false sein."]},
+    "remediation": {"mode":"manual","risk":"low","gui":"Einstellungen > Windows Update","steps":["Einstellungen > Windows Update > Jetzt neu starten (ausstehenden Neustart ausführen).","Prüfen: erneuter Scan. PowerShell: Test-Path HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing\\RebootPending ($false = OK)."]},
     "profil": "L1",
     "kapitel": "MS Patchstand",
     "giltAb": "24H2",

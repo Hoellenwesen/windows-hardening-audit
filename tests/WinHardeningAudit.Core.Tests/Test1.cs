@@ -829,6 +829,10 @@ public sealed class RemediationTests
             RemediationScript.TryExtractCommand("PowerShell: New-ItemProperty HKCU:\\Software\\X -Name V -Value 4 -PropertyType DWord -Force (Office 16.0 = 2016, adjust path)."));
         Assert.AreEqual("Set-MpPreference -DisableBehaviorMonitoring $false",
             RemediationScript.TryExtractCommand("PowerShell (Admin): Set-MpPreference -DisableBehaviorMonitoring $false (blocked when tamper protection is on)."));
+        Assert.AreEqual("gpupdate /force",
+            RemediationScript.TryExtractCommand("Apply domain GPOs: gpupdate /force (admin)."));
+        Assert.AreEqual(@"Test-Path HKLM:\SOFTWARE\X\RebootPending",
+            RemediationScript.TryExtractCommand(@"Verify: re-scan. PowerShell: Test-Path HKLM:\SOFTWARE\X\RebootPending ($false = OK)."));
         Assert.AreEqual("Get-NetFirewallRule | Where-Object { $_.Enabled }",
             RemediationScript.TryExtractCommand("Get-NetFirewallRule | Where-Object { $_.Enabled } (admin)."));
         Assert.AreEqual("auditpol /set /subcategory:x /success:enable",

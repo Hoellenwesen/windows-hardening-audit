@@ -253,7 +253,7 @@
                    "gui":  "Settings \u003e Windows Update",
                    "steps":  [
                                  "Settings \u003e Windows Update \u003e restart now (perform the pending restart).",
-                                 "Verify: re-scan; PowerShell: Test-Path HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing\\RebootPending must be $false."
+                                 "Verify: re-scan. PowerShell: Test-Path HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing\\RebootPending ($false = OK)."
                              ]
                },
     "AUD-01":  {
@@ -2887,7 +2887,8 @@
                    "fixHint":  "Only relevant for domain-joined devices (gpresult /R to verify).",
                    "gui":  "gpedit/gpresult",
                    "steps":  [
-                                 "Check whether domain GPOs arrive: gpupdate /force (admin) and gpresult /r (admin).",
+                                 "Apply domain GPOs: gpupdate /force (admin).",
+                                 "Check the result: gpresult /r (admin).",
                                  "Without a domain this finding does not apply (the rule targets enterprise devices).",
                                  "Verify: re-scan after gpupdate."
                              ]

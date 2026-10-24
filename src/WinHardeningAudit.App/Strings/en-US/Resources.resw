@@ -183,6 +183,9 @@
   <data name="FixFailed"><value>Fix failed: {0}</value></data>
   <data name="FixBlocked"><value>Fix not possible: {0}</value></data>
   <data name="GuideTitle"><value>Manual remediation</value></data>
+  <data name="GuideGuiHeader"><value>Option A: Graphical interface</value></data>
+  <data name="GuideCliHeader"><value>Option B: Command line (as administrator)</value></data>
+  <data name="GuideNoCli"><value>No command-line steps exist for this finding.</value></data>
   <data name="GuideVerify"><value>After the change: re-scan.</value></data>
   <data name="FixRisk"><value>Risk</value></data>
   <data name="CopyButtonLabel"><value>Copy</value></data>
