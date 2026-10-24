@@ -134,8 +134,35 @@ public sealed class RegistryProvider : ICheckProvider
             "Contains" => a.Contains(e, StringComparison.OrdinalIgnoreCase),
             "GreaterOrEqual" => TryLong(a, out var la) && TryLong(e, out var le) && la >= le,
             "LessOrEqual" => TryLong(a, out var la2) && TryLong(e, out var le2) && la2 <= le2,
+            "Between" => MatchesRanges(a, e),
             _ => string.Equals(a, e, StringComparison.OrdinalIgnoreCase),
         };
+    }
+
+    /// <summary>
+    /// Numeric membership test for the "Between" operator.
+    /// Spec is a comma separated list of literals, inclusive ranges "min..max",
+    /// open ranges "min.." / "..max". Example: "0,15.." = 0 or >= 15.
+    /// Non-numeric input never matches (no silent pass).
+    /// </summary>
+    public static bool MatchesRanges(string actual, string spec)
+    {
+        if (!TryLong(actual, out var v)) return false;
+        foreach (var raw in spec.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var idx = raw.IndexOf("..", StringComparison.Ordinal);
+            if (idx < 0)
+            {
+                if (TryLong(raw, out var single) && v == single) return true;
+                continue;
+            }
+            var lo = raw[..idx].Trim();
+            var hi = raw[(idx + 2)..].Trim();
+            var loOk = lo.Length == 0 || (TryLong(lo, out var l) && v >= l);
+            var hiOk = hi.Length == 0 || (TryLong(hi, out var h) && v <= h);
+            if (loOk && hiOk) return true;
+        }
+        return false;
     }
 
     private static bool TryLong(string s, out long v)
@@ -347,6 +374,7 @@ public sealed class SeceditProvider : ICheckProvider
             "ContainsAll" => SplitSids(e).All(x => SplitSids(a).Contains(x, StringComparer.OrdinalIgnoreCase)),
             "GreaterOrEqual" => long.TryParse(a, out var la) && long.TryParse(e, out var le) && la >= le,
             "LessOrEqual" => long.TryParse(a, out var la2) && long.TryParse(e, out var le2) && la2 <= le2,
+            "Between" => RegistryProvider.MatchesRanges(a, e),
             _ => SetEquals(a, e),
         };
     }

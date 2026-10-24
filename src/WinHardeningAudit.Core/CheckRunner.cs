@@ -203,7 +203,7 @@ public sealed class CheckRunner
     };
     public static readonly string[] ValidOperators =
     {
-        "Equals", "NotEquals", "Contains", "ContainsAll", "GreaterOrEqual", "LessOrEqual",
+        "Equals", "NotEquals", "Contains", "ContainsAll", "GreaterOrEqual", "LessOrEqual", "Between",
     };
     public static readonly string[] ValidSeceditKeys = { "SystemAccess", "PrivilegeRights" };
 
