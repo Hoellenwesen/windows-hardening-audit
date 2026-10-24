@@ -161,7 +161,22 @@ public sealed class SeceditTests
         Assert.IsTrue(problems.Any(p => p.Contains("B2")), "Operator-Fehler B2 nicht erkannt");
         Assert.IsTrue(problems.Any(p => p.Contains("B3")), "Kategorie-Fehler B3 nicht erkannt");
         Assert.IsTrue(problems.Any(p => p.Contains("B4")), "secedit-Key-Fehler B4 nicht erkannt");
-        var good = new[] { R("G1", "registry", "Equals"), R("G2", "manual", "Equals") };
+        var good = new[]
+        {
+            R("G1", "registry", "Equals") with
+            {
+                Profil = "L1",
+                Remediation = new RemediationSpec
+                {
+                    Mode = "auto", Risk = "low",
+                    Actions = new List<RemediationAction>
+                    {
+                        new() { Type = "registry", Key = "HKLM\\SOFTWARE\\X", ValueName = "V", ValueType = "dword", Value = "1" }
+                    }
+                }
+            },
+            R("G2", "manual", "Equals") with { Profil = "MS" }
+        };
         Assert.IsEmpty(CheckRunner.ValidateRules(good));
     }
 
@@ -614,5 +629,190 @@ public sealed class OverlayTests
         Assert.HasCount(merged.Count, rules);
         Assert.IsEmpty(CheckRunner.ValidateRules(merged), "Merged EN rules invalid:\n" + string.Join("\n", CheckRunner.ValidateRules(merged).Take(10)));
         Assert.IsTrue(merged.Any(r => r.Title.Contains("password", StringComparison.OrdinalIgnoreCase)), "Expected merged English titles");
+    }
+}
+
+[TestClass]
+public sealed class RemediationTests
+{
+    private static List<RuleDefinition> ShippedRules()
+    {
+        var dir = Path.Combine(AppContext.BaseDirectory, "Rules");
+        if (!Directory.Exists(dir))
+            dir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "WinHardeningAudit.Core", "Rules"));
+        return CheckRunner.LoadRulesFromDirectory(dir);
+    }
+
+    private static List<RuleDefinition> L1() => ShippedRules().Where(r => r.Profil == "L1").ToList();
+
+    [TestMethod]
+    public void L1_Remediation_Modes_Are_Consistent()
+    {
+        var l1 = L1();
+        Assert.IsGreaterThanOrEqualTo(90, l1.Count, $"Expected >= 90 L1 rules, found {l1.Count}");
+        var auto = l1.Where(r => r.Remediation?.Mode == "auto").ToList();
+        var manual = l1.Where(r => r.Remediation?.Mode == "manual").ToList();
+        Assert.HasCount(l1.Count, auto.Concat(manual), "Every L1 rule needs mode auto or manual");
+        Assert.IsGreaterThanOrEqualTo(40, auto.Count, $"Expected >= 40 auto-fixable, found {auto.Count}");
+        Assert.IsEmpty(auto.Where(r => r.Remediation!.Risk == "high").Select(r => r.Id),
+            "High-risk rules must not be auto-fixable");
+        Assert.IsEmpty(auto.Where(r => string.IsNullOrWhiteSpace(r.Remediation!.Gui)).Select(r => r.Id),
+            "Auto rules without GUI path");
+        Assert.IsEmpty(manual.Where(r => string.IsNullOrWhiteSpace(r.Remediation!.Gui)
+                || r.Remediation!.Steps.Count < 2).Select(r => r.Id),
+            "Manual rules need a GUI path and at least 2 steps");
+    }
+
+    [TestMethod]
+    public void Auto_Registry_Actions_Match_Check_Key()
+    {
+        // The fix must write exactly the value the check reads (catches HKLM/HKCU mix-ups).
+        var bad = new List<string>();
+        foreach (var r in L1().Where(r => r.Remediation?.Mode == "auto"
+            && string.Equals(r.Check.Provider, "registry", StringComparison.OrdinalIgnoreCase)))
+        {
+            foreach (var a in r.Remediation!.Actions.Where(a => a.Type == "registry"))
+            {
+                if (!string.Equals(a.Key?.Trim(), r.Check.Key?.Trim(), StringComparison.OrdinalIgnoreCase)
+                    || !string.Equals(a.ValueName?.Trim(), r.Check.ValueName?.Trim(), StringComparison.OrdinalIgnoreCase))
+                    bad.Add($"{r.Id}: action {a.Key}\\{a.ValueName} vs check {r.Check.Key}\\{r.Check.ValueName}");
+            }
+        }
+        Assert.IsEmpty(bad, "Remediation writes a different value than the check reads:\n" + string.Join("\n", bad));
+    }
+
+    [TestMethod]
+    public void Auto_Action_Value_Satisfies_Check_Operator()
+    {
+        var bad = new List<string>();
+        foreach (var r in L1().Where(r => r.Remediation?.Mode == "auto"))
+        {
+            foreach (var a in r.Remediation!.Actions)
+            {
+                if (a.Type == "registry" && string.Equals(r.Check.Provider, "registry", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!RegistryProvider.Compare(a.Value ?? "", r.Check.Expected ?? "", r.Check.Operator))
+                        bad.Add($"{r.Id}: value {a.Value} fails {r.Check.Operator} {r.Check.Expected}");
+                }
+                else if (a.Type == "secedit" && string.Equals(r.Check.Provider, "secedit", StringComparison.OrdinalIgnoreCase)
+                         && string.Equals(a.ValueName, r.Check.ValueName, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!SeceditProvider.CompareSecedit(a.Value ?? "", r.Check.Expected ?? "", r.Check.Operator))
+                        bad.Add($"{r.Id}: value {a.Value} fails {r.Check.Operator} {r.Check.Expected}");
+                }
+            }
+        }
+        Assert.IsEmpty(bad, "Fix value does not satisfy the check:\n" + string.Join("\n", bad));
+    }
+
+    [TestMethod]
+    public void Describe_Summarizes_Every_Action_Type()
+    {
+        var markers = new Dictionary<string, string>
+        {
+            ["registry"] = "HKLM", ["service"] = "Disabled", ["account"] = "Guest",
+            ["auditpol"] = "0cce9215", ["eventlog"] = "Security", ["firewallProfile"] = "Domain",
+            ["smb"] = "SMB", ["netaccounts"] = "maxpwage", ["secedit"] = "PasswordComplexity",
+        };
+        foreach (var type in CheckRunner.ValidRemediationTypes)
+        {
+            var a = new RemediationAction
+            {
+                Type = type, Key = "HKLM\\SOFTWARE\\X", ValueName = "PasswordComplexity",
+                ValueType = "dword", Value = "1",
+                Name = "Guest", StartType = "Disabled", Subcategory = "0cce9215-69ae-11d9-bed3-505054503030",
+                Success = true, Failure = true, Log = "Security", MaxSizeBytes = 1,
+                Profile = "Domain", Enabled = true, Switch = "maxpwage",
+            };
+            if (type == "account") a = a with { Name = "Guest" };
+            var s = RemediationScript.Describe(a);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(s), $"Describe empty for {type}");
+            Assert.Contains(markers[type], s, $"Describe uninformative for {type}: {s}");
+        }
+    }
+
+    [TestMethod]
+    public void CanAutoFix_Gates_Mode_Profile_And_Actions()
+    {
+        var l1 = L1().ToDictionary(r => r.Id);
+        Assert.IsTrue(RemediationRunner.CanAutoFix(l1["ACCT-02"]));
+        Assert.IsFalse(RemediationRunner.CanAutoFix(l1["BOOT-01"]), "Manual rule must not be auto-fixable");
+        var l2 = l1["ACCT-02"] with { Profil = "L2" };
+        Assert.IsFalse(RemediationRunner.CanAutoFix(l2), "L2 rules are out of scope for one-click fix");
+        var noActions = l1["ACCT-02"] with
+        {
+            Remediation = l1["ACCT-02"].Remediation! with { Actions = new List<RemediationAction>() }
+        };
+        Assert.IsFalse(RemediationRunner.CanAutoFix(noActions));
+    }
+
+    [TestMethod]
+    public void Undo_Registry_Roundtrip_On_Hkcu()
+    {
+        // HKCU needs no admin rights, safe on any machine. Always cleans up.
+        const string key = "HKCU\\Software\\WinHardeningAuditTest\\Remediation";
+        var action = new RemediationAction
+        {
+            Type = "registry", Key = key, ValueName = "Probe", ValueType = "dword", Value = "1",
+        };
+        var before = PowerShellFile.RunAsync(RemediationScript.Snapshot(action)).GetAwaiter().GetResult();
+        Assert.IsTrue(before.Ok, "Snapshot failed: " + before.Text);
+        string? backupApply = null;
+        try
+        {
+            var apply = PowerShellFile.RunAsync(RemediationScript.Apply(action)).GetAwaiter().GetResult();
+            Assert.IsTrue(apply.Ok, "Apply failed: " + apply.Text);
+            backupApply = apply.Text;
+            var verify = PowerShellFile.RunAsync(RemediationScript.Snapshot(action)).GetAwaiter().GetResult();
+            Assert.IsTrue(verify.Ok && verify.Text.Contains("\"existed\":true", StringComparison.OrdinalIgnoreCase),
+                "Value not written: " + verify.Text);
+            var undo = RemediationScript.UndoFromSnapshot(action, before.Text);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(undo), "Undo script empty");
+            var undone = PowerShellFile.RunAsync(undo).GetAwaiter().GetResult();
+            Assert.IsTrue(undone.Ok, "Undo failed: " + undone.Text);
+        }
+        finally
+        {
+            PowerShellFile.RunAsync($"Remove-Item -Path 'HKCU:\\Software\\WinHardeningAuditTest' -Recurse -Force -ErrorAction SilentlyContinue")
+                .GetAwaiter().GetResult();
+        }
+        Assert.IsNotNull(backupApply);
+    }
+
+    [TestMethod]
+    public void Snapshot_Of_Missing_Key_Yields_Removal_Undo()
+    {
+        var action = new RemediationAction
+        {
+            Type = "registry", Key = "HKCU\\Software\\WinHardeningAuditTest\\NoSuchKey",
+            ValueName = "Nope", ValueType = "dword", Value = "1",
+        };
+        var snap = PowerShellFile.RunAsync(RemediationScript.Snapshot(action)).GetAwaiter().GetResult();
+        Assert.IsTrue(snap.Ok, "Snapshot failed: " + snap.Text);
+        var undo = RemediationScript.UndoFromSnapshot(action, snap.Text);
+        Assert.Contains("Remove-ItemProperty", undo, "Missing key must be restored by removal, got: " + undo);
+    }
+
+    [TestMethod]
+    public void English_Overlay_Covers_Remediation_Guides()
+    {
+        var dir = Path.Combine(AppContext.BaseDirectory, "Rules");
+        if (!Directory.Exists(dir))
+            dir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "WinHardeningAudit.Core", "Rules"));
+        var overlay = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, CheckRunner.RuleOverlay>>(
+            File.ReadAllText(Path.Combine(dir, "l10n", "en.json")),
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        Assert.IsNotNull(overlay);
+        var missingGui = new List<string>();
+        var missingSteps = new List<string>();
+        foreach (var r in L1())
+        {
+            if (!overlay.TryGetValue(r.Id, out var o) || o is null || string.IsNullOrWhiteSpace(o.Gui))
+                missingGui.Add(r.Id);
+            if (r.Remediation?.Mode == "manual" && (o?.Steps is not { Count: >= 2 }))
+                missingSteps.Add(r.Id);
+        }
+        Assert.IsEmpty(missingGui, "EN overlay without GUI path: " + string.Join(",", missingGui));
+        Assert.IsEmpty(missingSteps, "EN overlay without steps: " + string.Join(",", missingSteps));
     }
 }

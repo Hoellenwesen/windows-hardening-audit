@@ -179,8 +179,18 @@ public sealed class CheckRunner
                 Description = string.IsNullOrWhiteSpace(o.Description) ? r.Description : o.Description,
                 FixHint = string.IsNullOrWhiteSpace(o.FixHint) ? r.FixHint : o.FixHint,
                 Notiz26H2 = string.IsNullOrWhiteSpace(o.Note) ? r.Notiz26H2 : o.Note,
+                Remediation = MergeRemediation(r.Remediation, o),
             };
         }).ToList();
+    }
+
+    private static RemediationSpec? MergeRemediation(RemediationSpec? rem, RuleOverlay o)
+    {
+        if (rem is null) return null;
+        var gui = string.IsNullOrWhiteSpace(o.Gui) ? rem.Gui : o.Gui;
+        var steps = (o.Steps is { Count: > 0 }) ? o.Steps : rem.Steps;
+        if (gui == rem.Gui && ReferenceEquals(steps, rem.Steps)) return rem;
+        return rem with { Gui = gui, Steps = steps };
     }
 
     public sealed record RuleOverlay
@@ -189,7 +199,17 @@ public sealed class CheckRunner
         public string? Description { get; init; }
         public string? FixHint { get; init; }
         public string? Note { get; init; }
+        public string? Gui { get; init; }
+        public List<string>? Steps { get; init; }
     }
+
+    public static readonly string[] ValidRemediationModes = { "auto", "manual" };
+    public static readonly string[] ValidRemediationRisks = { "low", "medium", "high" };
+    public static readonly string[] ValidRemediationTypes =
+    {
+        "registry", "service", "account", "auditpol", "eventlog",
+        "firewallProfile", "smb", "netaccounts", "secedit",
+    };
 
     public static readonly string[] ValidProfile = { "L1", "L2", "MS" };
     public static readonly string[] ValidZiel = { "both", "standalone", "enterprise" };
@@ -244,6 +264,30 @@ public sealed class CheckRunner
                     if (string.IsNullOrWhiteSpace(r.Check.ValueName)) problems.Add($"Rule {r.Id}: secedit without value name");
                     if (r.Check.Expected is null) problems.Add($"Rule {r.Id}: secedit without expected value");
                     break;
+            }
+            if (r.Profil == "L1")
+            {
+                if (r.Remediation is null)
+                    problems.Add($"Rule {r.Id}: L1 rule without remediation block");
+                else
+                {
+                    var rem = r.Remediation;
+                    if (!ValidRemediationModes.Contains(rem.Mode))
+                        problems.Add($"Rule {r.Id}: remediation.mode '{rem.Mode}' invalid");
+                    if (!ValidRemediationRisks.Contains(rem.Risk))
+                        problems.Add($"Rule {r.Id}: remediation.risk '{rem.Risk}' invalid");
+                    if (rem.Mode == "auto" && rem.Actions.Count == 0)
+                        problems.Add($"Rule {r.Id}: auto remediation without actions");
+                    if (rem.Mode == "manual" && rem.Steps.Count < 2)
+                        problems.Add($"Rule {r.Id}: manual remediation needs at least 2 steps");
+                    if (rem.Mode == "auto" && rem.Risk == "high")
+                        problems.Add($"Rule {r.Id}: high-risk rule must not be auto-fixable");
+                    if (rem.Mode == "auto" && rem.Actions.Any(a => !ValidRemediationTypes.Contains(a.Type)))
+                        problems.Add($"Rule {r.Id}: unknown remediation action type");
+                    if (rem.Mode == "auto" && rem.Actions.Any(a => a.Type == "registry" &&
+                            (string.IsNullOrWhiteSpace(a.Key) || string.IsNullOrWhiteSpace(a.ValueName) || a.Value is null)))
+                        problems.Add($"Rule {r.Id}: incomplete registry remediation action");
+                }
             }
         }
         return problems;
