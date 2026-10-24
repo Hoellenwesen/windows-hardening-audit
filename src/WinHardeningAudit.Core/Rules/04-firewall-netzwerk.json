@@ -15,6 +15,7 @@
     },
     "fixHint": "GPO: Firewall für alle Profile aktivieren.",
     "kapitel": "9.x Firewall",
+    "remediation": {"mode":"auto","risk":"medium","gui":"Windows-Sicherheit > Firewall und Netzwerkschutz > Domänennetzwerk > Microsoft Defender Firewall aktivieren","actions":[{"type":"firewallProfile","profile":"Domain","enabled":true}]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -35,6 +36,7 @@
     },
     "fixHint": "Einstellungen > Datenschutz & Sicherheit > Firewall.",
     "kapitel": "9.x Firewall",
+    "remediation": {"mode":"auto","risk":"medium","gui":"Windows-Sicherheit > Firewall und Netzwerkschutz > Privates Netzwerk > Microsoft Defender Firewall aktivieren","actions":[{"type":"firewallProfile","profile":"Private","enabled":true}]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -55,6 +57,7 @@
     },
     "fixHint": "Gerade auf Laptops kritisch (Café-WLAN).",
     "kapitel": "9.x Firewall",
+    "remediation": {"mode":"auto","risk":"medium","gui":"Windows-Sicherheit > Firewall und Netzwerkschutz > Öffentliches Netzwerk > Microsoft Defender Firewall aktivieren","actions":[{"type":"firewallProfile","profile":"Public","enabled":true}]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -75,6 +78,7 @@
     },
     "fixHint": "Optionale Features > SMB 1.0/CIFS entfernen. Fehlt die Komponente ganz (ab 26H2 möglich), gilt der Check als erfüllt.",
     "kapitel": "CIS 18.4 SMBv1",
+    "remediation": {"mode":"auto","risk":"medium","requiresReboot":true,"gui":"Systemsteuerung > Programme > Windows-Features > „SMB 1.0/CIFS-Unterstützung“ deaktivieren","actions":[{"type":"smb"}]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2",
@@ -97,6 +101,7 @@
     },
     "fixHint": "GPO: Microsoft-Netzwerk (Client): SMB-Kommunikation digital signieren (immer).",
     "kapitel": "MS SMB Signing",
+    "remediation": {"mode":"auto","risk":"low","gui":"secpol.msc > Sicherheitsoptionen > Microsoft-Netzwerkclient: Digitale Signatur für Kommunikation (immer) = Aktiviert","actions":[{"type":"registry","valueName":"RequireSecuritySignature","valueType":"dword","key":"HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters","value":"1"}]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"

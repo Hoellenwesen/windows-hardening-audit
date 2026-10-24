@@ -14,6 +14,7 @@
       "script": "$c = (Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System' -ErrorAction SilentlyContinue).legalnoticecaption; $t = (Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System' -ErrorAction SilentlyContinue).legalnoticetext; if ([string]::IsNullOrWhiteSpace($c) -or [string]::IsNullOrWhiteSpace($t)) { 'Leer' } else { 'Gesetzt' }"
     },
     "fixHint": "secpol.msc > Sicherheitsoptionen > Interaktive Anmeldung: Meldungstext/-titel für Anmeldeversuche festlegen.",
+    "remediation": {"mode":"manual","risk":"low","gui":"secpol.msc > Sicherheitsoptionen > Interaktive Anmeldung: Titel/Text für Benutzer bei der Anmeldung","steps":["secpol.msc > Lokale Richtlinien > Sicherheitsoptionen > Interaktive Anmeldung: Titel und Text für Benutzer bei der Anmeldung festlegen (Rechts-/Organisationsvorgaben beachten).","PowerShell (Admin): New-ItemProperty HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System -Name legalnoticecaption -Value <Titel> -PropertyType String -Force; analog legalnoticetext.","Prüfen: erneut scannen (Fund verlangt einen gesetzten, nicht-leeren Hinweistext)."]},
     "profil": "L1",
     "kapitel": "2.3 Security Options",
     "giltAb": "24H2",
@@ -35,6 +36,7 @@
       "expected": "1"
     },
     "fixHint": "secpol.msc > Interaktive Anmeldung: Letzten Benutzernamen nicht anzeigen = Aktiviert.",
+    "remediation": {"mode":"auto","risk":"low","gui":"secpol.msc > Sicherheitsoptionen > Interaktive Anmeldung: Letzten Benutzernamen nicht anzeigen = Aktiviert","actions":[{"type":"registry","valueName":"dontdisplaylastusername","valueType":"dword","key":"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System","value":"1"}]},
     "profil": "L1",
     "kapitel": "2.3 Security Options",
     "giltAb": "24H2",
@@ -55,6 +57,7 @@
       "script": "try { (Get-Service -Name SSDPSRV -ErrorAction Stop).StartType } catch { exit 1 }"
     },
     "fixHint": "services.msc > SSDP-Suche = Deaktiviert. Ohne UPnP-Bedarf unbedenklich.",
+    "remediation": {"mode":"auto","risk":"low","gui":"services.msc > SSDP-Suche (SSDPSRV) > Starttyp: Deaktiviert","actions":[{"type":"service","startType":"Disabled","name":"SSDPSRV"}]},
     "profil": "L1",
     "kapitel": "5.x System Services",
     "giltAb": "24H2",
@@ -75,6 +78,7 @@
       "script": "try { (Get-Service -Name upnphost -ErrorAction Stop).StartType } catch { exit 1 }"
     },
     "fixHint": "services.msc > UPnP-Gerätehost = Deaktiviert.",
+    "remediation": {"mode":"auto","risk":"low","gui":"services.msc > UPnP-Gerätehost (upnphost) > Starttyp: Deaktiviert","actions":[{"type":"service","startType":"Disabled","name":"upnphost"}]},
     "profil": "L1",
     "kapitel": "5.x System Services",
     "giltAb": "24H2",

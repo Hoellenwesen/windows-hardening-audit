@@ -17,6 +17,7 @@
     },
     "fixHint": "GPO Edge: Microsoft Defender SmartScreen erzwingen. Ohne Richtlinie ist SmartScreen im Standard aktiv – in Edge unter edge://settings/privacy gegenprüfen.",
     "kapitel": "MS Edge Baseline",
+    "remediation": {"mode":"auto","risk":"low","gui":"GPO: Computerkonfiguration > Administrative Vorlagen > Microsoft Edge > SmartScreen-Einstellungen > SmartScreen für Microsoft Edge erzwingen = Aktiviert","actions":[{"type":"registry","valueName":"SmartScreenEnabled","valueType":"dword","key":"HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge","value":"1"}]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -34,6 +35,7 @@
     },
     "fixHint": "Edge > Einstellungen > Datenschutz > Erweiterten Sicherheitsmodus auf Ausgewogen/Streng. (Bewusste Ermessensprüfung, kein Auto-Check.)",
     "kapitel": "MS Edge Baseline",
+    "remediation": {"mode":"manual","risk":"low","gui":"Edge > Einstellungen > Datenschutz > Sicherheit > Verstärkte Sicherheit","steps":["Edge > Einstellungen > Datenschutz und Sicherheit > Sicherheit: „Verstärkter Sicherheitsmodus“ auf „Ausgeglichen“ oder „Streng“ (mindestens für das Internet).","PowerShell (Admin): New-ItemProperty HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge -Name EnhanceSecurityMode -Value 1 -PropertyType DWord -Force","Prüfen: edge://policy zeigt die Richtlinie; erneut scannen."]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -51,6 +53,7 @@
     },
     "fixHint": "Edge-Sicherheitsbaseline aus Security Compliance Toolkit importieren. (Bewusste Ermessensprüfung, kein Auto-Check.)",
     "kapitel": "MS Edge Baseline",
+    "remediation": {"mode":"manual","risk":"low","gui":"Edge > Einstellungen > Datenschutz > Sicherheit","steps":["Edge > Einstellungen > Datenschutz und Sicherheit > Sicherheit: Schutz vor Zeichenverwechslungen (Typosquatting-Prüfung) aktivieren.","PowerShell (Admin): New-ItemProperty HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge -Name TyposquattingCheckerEnabled -Value 1 -PropertyType DWord -Force","Prüfen: edge://policy; erneut scannen."]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -71,6 +74,7 @@
     },
     "fixHint": "services.msc > Microsoft Edge Update > Automatisch.",
     "kapitel": "MS Edge Baseline",
+    "remediation": {"mode":"manual","risk":"low","gui":"services.msc > Microsoft Edge Update Service (edgeupdate)","steps":["services.msc: Microsoft Edge Update Service (edgeupdate) darf nicht deaktiviert sein.","PowerShell (Admin): Set-Service -Name edgeupdate -StartupType Automatic","Prüfen: (Get-Service edgeupdate).StartType; erneut scannen."]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -91,6 +95,7 @@
       "expected": "1"
     },
     "fixHint": "Edge-Richtlinie: Umgehen von SmartScreen-Eingabeaufforderungen für Sites verhindern = Aktiviert.",
+    "remediation": {"mode":"auto","risk":"low","gui":"GPO: Microsoft Edge > SmartScreen > Außerkraftsetzung von SmartScreen-Prompten verhindern = Aktiviert","actions":[{"type":"registry","valueName":"PreventSmartScreenPromptOverride","valueType":"dword","key":"HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge","value":"1"}]},
     "profil": "L1",
     "kapitel": "MS Edge Baseline",
     "giltAb": "24H2",
@@ -112,6 +117,7 @@
       "expected": "1"
     },
     "fixHint": "Edge-Richtlinie: Umgehen von SmartScreen-Eingabeaufforderungen für Dateien verhindern = Aktiviert.",
+    "remediation": {"mode":"auto","risk":"low","gui":"GPO: Microsoft Edge > SmartScreen > Außerkraftsetzung von SmartScreen-Prompten für Dateien verhindern = Aktiviert","actions":[{"type":"registry","valueName":"PreventSmartScreenPromptOverrideForFiles","valueType":"dword","key":"HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge","value":"1"}]},
     "profil": "L1",
     "kapitel": "MS Edge Baseline",
     "giltAb": "24H2",

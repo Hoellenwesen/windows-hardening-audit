@@ -31,6 +31,7 @@
       "provider": "manual"
     },
     "fixHint": "services.msc > Druckwarteschlange: Deaktiviert, wenn kein Drucker/kein Drucken nötig. (Bewusste Ermessensprüfung: nur du weißt, ob gedruckt wird.)",
+    "remediation": {"mode":"manual","risk":"low","gui":"services.msc > Druckwarteschlange (Spooler)","steps":["Falls kein Drucker benötigt wird: PowerShell (Admin): Set-Service -Name Spooler -StartupType Disabled; Stop-Service -Name Spooler -Force","Mit Drucker: Starttyp auf „Manuell“ belassen und Druckdienste beobachten (Spooler ist häufige Angriffsfläche für Malware).","Prüfen: erneut scannen; Fund ist eine manuelle Abwägung (Rule ist bewusst manuell)."]},
     "profil": "L1",
     "kapitel": "5.x System Services",
     "giltAb": "24H2",
@@ -51,6 +52,7 @@
       "script": "$n=@('XboxGipSvc','XblAuthManager','XblGameSave','XboxNetApiSvc'); $r=@(Get-Service -ErrorAction Stop | Where-Object { $n -contains $_.Name -and $_.StartType -ne 'Disabled' }); if ($r.Count -eq 0) { 'Disabled' } else { ($r.Name -join ', ') }"
     },
     "fixHint": "services.msc > Xbox-Dienste (Zubehörverwaltung, Auth Manager, Game Save, Netzwerkdienst) = Deaktiviert.",
+    "remediation": {"mode":"auto","risk":"low","gui":"services.msc: XboxGipSvc, XblAuthManager, XblGameSave, XboxNetApiSvc > Starttyp Deaktiviert","actions":[{"type":"service","startType":"Disabled","name":"XboxGipSvc"},{"type":"service","startType":"Disabled","name":"XblAuthManager"},{"type":"service","startType":"Disabled","name":"XblGameSave"},{"type":"service","startType":"Disabled","name":"XboxNetApiSvc"}]},
     "profil": "L1",
     "kapitel": "MS 25H2 (Dienste)",
     "giltAb": "24H2",

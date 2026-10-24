@@ -14,6 +14,7 @@
       "script": "(Get-Service -Name wuauserv -ErrorAction Stop).StartType"
     },
     "fixHint": "services.msc > Windows Update > Starttyp Automatisch oder Manuell (nicht Deaktiviert).",
+    "remediation": {"mode":"auto","risk":"low","gui":"services.msc > Windows Update (wuauserv) > Starttyp: Manuell, nicht Deaktiviert","actions":[{"type":"service","startType":"Manual","name":"wuauserv"}]},
     "profil": "L1",
     "kapitel": "MS Windows Update",
     "giltAb": "24H2",
@@ -36,6 +37,7 @@
       "missingIs": "Passed"
     },
     "fixHint": "Falls Schlüssel fehlt, ist das OK (keine Block-Policy). GPO: Automatische Updates konfigurieren = 4.",
+    "remediation": {"mode":"auto","risk":"low","gui":"GPO: Computerkonfiguration > Administrative Vorlagen > Windows-Komponenten > Windows Update > Automatische Updates konfigurieren","actions":[{"type":"registry","valueName":"NoAutoUpdate","valueType":"dword","key":"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU","value":"0"}]},
     "profil": "L1",
     "kapitel": "MS Windows Update",
     "giltAb": "24H2",
@@ -57,6 +59,7 @@
       "expected": "1"
     },
     "fixHint": "Standard 1. Nur bei Kompatibilitätsproblemen anfassen.",
+    "remediation": {"mode":"auto","risk":"low","gui":"secpol.msc > Sicherheitsoptionen > Benutzerkontensteuerung: Datei- und Registrierungsschreibfehler an pro-Benutzer-Speicherorte virtualisieren = Aktiviert","actions":[{"type":"registry","valueName":"EnableVirtualization","valueType":"dword","key":"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System","value":"1"}]},
     "profil": "L1",
     "kapitel": "2.3 Security Options (UAC)",
     "giltAb": "24H2",
@@ -77,6 +80,7 @@
       "script": "$h = Get-HotFix -ErrorAction Stop | Sort-Object InstalledOn -Descending | Select-Object -First 1; [int]((Get-Date) - $h.InstalledOn).TotalDays"
     },
     "fixHint": "Einstellungen > Windows Update > Updateverlauf. Ziel: max. 30 Tage hinter Patch-Tuesday.",
+    "remediation": {"mode":"manual","risk":"low","gui":"Einstellungen > Windows Update","steps":["Einstellungen > Windows Update > Nach Updates suchen und installieren; ggf. eingerichtete Update-Pause entfernen.","Prüfen: Get-HotFix | Sort-Object InstalledOn -Descending | Select-Object -First 1; erneut scannen (Soll <= 45 Tage)."]},
     "profil": "L1",
     "kapitel": "MS Patchstand",
     "giltAb": "24H2",
@@ -97,6 +101,7 @@
       "script": "if (Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update\\RebootRequired') { 'True' } else { 'False' }"
     },
     "fixHint": "Ausstehenden Neustart durchführen, damit Updates (v.a. Kernel) wirksam werden.",
+    "remediation": {"mode":"manual","risk":"low","gui":"Einstellungen > Windows Update","steps":["Einstellungen > Windows Update > Jetzt neu starten (ausstehenden Neustart ausführen).","Prüfen: erneuter Scan; PowerShell: Test-Path HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing\\RebootPending muss $false sein."]},
     "profil": "L1",
     "kapitel": "MS Patchstand",
     "giltAb": "24H2",

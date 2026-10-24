@@ -14,6 +14,7 @@
       "script": "try { $g=@(Get-ChildItem 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Group Policy\\State\\Machine\\GPO-List' -ErrorAction Stop | Get-ItemProperty -ErrorAction Stop | Where-Object { $_.GPOID -match '^\\{[0-9a-fA-F-]{36}\\}$' } | Select-Object -ExpandProperty DisplayName); if ($g.Count -eq 0) { 'Keine' } else { ($g -join '; ') } } catch { exit 1 }"
     },
     "fixHint": "Nur relevant für domänengebundene Geräte (gpresult /R zur Kontrolle).",
+    "remediation": {"mode":"manual","risk":"low","gui":"gpedit/gpresult","steps":["Prüfen, ob Domänen-GPOs ankommen: gpupdate /force (Admin) und gpresult /r (Admin).","Ohne Domäne ist dieser Fund nicht anwendbar (Regel zielt auf Enterprise-Geräte).","Prüfen: erneuter Scan nach gpupdate."]},
     "profil": "L1",
     "kapitel": "GPO-Herkunft",
     "giltAb": "24H2",
@@ -34,6 +35,7 @@
       "script": "try { $n = @(Get-ChildItem 'Cert:\\LocalMachine\\Root' -ErrorAction Stop | Where-Object { $_.NotAfter -lt (Get-Date) }).Count; [string]$n } catch { exit 1 }"
     },
     "fixHint": "Abgelaufene Roots entfernen (certlm.msc > Vertrauenswürdige Stammzertifizierungstellen).",
+    "remediation": {"mode":"manual","risk":"low","gui":"certmgr.msc > Vertrauenswürdige Stammzertifizierungsstellen","steps":["certmgr.msc > Vertrauenswürdige Stammzertifizierungsstellen: abgelaufene/stillgelegte Root-Zertifikate manuell entfernen.","Alternativ: Windows-Updates installieren; die Microsoft Root-Programm-Sperrliste (CTL) aktualisiert sich automatisch.","Prüfen: erneut scannen."]},
     "profil": "L1",
     "kapitel": "Zertifikatshygiene",
     "giltAb": "24H2",
@@ -54,6 +56,7 @@
       "script": "(Get-MpComputerStatus -ErrorAction Stop).AMServiceEnabled"
     },
     "fixHint": "Windows-Sicherheit > Viren- & Bedrohungsschutz prüfen; ggf. Fremd-AV der Grund.",
+    "remediation": {"mode":"manual","risk":"medium","gui":"Windows-Sicherheit > Virusschutz","steps":["Dienst WinDefend muss laufen; er ist systemschützt und lässt sich nicht absichtlich absenken.","Windows-Sicherheit öffnen und Echtzeitschutz sicherstellen; bei Drittanbieter-AV prüfen, welcher Motor aktiv ist.","Prüfen: (Get-MpComputerStatus).AMServiceEnabled; erneut scannen."]},
     "profil": "L1",
     "kapitel": "MS Defender Baseline",
     "giltAb": "24H2",
@@ -74,6 +77,7 @@
       "script": "(Get-MpComputerStatus -ErrorAction Stop).AntivirusEnabled"
     },
     "fixHint": "Windows-Sicherheit > Viren- & Bedrohungsschutz prüfen.",
+    "remediation": {"mode":"manual","risk":"medium","gui":"Windows-Sicherheit > Virusschutz","steps":["Windows-Sicherheit öffnen und sicherstellen, dass Defender aktiv ist oder ein registriertes Drittanbieter-AV übernimmt.","PowerShell (Admin): Set-MpPreference -DisableAntiVirus $false","Prüfen: (Get-MpComputerStatus).AntivirusEnabled; erneut scannen."]},
     "profil": "L1",
     "kapitel": "MS Defender Baseline",
     "giltAb": "24H2",
@@ -94,6 +98,7 @@
       "script": "(Get-MpComputerStatus -ErrorAction Stop).NISEnabled"
     },
     "fixHint": "Windows-Sicherheit > Firewall- & Netzwerkschutz bzw. Defender-Richtlinie prüfen.",
+    "remediation": {"mode":"manual","risk":"low","gui":"Windows-Sicherheit > Virusschutz","steps":["Windows-Sicherheit > Virusschutz > Einstellungen verwalten: Echtzeitschutz und Cloud-Schutz aktiviert halten (Network Inspection System).","PowerShell (Admin): Set-MpPreference -DisableIOAVProtection $false","Prüfen: (Get-MpComputerStatus).NISEnabled; erneut scannen."]},
     "profil": "L1",
     "kapitel": "MS Defender Baseline",
     "giltAb": "24H2",
@@ -114,6 +119,7 @@
       "script": "try { $hit = @(Get-NetFirewallRule -Direction Inbound -Enabled True -Action Allow -ErrorAction Stop | Where-Object { $_.DisplayName -match 'Telnet|TFTP|\\brsh\\b|Remote Shell|Finger' }); if ($hit.Count -eq 0) { 'Keine' } else { (($hit | Select-Object -First 5 DisplayName).DisplayName -join '; ') } } catch { exit 1 }"
     },
     "fixHint": "wf.msc > Eingehende Regeln: Legacy-Regeln (Telnet/TFTP/rsh) deaktivieren bzw. löschen.",
+    "remediation": {"mode":"manual","risk":"medium","gui":"Windows Defender Firewall > Erweiterte Einstellungen","steps":["Regeln anzeigen: Get-NetFirewallRule | Where-Object { $_.DisplayName -match \u0027Telnet|TFTP|rsh|Finger\u0027 } (Admin).","Nicht benötigte Regeln entfernen: Remove-NetFirewallRule -DisplayName <Regelname> (Admin).","Prüfen: erneut scannen."]},
     "profil": "L1",
     "kapitel": "9.x Firewall-Regeln",
     "giltAb": "24H2",
@@ -134,6 +140,7 @@
       "script": "try { $c = (Get-NetFirewallRule -Direction Inbound -Enabled True -ErrorAction Stop | Where-Object { $_.EdgeTraversalPolicy -eq 'Allow' } | Measure-Object).Count; [string]$c } catch { exit 1 }"
     },
     "fixHint": "wf.msc > Eingehende Regeln: Edge-Traversal auf Block/Defer setzen, außer begründet nötig.",
+    "remediation": {"mode":"manual","risk":"low","gui":"Windows Defender Firewall > Erweiterte Einstellungen","steps":["Ausnahmen anzeigen: Get-NetFirewallRule | Where-Object { $_.EdgeTraversalPolicy -eq \u0027Allow\u0027 } (Admin).","Prüfen, ob jede Ausnahme gewollt ist; andernfalls: Set-NetFirewallRule -Name <Name> -EdgeTraversalPolicy Block (Admin).","Prüfen: erneut scannen."]},
     "profil": "L1",
     "kapitel": "9.x Firewall-Regeln",
     "giltAb": "24H2",
@@ -154,6 +161,7 @@
       "script": "try { $s = Get-SmbShare -ErrorAction Stop | Where-Object { $_.Name -notlike '*$' }; $bad = @($s | Get-SmbShareAccess -ErrorAction Stop | Where-Object { $_.AccessRight -eq 'Full' -and $_.AccountName -match 'Everyone|Jeder|Guests|Gäste' }); if ($bad.Count -eq 0) { 'Keine' } else { (($bad | Select-Object -First 5 Name).Name -join '; ') } } catch { exit 1 }"
     },
     "fixHint": "fsmgmt.msc > Freigaben: Jeder-Vollzugriff entfernen (erfordert Admin zum Prüfen).",
+    "remediation": {"mode":"manual","risk":"medium","gui":"computermanagement > Freigaben","steps":["Freigaben und Rechte anzeigen: Get-SmbShare | Get-SmbShareAccess (Admin).","„Jeder“ aus dem Vollzugriff entfernen: Revoke-SmbShareAccess -Name <Freigabe> -AccountName Everyone (Admin).","Prüfen: erneut scannen."]},
     "profil": "L1",
     "kapitel": "Share-Rechte",
     "giltAb": "24H2",
@@ -174,6 +182,7 @@
       "script": "try { $h = @(Get-SmbShare -ErrorAction Stop | Where-Object { $_.Name -like '*$' -and @('C$','ADMIN$','IPC$','print$') -notcontains $_.Name }); if ($h.Count -eq 0) { 'Keine' } else { (($h | Select-Object -ExpandProperty Name) -join '; ') } } catch { exit 1 }"
     },
     "fixHint": "fsmgmt.msc > Unerwartete $-Freigaben entfernen (erfordert Admin zum Prüfen).",
+    "remediation": {"mode":"manual","risk":"medium","gui":"computermanagement > Freigaben","steps":["Versteckte Freigaben anzeigen: Get-SmbShare (Admin; C$, ADMIN$, IPC$, print$ sind Standard).","Nicht benötigte Freigaben entfernen: Remove-SmbShare -Name <Freigabe> (Admin).","Prüfen: erneut scannen."]},
     "profil": "L1",
     "kapitel": "Share-Rechte",
     "giltAb": "24H2",

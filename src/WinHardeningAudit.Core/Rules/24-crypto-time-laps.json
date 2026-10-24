@@ -16,6 +16,7 @@
       "missingIs": "Passed"
     },
     "fixHint": "SchUseStrongCrypto=1 (DWORD) explizit setzen. Fehlender Wert = sicherer Standard ab .NET 4.6.",
+    "remediation": {"mode":"auto","risk":"low","gui":"Kein GUI-Pfad; .NET-Registry (64 Bit): SchUseStrongCrypto = 1","actions":[{"type":"registry","valueName":"SchUseStrongCrypto","valueType":"dword","key":"HKLM\\SOFTWARE\\Microsoft\\.NETFramework\\v4.0.30319","value":"1"}]},
     "profil": "L1",
     "kapitel": "TLS-Härtung",
     "giltAb": "24H2",
@@ -38,6 +39,7 @@
       "missingIs": "Passed"
     },
     "fixHint": "SchUseStrongCrypto=1 (DWORD) im WoW64-Zweig explizit setzen.",
+    "remediation": {"mode":"auto","risk":"low","gui":"Kein GUI-Pfad; .NET-Registry (32 Bit/WoW64): SchUseStrongCrypto = 1","actions":[{"type":"registry","valueName":"SchUseStrongCrypto","valueType":"dword","key":"HKLM\\SOFTWARE\\Wow6432Node\\Microsoft\\.NETFramework\\v4.0.30319","value":"1"}]},
     "profil": "L1",
     "kapitel": "TLS-Härtung",
     "giltAb": "24H2",
@@ -60,6 +62,7 @@
       "missingIs": "Passed"
     },
     "fixHint": "SystemDefaultTlsVersions=1 (DWORD) explizit setzen.",
+    "remediation": {"mode":"auto","risk":"low","gui":"Kein GUI-Pfad; .NET-Registry (64 Bit): SystemDefaultTlsVersions = 1","actions":[{"type":"registry","valueName":"SystemDefaultTlsVersions","valueType":"dword","key":"HKLM\\SOFTWARE\\Microsoft\\.NETFramework\\v4.0.30319","value":"1"}]},
     "profil": "L1",
     "kapitel": "TLS-Härtung",
     "giltAb": "24H2",
@@ -82,6 +85,7 @@
       "missingIs": "Passed"
     },
     "fixHint": "SystemDefaultTlsVersions=1 (DWORD) im WoW64-Zweig explizit setzen.",
+    "remediation": {"mode":"auto","risk":"low","gui":"Kein GUI-Pfad; .NET-Registry (32 Bit/WoW64): SystemDefaultTlsVersions = 1","actions":[{"type":"registry","valueName":"SystemDefaultTlsVersions","valueType":"dword","key":"HKLM\\SOFTWARE\\Wow6432Node\\Microsoft\\.NETFramework\\v4.0.30319","value":"1"}]},
     "profil": "L1",
     "kapitel": "TLS-Härtung",
     "giltAb": "24H2",
@@ -103,6 +107,7 @@
       "expected": "2"
     },
     "fixHint": "secpol.msc > Netzwerksicherheit: Eingehenden NTLM-Verkehr überwachen = Für alle Konten aktivieren (2).",
+    "remediation": {"mode":"auto","risk":"low","gui":"secpol.msc > Sicherheitsoptionen > Netzwerksicherheit: NTLM einschränken: Eingehenden NTLM-Verkehr überwachen = Alle Konten","actions":[{"type":"registry","valueName":"AuditReceivingNTLMTraffic","valueType":"dword","key":"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa\\MSV1_0","value":"2"}]},
     "profil": "L1",
     "kapitel": "2.3 NTLM",
     "giltAb": "24H2",
@@ -125,6 +130,7 @@
       "expected": "1"
     },
     "fixHint": "secpol.msc > Netzwerksicherheit: Ausgehenden NTLM-Verkehr = Alle überwachen (1) oder Alle verweigern (2, vorher testen).",
+    "remediation": {"mode":"auto","risk":"low","gui":"secpol.msc > Sicherheitsoptionen > Netzwerksicherheit: NTLM einschränken: Ausgehenden NTLM-Verkehr an Remoteserver = Alle überwachen (oder höher)","actions":[{"type":"registry","valueName":"RestrictSendingNTLMTraffic","valueType":"dword","key":"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa\\MSV1_0","value":"1"}]},
     "profil": "L1",
     "kapitel": "2.3 NTLM",
     "giltAb": "24H2",
@@ -146,6 +152,7 @@
       "script": "$u=@(Get-LocalUser -ErrorAction Stop | Where-Object { $_.SID -match '-500$' } | Select-Object -First 1); if ($u.Count -eq 0) { exit 1 }; if (-not $u[0].Enabled) { 'OK' } elseif ($null -eq $u[0].PasswordLastSet) { 'VERALTET' } elseif (((Get-Date) - $u[0].PasswordLastSet).TotalDays -le 60) { 'OK' } else { 'VERALTET' }"
     },
     "fixHint": "Windows LAPS einrichten (Kennwortverwaltung lokaler Admins) oder Konto deaktivieren.",
+    "remediation": {"mode":"manual","risk":"medium","gui":"Einstellungen > Konten > Windows LAPS / Intune","steps":["Windows LAPS ist in Windows 11 integriert: Einstellungen > Konten > Windows LAPS aktivieren (Passwort-Backup nach AD DS oder Entra ID).","Bei verwalteten Geräten: Intune-Richtlinie „Local admin password solution (LAPS)“ oder GPO „LAPS-Kennwort-Backup“.","Prüfen: Kennwortalter über Windows LAPS/Berichte; erneut scannen (wirkt mit dem nächsten Richtlinienzyklus)."]},
     "profil": "L1",
     "kapitel": "1.x Admin-Konten",
     "giltAb": "24H2",
@@ -166,6 +173,7 @@
       "script": "(Get-Service -Name W32Time -ErrorAction Stop).Status"
     },
     "fixHint": "services.msc > Windows-Zeitgeber = Automatisch + Gestartet.",
+    "remediation": {"mode":"auto","risk":"low","gui":"services.msc > Windows-Zeitdienst (W32Time) > Starttyp: Automatisch + Dienst starten","actions":[{"type":"service","name":"W32Time","startType":"Automatic","start":true}]},
     "profil": "L1",
     "kapitel": "Zeit-Sync",
     "giltAb": "24H2",
@@ -187,6 +195,7 @@
       "expected": "NTP"
     },
     "fixHint": "W32Time\\Parameters\\Type = NTP (Stand-alone). Domäne nutzt NT5DS (Enterprise-Ansicht).",
+    "remediation": {"mode":"auto","risk":"low","gui":"Einstellungen > Zeit und Sprache > Datum/Uhrzeit: mit NTP-Server synchronisieren","actions":[{"type":"registry","valueName":"Type","valueType":"string","key":"HKLM\\SYSTEM\\CurrentControlSet\\Services\\W32Time\\Parameters","value":"NTP"}]},
     "profil": "L1",
     "kapitel": "Zeit-Sync",
     "giltAb": "24H2",
@@ -208,6 +217,7 @@
       "expected": "NT5DS"
     },
     "fixHint": "W32Time\\Parameters\\Type = NT5DS (Domäne). Stand-alone nutzt NTP.",
+    "remediation": {"mode":"auto","risk":"low","gui":"Domänenmitglieder synchronisieren automatisch mit der Domänenhierarchie (NT5DS)","actions":[{"type":"registry","valueName":"Type","valueType":"string","key":"HKLM\\SYSTEM\\CurrentControlSet\\Services\\W32Time\\Parameters","value":"NT5DS"}]},
     "profil": "L1",
     "kapitel": "Zeit-Sync",
     "giltAb": "24H2",
@@ -228,6 +238,7 @@
       "script": "$w=@(Get-ChildItem 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\CI\\Policy' -ErrorAction Stop | Where-Object { $_.PSChildName -match '^\\{[0-9a-fA-F-]{36}\\}$' }).Count; $a=0; try { $a=((Get-AppLockerPolicy -Effective -ErrorAction Stop).RuleCollections | ForEach-Object { @($_.Rules).Count } | Measure-Object -Sum).Sum } catch {}; if ($w -gt 0 -or $a -gt 0) { 'Enforced' } else { 'NotEnforced' }"
     },
     "fixHint": "WDAC-Richtlinie (auch Pro möglich) oder AppLocker-Regeln (Enterprise) mit dokumentierter Freigabe einführen.",
+    "remediation": {"mode":"manual","risk":"high","gui":"GPO > Anwendungskontrollrichtlinien (AppLocker/WDAC)","steps":["AppLocker als Einstieg: GPO > Computerkonfiguration > Windows-Einstellungen > Anwendungskontrollrichtlinien > AppLocker; Regelregeln (exe/dll/msi/script) auf Standardregeln-Basis erstellen.","Alternativ WDAC: Richtlinie aus den Microsoft-Beispiel-Baselines ableiten, testen, signieren und als Code-Integrity-Richtlinie bereitstellen.","Achtung: zu strenge Regeln blockieren Anwendungen oder Boot – zuerst im Audit-Modus (Eventlog) testen!","Prüfen: erneut scannen; AppLocker-Dienst (AppIDSvc) muss laufen."]},
     "profil": "L1",
     "kapitel": "Allowlisting",
     "giltAb": "24H2",

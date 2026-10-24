@@ -16,6 +16,7 @@
     },
     "fixHint": "Systemsteuerung > Benutzerkonten > UAC auf Standard oder höher.",
     "kapitel": "2.3 Security Options",
+    "remediation": {"mode":"auto","risk":"medium","requiresReboot":true,"gui":"secpol.msc > Lokale Richtlinien > Sicherheitsoptionen > Benutzerkontensteuerung: Alle Administratoren im Admin-Genehmigungsmodus ausführen = Aktiviert","actions":[{"type":"registry","valueName":"EnableLUA","valueType":"dword","key":"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System","value":"1"}]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -37,6 +38,7 @@
     },
     "fixHint": "GPO: Computerkonfiguration > Windows-Einstellungen > Sicherheitseinstellungen > Lokale Richtlinien > Sicherheitsoptionen.",
     "kapitel": "2.3 Security Options",
+    "remediation": {"mode":"auto","risk":"low","gui":"secpol.msc > Lokale Richtlinien > Sicherheitsoptionen > Benutzerkontensteuerung: Verhalten der Eingabeaufforderung für erhöhte Rechte für Administratoren = Zustimmung anfordern (sicherer Desktop)","actions":[{"type":"registry","valueName":"ConsentPromptBehaviorAdmin","valueType":"dword","key":"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System","value":"2"}]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -58,6 +60,7 @@
     },
     "fixHint": "GPO Sicherheitsoptionen > UAC: Nur UIAccess-Anwendungen â€¦ / Secure Desktop.",
     "kapitel": "2.3 Security Options",
+    "remediation": {"mode":"auto","risk":"low","gui":"secpol.msc > Lokale Richtlinien > Sicherheitsoptionen > Benutzerkontensteuerung: Zur Verwendung des sicheren Desktops wechseln bei Anforderung erhöhter Rechte = Aktiviert","actions":[{"type":"registry","valueName":"PromptOnSecureDesktop","valueType":"dword","key":"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System","value":"1"}]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -80,6 +83,7 @@
     },
     "fixHint": "Standard ist 1 (aktiviert). Falls 0: per GPO/Registry korrigieren.",
     "kapitel": "2.3 Security Options",
+    "remediation": {"mode":"auto","risk":"low","gui":"secpol.msc > Lokale Richtlinien > Sicherheitsoptionen > Konten: Verwendung von leeren Kennwörtern durch lokale Konten auf Anmeldungen am Computer beschränken = Aktiviert","actions":[{"type":"registry","valueName":"LimitBlankPasswordUse","valueType":"dword","key":"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System","value":"1"}]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -100,6 +104,7 @@
     },
     "fixHint": "lusrmgr.msc > Benutzer > Gast > Konto ist deaktiviert.",
     "kapitel": "2.3 Security Options",
+    "remediation": {"mode":"auto","risk":"low","gui":"Computerverwaltung > Lokale Benutzer und Gruppen > Benutzer > Gast > dieses Konto deaktivieren","actions":[{"type":"account","name":"Guest"}]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"

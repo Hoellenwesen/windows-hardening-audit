@@ -16,6 +16,7 @@
     },
     "fixHint": "GPO: Automatische Wiedergabe deaktivieren = Alle Laufwerke.",
     "kapitel": "18.1 Autoplay",
+    "remediation": {"mode":"auto","risk":"low","gui":"GPO: Computerkonfiguration > Administrative Vorlagen > Windows-Komponenten > Autoplay-Richtlinien > Autoplay für alle Laufwerke deaktivieren","actions":[{"type":"registry","valueName":"NoDriveTypeAutoRun","valueType":"dword","key":"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer","value":"255"}]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -37,6 +38,7 @@
     },
     "fixHint": "GPO Sicherheitsoptionen > Netzwerkzugriff: Anonyme Aufzählung von SAM-Konten nicht zulassen.",
     "kapitel": "2.3 Security Options",
+    "remediation": {"mode":"auto","risk":"low","gui":"secpol.msc > Sicherheitsoptionen > Netzwerkzugriff: Anonyme Aufzählung von SAM-Konten nicht zulassen = Aktiviert","actions":[{"type":"registry","valueName":"restrictanonymoussam","valueType":"dword","key":"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa","value":"1"}]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -58,6 +60,7 @@
     },
     "fixHint": "GPO: Netzwerkzugriff: Anonyme SID-/Namen-Übersetzung nicht zulassen.",
     "kapitel": "2.3 Security Options",
+    "remediation": {"mode":"auto","risk":"low","gui":"secpol.msc > Sicherheitsoptionen > Netzwerkzugriff: Anonyme Aufzählung von SAM-Konten und Freigaben nicht zulassen = Aktiviert","actions":[{"type":"registry","valueName":"restrictanonymous","valueType":"dword","key":"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa","value":"1"}]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -78,6 +81,7 @@
     },
     "fixHint": "Entweder RDP deaktivieren (fDenyTSConnections=1) oder NLA erzwingen (UserAuthentication=1).",
     "kapitel": "MS RDP NLA",
+    "remediation": {"mode":"manual","risk":"medium","gui":"Einstellungen > System > Remotedesktop > Netzwerkauthentifizierung","steps":["Einstellungen > System > Remotedesktop: „Verbindungen nur von Computern zulassen, auf denen Remotedesktop mit Netzwerkauthentifizierung läuft“ aktivieren.","PowerShell (Admin): Set-ItemProperty HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp -Name UserAuthentication -Value 1","Achtung: veraltete RDP-Clients werden danach abgewiesen; bestehende Sitzungen bleiben aktiv.","Prüfen: erneut scannen."]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -90,16 +94,10 @@
     "source": "CIS",
     "sourceId": "CIS 18.10.82.2 (L1)",
     "severity": 2,
-    "check": {
-      "provider": "registry",
-      "key": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Installer",
-      "valueName": "AlwaysInstallElevated",
-      "operator": "Equals",
-      "expected": "0",
-      "missingIs": "Passed"
-    },
+    "check": { "provider": "script", "operator": "Equals", "expected": "0", "script": "$a=(Get-ItemProperty 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Installer' -ErrorAction SilentlyContinue).AlwaysInstallElevated; $b=(Get-ItemProperty 'HKCU:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Installer' -ErrorAction SilentlyContinue).AlwaysInstallElevated; if($a -eq 1 -or $b -eq 1){'1'}else{'0'}" },
     "fixHint": "Falls Schlüssel fehlt, ist das gut (nicht konfiguriert = aus). GPO explizit auf Deaktiviert setzen.",
     "kapitel": "18.5 Installer",
+    "remediation": {"mode":"auto","risk":"low","gui":"GPO: Computerkonfiguration > Administrative Vorlagen > Windows-Komponenten > Windows Installer > Immer mit erhöhten Rechten installieren = Deaktiviert (Computer + Benutzer)","actions":[{"type":"registry","valueName":"AlwaysInstallElevated","valueType":"dword","key":"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Installer","value":"0"},{"type":"registry","valueName":"AlwaysInstallElevated","valueType":"dword","key":"HKCU\\SOFTWARE\\Policies\\Microsoft\\Windows\\Installer","value":"0"}]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -122,6 +120,7 @@
     },
     "fixHint": "AutoAdminLogon=0. Fehlender Wert = ebenfalls OK, wird als offen gewertet â€“ dann manuell prüfen.",
     "kapitel": "18.3 Winlogon",
+    "remediation": {"mode":"auto","risk":"low","gui":"netplwiz/systempropertiesadvanced: Automatische Anmeldung deaktivieren (kein Kennwort speichern)","actions":[{"type":"registry","valueName":"AutoAdminLogon","valueType":"string","key":"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon","value":"0"}]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"

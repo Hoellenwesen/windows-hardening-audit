@@ -15,6 +15,7 @@
     },
     "fixHint": "Windows-Sicherheit > Viren- & Bedrohungsschutz > Echtzeitschutz aktivieren.",
     "kapitel": "MS Defender Baseline",
+    "remediation": {"mode":"manual","risk":"low","gui":"Windows-Sicherheit > Virusschutz > Verwaltung von Schutz > Echtzeitschutz","steps":["Windows-Sicherheit > Virusschutz > Verwaltung von Schutz > Echtzeitschutz aktivieren (bei aktivem Manipulationsschutz sperrt Windows diese Änderung).","PowerShell (Admin): Set-MpPreference -DisableRealtimeMonitoring $false","Prüfen: (Get-MpComputerStatus).RealTimeProtectionEnabled oder erneut scannen.","Rückgängig: Set-MpPreference -DisableRealtimeMonitoring $true"]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -36,6 +37,7 @@
     },
     "fixHint": "Windows-Sicherheit > Viren- & Bedrohungsschutz > Einstellungen > Manipulationsschutz. Ggf. Intune/GPO.",
     "kapitel": "MS Defender Baseline",
+    "remediation": {"mode":"manual","risk":"medium","gui":"Windows-Sicherheit > Virusschutz > Verwaltung von Schutz > Schutz vor Manipulationen","steps":["Windows-Sicherheit > Virusschutz > Verwaltung von Schutz > Schutz vor Manipulationen aktivieren (per PowerShell nicht setzbar, absichtlich).","Bei verwalteten Geräten über Intune/GPO erzwingen.","Prüfen: Registry HKLM\\SOFTWARE\\Microsoft\\Windows Defender\\Features\\TamperProtection = 1 und erneuter Scan."]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -56,6 +58,7 @@
     },
     "fixHint": "Windows-Sicherheit > Cloud-basierter Schutz aktivieren.",
     "kapitel": "MS Defender Baseline",
+    "remediation": {"mode":"manual","risk":"low","gui":"Windows-Sicherheit > Virusschutz > Einstellungen verwalten > In die Microsoft-Cloud gesendeter Schutz","steps":["Windows-Sicherheit > Virusschutz > Einstellungen verwalten > In die Microsoft-Cloud gesendeter Schutz auf Erweitert stellen.","PowerShell (Admin): Set-MpPreference -MAPSReporting Advanced; Set-MpPreference -SubmitSamplesConsent SendSafeSamples","Prüfen: (Get-MpPreference).MAPSReporting; erneut scannen."]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -76,6 +79,7 @@
     },
     "fixHint": "Windows Update ausführen bzw. Update-MpSignature.",
     "kapitel": "MS Defender Baseline",
+    "remediation": {"mode":"manual","risk":"low","gui":"Einstellungen > Windows Update","steps":["Einstellungen > Windows Update > Nach Updates suchen und installieren (aktualisiert die Virensignaturen; Internet nötig).","PowerShell (Admin): Update-MpSignature","Prüfen: (Get-MpComputerStatus).AntivirusSignatureLastUpdated; erneut scannen (Soll <= 7 Tage)."]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -96,6 +100,7 @@
     },
     "fixHint": "GPO/Intune: ASR-Regeln konfigurieren (Block-Modus statt Audit).",
     "kapitel": "MS Defender ASR",
+    "remediation": {"mode":"manual","risk":"medium","gui":"GPO > Microsoft Defender Antivirus > Microsoft Defender Exploit Guard > Angriffsfläche verringern","steps":["PowerShell (Admin): Set-MpPreference -AttackSurfaceReductionRules_Ids 75668c1f-73b5-4cf0-bb93-3ecf5cb7cc84 -AttackSurfaceReductionRules_Actions Enabled","GPO: Computerkonfiguration > Administrative Vorlagen > Windows-Komponenten > Microsoft Defender Antivirus > Microsoft Defender Exploit Guard > Angriffsfläche verringern > Regeln für das Verringern der Angriffsfläche konfigurieren.","Prüfen: (Get-MpPreference).AttackSurfaceReductionRules_Ids enthält die GUID; erneut scannen.","Rückgängig: Set-MpPreference -AttackSurfaceReductionRules_Actions Disabled (gleiche GUID)"]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"
@@ -116,6 +121,7 @@
     },
     "fixHint": "Defender-Richtlinie prüfen; ggf. Fremd-AV ersetzt Defender (dann N/A).",
     "kapitel": "MS Defender Baseline",
+    "remediation": {"mode":"manual","risk":"low","gui":"Windows-Sicherheit > Virusschutz","steps":["PowerShell (Admin): Set-MpPreference -DisableBehaviorMonitoring $false (bei aktivem Manipulationsschutz gesperrt).","Prüfen: (Get-MpComputerStatus).BehaviorMonitorEnabled; erneut scannen."]},
     "profil": "L1",
     "ziel": "both",
     "giltAb": "24H2"

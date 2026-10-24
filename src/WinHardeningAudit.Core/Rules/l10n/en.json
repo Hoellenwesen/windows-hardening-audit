@@ -1,155 +1,260 @@
-{
+﻿{
     "ACCT-01":  {
                     "title":  "UAC: Admin Approval Mode for administrators",
                     "description":  "All administrators run in Admin Approval Mode.",
-                    "fixHint":  "Control Panel \u003e User Accounts \u003e set UAC to Default or higher."
+                    "fixHint":  "Control Panel \u003e User Accounts \u003e set UAC to Default or higher.",
+                    "gui":  "secpol.msc \u003e Local Policies \u003e Security Options \u003e User Account Control: Run all administrators in Admin Approval Mode = Enabled"
                 },
     "ACCT-02":  {
                     "title":  "UAC: Secure desktop prompt for admins",
                     "description":  "Consent prompt on the secure desktop (behavior 2 = prompt for consent).",
-                    "fixHint":  "GPO: Computer Configuration \u003e Windows Settings \u003e Security Settings \u003e Local Policies \u003e Security Options."
+                    "fixHint":  "GPO: Computer Configuration \u003e Windows Settings \u003e Security Settings \u003e Local Policies \u003e Security Options.",
+                    "gui":  "secpol.msc \u003e Local Policies \u003e Security Options \u003e User Account Control: Behavior of the elevation prompt for administrators = Prompt for consent on the secure desktop"
                 },
     "ACCT-03":  {
                     "title":  "UAC: Enforce Secure Desktop",
                     "description":  "Show the UAC prompt on the secure desktop.",
-                    "fixHint":  "Security Options \u003e UAC: only elevate UIAccess applications / Secure Desktop."
+                    "fixHint":  "Security Options \u003e UAC: only elevate UIAccess applications / Secure Desktop.",
+                    "gui":  "secpol.msc \u003e Local Policies \u003e Security Options \u003e User Account Control: Switch to the secure desktop when prompting for elevation = Enabled"
                 },
     "ACCT-04":  {
                     "title":  "Blank passwords for console logon only",
                     "description":  "Accounts with blank passwords may only log on locally.",
-                    "fixHint":  "Default is 1 (enabled). If 0: correct via GPO/registry."
+                    "fixHint":  "Default is 1 (enabled). If 0: correct via GPO/registry.",
+                    "gui":  "secpol.msc \u003e Local Policies \u003e Security Options \u003e Accounts: Limit local account use of blank passwords to console logon only = Enabled"
                 },
     "ACCT-05":  {
                     "title":  "Guest account disabled",
                     "description":  "The built-in guest account must be disabled.",
-                    "fixHint":  "lusrmgr.msc \u003e Users \u003e Guest \u003e Account is disabled."
+                    "fixHint":  "lusrmgr.msc \u003e Users \u003e Guest \u003e Account is disabled.",
+                    "gui":  "Computer Management \u003e Local Users and Groups \u003e Users \u003e Guest \u003e disable this account"
                 },
     "DEF-01":  {
                    "title":  "Defender real-time protection on",
                    "description":  "Real-time protection must be turned on.",
-                   "fixHint":  "Windows Security \u003e Virus \u0026 threat protection \u003e turn on real-time protection."
+                   "fixHint":  "Windows Security \u003e Virus \u0026 threat protection \u003e turn on real-time protection.",
+                   "gui":  "Windows Security \u003e Virus protection \u003e Manage protection \u003e Real-time protection",
+                   "steps":  [
+                                 "Windows Security \u003e Virus protection \u003e Manage protection \u003e enable real-time protection (blocked by Windows when tamper protection is on).",
+                                 "PowerShell (admin): Set-MpPreference -DisableRealtimeMonitoring $false",
+                                 "Verify: (Get-MpComputerStatus).RealTimeProtectionEnabled or re-scan.",
+                                 "Revert: Set-MpPreference -DisableRealtimeMonitoring $true"
+                             ]
                },
     "DEF-02":  {
                    "title":  "Defender Tamper Protection on",
                    "description":  "Tamper protection prevents malware from turning Defender off.",
-                   "fixHint":  "Windows Security \u003e Virus \u0026 threat protection \u003e Settings \u003e Tamper Protection. Possibly Intune/GPO."
+                   "fixHint":  "Windows Security \u003e Virus \u0026 threat protection \u003e Settings \u003e Tamper Protection. Possibly Intune/GPO.",
+                   "gui":  "Windows Security \u003e Virus protection \u003e Manage protection \u003e Tamper protection",
+                   "steps":  [
+                                 "Windows Security \u003e Virus protection \u003e Manage protection \u003e enable tamper protection (cannot be set via PowerShell, by design).",
+                                 "On managed devices enforce via Intune/GPO.",
+                                 "Verify: registry HKLM\\SOFTWARE\\Microsoft\\Windows Defender\\Features\\TamperProtection = 1 and re-scan."
+                             ]
                },
     "DEF-03":  {
                    "title":  "Defender cloud protection on",
                    "description":  "Cloud-delivered protection + automatic sample submission.",
-                   "fixHint":  "Windows Security \u003e enable cloud-delivered protection."
+                   "fixHint":  "Windows Security \u003e enable cloud-delivered protection.",
+                   "gui":  "Windows Security \u003e Virus protection \u003e Manage settings \u003e Cloud-delivered protection",
+                   "steps":  [
+                                 "Windows Security \u003e Virus protection \u003e Manage settings \u003e set cloud-delivered protection to Advanced.",
+                                 "PowerShell (admin): Set-MpPreference -MAPSReporting Advanced; Set-MpPreference -SubmitSamplesConsent SendSafeSamples",
+                                 "Verify: (Get-MpPreference).MAPSReporting; re-scan."
+                             ]
                },
     "DEF-04":  {
                    "title":  "Defender signatures current (\u003c 7 days)",
                    "description":  "Antimalware signatures must not be older than 7 days.",
-                   "fixHint":  "Run Windows Update or Update-MpSignature."
+                   "fixHint":  "Run Windows Update or Update-MpSignature.",
+                   "gui":  "Settings \u003e Windows Update",
+                   "steps":  [
+                                 "Settings \u003e Windows Update \u003e check for and install updates (refreshes signatures; internet required).",
+                                 "PowerShell (admin): Update-MpSignature",
+                                 "Verify: (Get-MpComputerStatus).AntivirusSignatureLastUpdated; re-scan (target \u003c= 7 days)."
+                             ]
                },
     "DEF-05":  {
                    "title":  "ASR rule: block Office macros",
                    "description":  "At minimum, the ASR rule against Office macro malware should be enforced (GUID 75668c1f).",
-                   "fixHint":  "GPO/Intune: configure ASR rules (Block mode instead of Audit)."
+                   "fixHint":  "GPO/Intune: configure ASR rules (Block mode instead of Audit).",
+                   "gui":  "GPO \u003e Microsoft Defender Antivirus \u003e Microsoft Defender Exploit Guard \u003e Attack Surface Reduction",
+                   "steps":  [
+                                 "PowerShell (admin): Set-MpPreference -AttackSurfaceReductionRules_Ids 75668c1f-73b5-4cf0-bb93-3ecf5cb7cc84 -AttackSurfaceReductionRules_Actions Enabled",
+                                 "GPO: Computer Configuration \u003e Administrative Templates \u003e Windows Components \u003e Microsoft Defender Antivirus \u003e Microsoft Defender Exploit Guard \u003e Attack Surface Reduction \u003e configure the rule.",
+                                 "Verify: (Get-MpPreference).AttackSurfaceReductionRules_Ids contains the GUID; re-scan.",
+                                 "Revert: Set-MpPreference -AttackSurfaceReductionRules_Actions Disabled (same GUID)"
+                             ]
                },
     "DEF-06":  {
                    "title":  "Behavior monitoring on",
                    "description":  "Behavior monitoring detects behavior-based malware.",
-                   "fixHint":  "Check Defender policy; a third-party AV may have replaced Defender (then N/A)."
+                   "fixHint":  "Check Defender policy; a third-party AV may have replaced Defender (then N/A).",
+                   "gui":  "Windows Security \u003e Virus protection",
+                   "steps":  [
+                                 "PowerShell (admin): Set-MpPreference -DisableBehaviorMonitoring $false (blocked when tamper protection is on).",
+                                 "Verify: (Get-MpComputerStatus).BehaviorMonitorEnabled; re-scan."
+                             ]
                },
     "ENC-01":  {
                    "title":  "BitLocker OS drive encrypted",
                    "description":  "The OS volume should be fully encrypted.",
-                   "fixHint":  "manage-bde -on C: or Settings \u003e Privacy \u0026 security \u003e Device encryption. Requires Pro/Enterprise."
+                   "fixHint":  "manage-bde -on C: or Settings \u003e Privacy \u0026 security \u003e Device encryption. Requires Pro/Enterprise.",
+                   "gui":  "Settings \u003e Privacy \u0026 security \u003e BitLocker drive encryption",
+                   "steps":  [
+                                 "Settings \u003e Privacy \u0026 security \u003e BitLocker drive encryption \u003e enable BitLocker (OS drive C:).",
+                                 "PowerShell (admin): Enable-BitLocker -MountPoint $env:SystemDrive -EncryptionMethod XtsAes256 -TpmProtector",
+                                 "Important: back up the recovery key first (print/USB/AD DS/Microsoft account) - otherwise data loss is possible.",
+                                 "Verify: (Get-BitLockerVolume -MountPoint $env:SystemDrive).ProtectionStatus; re-scan."
+                             ]
                },
     "ENC-02":  {
                    "title":  "TPM ready and enabled",
                    "description":  "TPM 2.0 is required for BitLocker + Secure Boot + Credential Guard. Not applicable without a TPM chip.",
-                   "fixHint":  "UEFI: enable TPM/Security Device; check tpm.msc. Not applicable without a TPM chip (e.g. VM)."
+                   "fixHint":  "UEFI: enable TPM/Security Device; check tpm.msc. Not applicable without a TPM chip (e.g. VM).",
+                   "gui":  "UEFI/firmware \u003e Security \u003e TPM",
+                   "steps":  [
+                                 "UEFI/firmware setup: enable the TPM/security chip (usually under Security).",
+                                 "Windows: open tpm.msc; status must read ready. Without a TPM, BitLocker only works with a password.",
+                                 "Verify: (Get-Tpm).TpmReady; re-scan. Hardware/firmware dependent."
+                             ]
                },
     "ENC-03":  {
                    "title":  "WDigest authentication disabled",
                    "description":  "Prevents plaintext credential storage in LSASS (off by default since 8.1).",
                    "fixHint":  "Set UseLogonCredential=0 (DWORD). A missing value = secure default. Requires restart.",
-                   "note":  "WDigest has been off by default since 8.1 and the setting is deprecated."
+                   "note":  "WDigest has been off by default since 8.1 and the setting is deprecated.",
+                   "gui":  "No GUI path; GPO: Computer Configuration \u003e Administrative Templates \u003e System \u003e Logon Optimization (WDigest)"
                },
     "ENC-04":  {
                    "title":  "LSA protection (PPL) enabled",
                    "description":  "LSASS runs as a Protected Process Light.",
-                   "fixHint":  "RunAsPPL=1 (DWORD) + restart. Verify on older hardware if needed."
+                   "fixHint":  "RunAsPPL=1 (DWORD) + restart. Verify on older hardware if needed.",
+                   "gui":  "GPO: Computer Configuration \u003e Administrative Templates \u003e System \u003e Local Security Authority \u003e Run LSASS as a protected process = Enabled"
                },
     "ENC-05":  {
                    "title":  "Kernel DMA protection available",
                    "description":  "Protection against DMA attacks via Thunderbolt/PCI (effective status from DeviceGuard).",
-                   "fixHint":  "msinfo32 \u003e Kernel DMA Protection = On. UEFI: enable VT-d / IOMMU (3 = DMA protection available)."
+                   "fixHint":  "msinfo32 \u003e Kernel DMA Protection = On. UEFI: enable VT-d / IOMMU (3 = DMA protection available).",
+                   "gui":  "UEFI/firmware \u003e Thunderbolt/DMA protection",
+                   "steps":  [
+                                 "Kernel DMA protection depends on firmware/hardware: open UEFI setup and enable DMA/Thunderbolt protection.",
+                                 "Alternatively restrict Thunderbolt access via policy; without Thunderbolt/external PCIe the finding is uncritical.",
+                                 "Verify: re-scan (target = 3, kernel DMA protection on)."
+                             ]
                },
     "NET-01":  {
                    "title":  "Firewall Domain profile on",
                    "description":  "Windows Defender Firewall for domain networks.",
-                   "fixHint":  "GPO: enable the firewall for all profiles."
+                   "fixHint":  "GPO: enable the firewall for all profiles.",
+                   "gui":  "Windows Security \u003e Firewall \u0026 network protection \u003e Domain network \u003e turn on Microsoft Defender Firewall"
                },
     "NET-02":  {
                    "title":  "Firewall Private profile on",
                    "description":  "Windows Defender Firewall for private networks.",
-                   "fixHint":  "Settings \u003e Privacy \u0026 security \u003e Firewall."
+                   "fixHint":  "Settings \u003e Privacy \u0026 security \u003e Firewall.",
+                   "gui":  "Windows Security \u003e Firewall \u0026 network protection \u003e Private network \u003e turn on Microsoft Defender Firewall"
                },
     "NET-03":  {
                    "title":  "Firewall Public profile on",
                    "description":  "Windows Defender Firewall for public networks.",
-                   "fixHint":  "Especially critical on laptops (public Wi-Fi)."
+                   "fixHint":  "Especially critical on laptops (public Wi-Fi).",
+                   "gui":  "Windows Security \u003e Firewall \u0026 network protection \u003e Public network \u003e turn on Microsoft Defender Firewall"
                },
     "NET-04":  {
                    "title":  "SMBv1 disabled",
                    "description":  "The outdated, insecure SMBv1 protocol must be off.",
                    "fixHint":  "Optional features \u003e remove SMB 1.0/CIFS. If the component is gone entirely (possible as of 26H2), the check counts as passed.",
-                   "note":  "On 26H2 the SMB1 component may be removed entirely (then counts as passed)."
+                   "note":  "On 26H2 the SMB1 component may be removed entirely (then counts as passed).",
+                   "gui":  "Control Panel \u003e Programs \u003e Windows Features \u003e disable SMB 1.0/CIFS support"
                },
     "NET-05":  {
                    "title":  "SMB signing required (workstation)",
                    "description":  "Protects against SMB relay/man-in-the-middle.",
-                   "fixHint":  "GPO: Microsoft network (client): Digitally sign communications (always)."
+                   "fixHint":  "GPO: Microsoft network (client): Digitally sign communications (always).",
+                   "gui":  "secpol.msc \u003e Security Options \u003e Microsoft network client: Digitally sign communications (always) = Enabled"
                },
     "BOOT-01":  {
                     "title":  "Secure Boot enabled",
                     "description":  "UEFI Secure Boot prevents boot malware.",
-                    "fixHint":  "UEFI: enable Secure Boot. On VMs check Hyper-V settings if needed. Not applicable in VMs without Secure Boot support."
+                    "fixHint":  "UEFI: enable Secure Boot. On VMs check Hyper-V settings if needed. Not applicable in VMs without Secure Boot support.",
+                    "gui":  "UEFI/firmware setup \u003e Secure Boot",
+                    "steps":  [
+                                  "UEFI/firmware setup: enable Secure Boot (for legacy BIOS installs, first convert MBR2GPT to UEFI).",
+                                  "Verify: Confirm-SecureBootUEFI (admin) or re-scan."
+                              ]
                 },
     "BOOT-02":  {
                     "title":  "Virtualization Based Security (VBS) active",
                     "description":  "VBS isolates security-critical processes (effective status, not just policy).",
-                    "fixHint":  "GPO: Device Guard \u003e Turn on virtualization-based security (status 2 = enabled and running). Requires UEFI + virtualization support."
+                    "fixHint":  "GPO: Device Guard \u003e Turn on virtualization-based security (status 2 = enabled and running). Requires UEFI + virtualization support.",
+                    "gui":  "Windows Security \u003e Device security \u003e Core isolation",
+                    "steps":  [
+                                  "Windows Security \u003e Privacy \u0026 security \u003e Windows Security \u003e Device security \u003e Core isolation \u003e Details \u003e enable Memory integrity; then restart.",
+                                  "PowerShell (admin): Set-ItemProperty HKLM:\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard -Name EnableVirtualizationBasedSecurity -Value 1; restart.",
+                                  "The BIOS must have virtualization (VT-x/AMD-V) and TPM enabled.",
+                                  "Verify (after restart): Win32_DeviceGuard.VirtualizationBasedSecurityStatus = 2; re-scan."
+                              ]
                 },
     "BOOT-03":  {
                     "title":  "Memory integrity (HVCI) enforced",
                     "description":  "Hypervisor-protected code integrity against driver malware (effective status).",
-                    "fixHint":  "Windows Security \u003e Device security \u003e Core isolation \u003e turn on Memory integrity (2 = enforced)."
+                    "fixHint":  "Windows Security \u003e Device security \u003e Core isolation \u003e turn on Memory integrity (2 = enforced).",
+                    "gui":  "Windows Security \u003e Core isolation \u003e Memory integrity",
+                    "steps":  [
+                                  "Windows Security \u003e Device security \u003e Core isolation \u003e enable Memory integrity; then restart.",
+                                  "PowerShell (admin): Set-ItemProperty HKLM:\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard\\Scenarios\\HypervisorEnforcedCodeIntegrity -Name Enabled -Value 1; restart.",
+                                  "Verify (after restart): Win32_DeviceGuard.CodeIntegrityPolicyEnforcementStatus = 2; re-scan."
+                              ]
                 },
     "BOOT-04":  {
                     "title":  "Credential Guard running",
                     "description":  "Isolates LSASS secrets via virtualization (effective status). Requires Enterprise/Education.",
-                    "fixHint":  "Requires Windows Enterprise/Education + UEFI + TPM + VBS. Not applicable on other editions (counted as N/A)."
+                    "fixHint":  "Requires Windows Enterprise/Education + UEFI + TPM + VBS. Not applicable on other editions (counted as N/A).",
+                    "gui":  "GPO \u003e System \u003e Device Guard \u003e Credential Guard",
+                    "steps":  [
+                                  "Enterprise/Education only: GPO/Intune Computer Configuration \u003e Administrative Templates \u003e System \u003e Device Guard \u003e enable Credential Guard (virtualization-based protection).",
+                                  "PowerShell (admin): Set-ItemProperty HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Lsa -Name LsaCfgFlags -Value 1; restart.",
+                                  "Verify (after restart): Win32_DeviceGuard.SecurityServicesRunning contains 1; re-scan."
+                              ]
                 },
     "UPD-01":  {
                    "title":  "Windows Update service not disabled",
                    "description":  "The update service must not be disabled.",
-                   "fixHint":  "services.msc \u003e Windows Update \u003e Startup type Automatic or Manual (not Disabled)."
+                   "fixHint":  "services.msc \u003e Windows Update \u003e Startup type Automatic or Manual (not Disabled).",
+                   "gui":  "services.msc \u003e Windows Update (wuauserv) \u003e Startup type: Manual, not Disabled"
                },
     "UPD-02":  {
                    "title":  "No NoAutoUpdate policy block",
                    "description":  "If an AU policy exists, it must not disable updates.",
-                   "fixHint":  "A missing key is OK (no blocking policy). GPO: Configure Automatic Updates = 4."
+                   "fixHint":  "A missing key is OK (no blocking policy). GPO: Configure Automatic Updates = 4.",
+                   "gui":  "GPO: Computer Configuration \u003e Administrative Templates \u003e Windows Components \u003e Windows Update \u003e Configure Automatic Updates"
                },
     "UPD-03":  {
                    "title":  "UAC virtualization for files/registry",
                    "description":  "Legacy apps are virtualized per-user instead of writing system-wide.",
-                   "fixHint":  "Default is 1. Only touch for compatibility issues."
+                   "fixHint":  "Default is 1. Only touch for compatibility issues.",
+                   "gui":  "secpol.msc \u003e Security Options \u003e User Account Control: Virtualize file and registry write failures to per-user locations = Enabled"
                },
     "UPD-04":  {
                    "title":  "Latest quality update max. 45 days old",
                    "description":  "The newest hotfix must not be older than 45 days (guideline: Patch Tuesday + buffer).",
-                   "fixHint":  "Settings \u003e Windows Update \u003e Update history. Target: max. 30 days behind Patch Tuesday."
+                   "fixHint":  "Settings \u003e Windows Update \u003e Update history. Target: max. 30 days behind Patch Tuesday.",
+                   "gui":  "Settings \u003e Windows Update",
+                   "steps":  [
+                                 "Settings \u003e Windows Update \u003e check for and install updates; remove any configured update pause.",
+                                 "Verify: Get-HotFix | Sort-Object InstalledOn -Descending | Select-Object -First 1; re-scan (target \u003c= 45 days)."
+                             ]
                },
     "UPD-05":  {
                    "title":  "No pending update restart",
                    "description":  "No restart is pending to finalize updates.",
-                   "fixHint":  "Perform the pending restart so updates (especially kernel) take effect."
+                   "fixHint":  "Perform the pending restart so updates (especially kernel) take effect.",
+                   "gui":  "Settings \u003e Windows Update",
+                   "steps":  [
+                                 "Settings \u003e Windows Update \u003e restart now (perform the pending restart).",
+                                 "Verify: re-scan; PowerShell: Test-Path HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing\\RebootPending must be $false."
+                             ]
                },
     "AUD-01":  {
                    "title":  "PowerShell Script Block Logging enabled",
@@ -159,127 +264,173 @@
     "AUD-02":  {
                    "title":  "Logon auditing: success + failure",
                    "description":  "Subcategory \u0027Logon\u0027 must audit success and failure (GUID match, language-independent).",
-                   "fixHint":  "auditpol /set /subcategory:Logon /success:enable /failure:enable (admin)."
+                   "fixHint":  "auditpol /set /subcategory:Logon /success:enable /failure:enable (admin).",
+                   "gui":  "GPO: Computer Configuration \u003e Windows Settings \u003e Security Settings \u003e Advanced Audit Policy \u003e Logon/Logoff \u003e Logon (Success + Failure)"
                },
     "AUD-03":  {
                    "title":  "Audit: capture logoffs",
                    "description":  "Subcategory \u0027Logoff\u0027 should at least log success (GUID match, language-independent).",
-                   "fixHint":  "auditpol /set /subcategory:Logoff /success:enable (admin)."
+                   "fixHint":  "auditpol /set /subcategory:Logoff /success:enable (admin).",
+                   "gui":  "GPO: Advanced Audit Policy \u003e Logon/Logoff \u003e Logoff (Success)"
                },
     "AUD-04":  {
                    "title":  "Audit: privilege use (Sensitive Privilege Use)",
                    "description":  "Detects abuse of sensitive rights (e.g. Debug, Backup). GUID match, language-independent.",
-                   "fixHint":  "auditpol /set /subcategory:\"Sensitive Privilege Use\" /success:enable /failure:enable."
+                   "fixHint":  "auditpol /set /subcategory:\"Sensitive Privilege Use\" /success:enable /failure:enable.",
+                   "gui":  "GPO: Advanced Audit Policy \u003e Privilege Use \u003e Sensitive Privilege Use (Success)"
                },
     "AUD-05":  {
                    "title":  "Security event log size \u003e= 192 MB",
                    "description":  "The Security log must be at least 196,608 KB (192 MB), otherwise events get overwritten too quickly.",
-                   "fixHint":  "GPO: set Security event log size to 196608 KB (192 MB) or more."
+                   "fixHint":  "GPO: set Security event log size to 196608 KB (192 MB) or more.",
+                   "gui":  "Event Viewer (eventvwr.msc) \u003e Security log \u003e Properties \u003e Maximum log size (KB) = 196608"
                },
     "SYS-01":  {
                    "title":  "AutoPlay/AutoRun disabled",
                    "description":  "No automatic execution from removable media.",
-                   "fixHint":  "GPO: Turn off AutoPlay = All drives."
+                   "fixHint":  "GPO: Turn off AutoPlay = All drives.",
+                   "gui":  "GPO: Computer Configuration \u003e Administrative Templates \u003e Windows Components \u003e AutoPlay Policies \u003e Turn off AutoPlay for all drives"
                },
     "SYS-02":  {
                    "title":  "Prevent anonymous SAM enumeration",
                    "description":  "RestrictAnonymousSAM = 1 blocks anonymous account enumeration.",
-                   "fixHint":  "GPO Security Options \u003e Network access: Do not allow anonymous enumeration of SAM accounts."
+                   "fixHint":  "GPO Security Options \u003e Network access: Do not allow anonymous enumeration of SAM accounts.",
+                   "gui":  "secpol.msc \u003e Security Options \u003e Network access: Do not allow anonymous enumeration of SAM accounts = Enabled"
                },
     "SYS-03":  {
                    "title":  "Restrict anonymous access (RestrictAnonymous)",
                    "description":  "No anonymous connections with SID/name resolution.",
-                   "fixHint":  "GPO: Network access: Do not allow anonymous SID/Name translation."
+                   "fixHint":  "GPO: Network access: Do not allow anonymous SID/Name translation.",
+                   "gui":  "secpol.msc \u003e Security Options \u003e Network access: Do not allow anonymous enumeration of SAM accounts and shares = Enabled"
                },
     "SYS-04":  {
                    "title":  "RDP with Network Level Authentication",
                    "description":  "If RDP is enabled, NLA must be enforced. If RDP is disabled, the check counts as passed (defense in depth).",
-                   "fixHint":  "Either disable RDP (fDenyTSConnections=1) or enforce NLA (UserAuthentication=1)."
+                   "fixHint":  "Either disable RDP (fDenyTSConnections=1) or enforce NLA (UserAuthentication=1).",
+                   "gui":  "Settings \u003e System \u003e Remote Desktop \u003e Network Level Authentication",
+                   "steps":  [
+                                 "Settings \u003e System \u003e Remote Desktop: allow connections only from computers running Remote Desktop with Network Level Authentication.",
+                                 "PowerShell (admin): Set-ItemProperty HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp -Name UserAuthentication -Value 1",
+                                 "Note: outdated RDP clients will be rejected afterwards; existing sessions stay active.",
+                                 "Verify: re-scan."
+                             ]
                },
     "SYS-05":  {
                    "title":  "Windows Installer: AlwaysInstallElevated off",
                    "description":  "Prevents privilege escalation via MSI packages.",
-                   "fixHint":  "A missing key is good (not configured = off). Explicitly set to Disabled via GPO."
+                   "fixHint":  "A missing key is good (not configured = off). Explicitly set to Disabled via GPO.",
+                   "gui":  "GPO: Computer Configuration \u003e Administrative Templates \u003e Windows Components \u003e Windows Installer \u003e Always install with elevated privileges = Disabled (Computer + User)"
                },
     "SYS-06":  {
                    "title":  "Automatic admin logon disabled",
                    "description":  "AutoAdminLogon must not be active.",
-                   "fixHint":  "AutoAdminLogon=0. A missing value is also OK; if reported as open, verify manually."
+                   "fixHint":  "AutoAdminLogon=0. A missing value is also OK; if reported as open, verify manually.",
+                   "gui":  "netplwiz / systempropertiesadvanced: disable automatic logon (do not store a password)"
                },
     "EDGE-01":  {
                     "title":  "Edge SmartScreen enabled",
                     "description":  "Protection against phishing/malware downloads in Edge.",
-                    "fixHint":  "GPO Edge: enforce Microsoft Defender SmartScreen. Without a policy, SmartScreen is active by default - cross-check in Edge under edge://settings/privacy."
+                    "fixHint":  "GPO Edge: enforce Microsoft Defender SmartScreen. Without a policy, SmartScreen is active by default - cross-check in Edge under edge://settings/privacy.",
+                    "gui":  "GPO: Computer Configuration \u003e Administrative Templates \u003e Microsoft Edge \u003e SmartScreen settings \u003e Force Microsoft Edge SmartScreen = Enabled"
                 },
     "EDGE-02":  {
                     "title":  "Edge Enhanced Security Mode",
                     "description":  "Hardens JIT / browser protection (Balanced or Strict).",
-                    "fixHint":  "Edge \u003e Settings \u003e Privacy \u003e set Enhanced Security mode to Balanced/Strict. (Deliberate judgment call, no auto-check.)"
+                    "fixHint":  "Edge \u003e Settings \u003e Privacy \u003e set Enhanced Security mode to Balanced/Strict. (Deliberate judgment call, no auto-check.)",
+                    "gui":  "Edge \u003e Settings \u003e Privacy \u003e Security \u003e Enhanced security",
+                    "steps":  [
+                                  "Edge \u003e Settings \u003e Privacy and security \u003e Security: set Enhanced Security Mode to Balanced or Strict (at least for the internet).",
+                                  "PowerShell (admin): New-ItemProperty HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge -Name EnhanceSecurityMode -Value 1 -PropertyType DWord -Force",
+                                  "Verify: edge://policy shows the policy; re-scan."
+                              ]
                 },
     "EDGE-03":  {
                     "title":  "Edge typosquatting protection (manual)",
                     "description":  "Warns about look-alike domains. Policy status varies by version.",
-                    "fixHint":  "Import the Edge security baseline from the Security Compliance Toolkit. (Deliberate judgment call, no auto-check.)"
+                    "fixHint":  "Import the Edge security baseline from the Security Compliance Toolkit. (Deliberate judgment call, no auto-check.)",
+                    "gui":  "Edge \u003e Settings \u003e Privacy \u003e Security",
+                    "steps":  [
+                                  "Edge \u003e Settings \u003e Privacy and security \u003e Security: enable typo-squatting protection.",
+                                  "PowerShell (admin): New-ItemProperty HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge -Name TyposquattingCheckerEnabled -Value 1 -PropertyType DWord -Force",
+                                  "Verify: edge://policy; re-scan."
+                              ]
                 },
     "EDGE-04":  {
                     "title":  "Edge automatic updates (manual)",
                     "description":  "The Edge updater service should run automatically.",
-                    "fixHint":  "services.msc \u003e Microsoft Edge Update \u003e Automatic."
+                    "fixHint":  "services.msc \u003e Microsoft Edge Update \u003e Automatic.",
+                    "gui":  "services.msc \u003e Microsoft Edge Update Service (edgeupdate)",
+                    "steps":  [
+                                  "services.msc: Microsoft Edge Update Service (edgeupdate) must not be disabled.",
+                                  "PowerShell (admin): Set-Service -Name edgeupdate -StartupType Automatic",
+                                  "Verify: (Get-Service edgeupdate).StartType; re-scan."
+                              ]
                 },
     "EDGE-05":  {
                     "title":  "Edge: block SmartScreen bypass for sites",
                     "description":  "Users cannot bypass SmartScreen warnings for websites.",
-                    "fixHint":  "Edge policy: Prevent bypassing SmartScreen prompts for sites = Enabled."
+                    "fixHint":  "Edge policy: Prevent bypassing SmartScreen prompts for sites = Enabled.",
+                    "gui":  "GPO: Microsoft Edge \u003e SmartScreen \u003e Prevent bypassing SmartScreen prompts for sites = Enabled"
                 },
     "EDGE-06":  {
                     "title":  "Edge: block SmartScreen bypass for files",
                     "description":  "Users cannot bypass SmartScreen warnings for downloads.",
-                    "fixHint":  "Edge policy: Prevent bypassing SmartScreen prompts for files = Enabled."
+                    "fixHint":  "Edge policy: Prevent bypassing SmartScreen prompts for files = Enabled.",
+                    "gui":  "GPO: Microsoft Edge \u003e SmartScreen \u003e Prevent bypassing SmartScreen prompts for files = Enabled"
                 },
     "ACCT-10":  {
                     "title":  "Minimum password length 14 characters",
                     "description":  "Local password policy: at least 14 characters (stand-alone recommendation).",
-                    "fixHint":  "secpol.msc \u003e Account Policies \u003e Password Policy \u003e Minimum password length = 14."
+                    "fixHint":  "secpol.msc \u003e Account Policies \u003e Password Policy \u003e Minimum password length = 14.",
+                    "gui":  "secpol.msc \u003e Account Policies \u003e Password Policy \u003e Minimum password length = 14"
                 },
     "ACCT-11":  {
                     "title":  "Password complexity required",
                     "description":  "Passwords must meet complexity requirements.",
-                    "fixHint":  "secpol.msc \u003e Password must meet complexity requirements = Enabled."
+                    "fixHint":  "secpol.msc \u003e Password must meet complexity requirements = Enabled.",
+                    "gui":  "secpol.msc \u003e Account Policies \u003e Password Policy \u003e Password must meet complexity requirements = Enabled"
                 },
     "ACCT-12":  {
                     "title":  "Password history: remember 24 predecessors",
                     "description":  "Prevents reuse of the last 24 passwords.",
-                    "fixHint":  "secpol.msc \u003e Enforce password history = 24."
+                    "fixHint":  "secpol.msc \u003e Enforce password history = 24.",
+                    "gui":  "secpol.msc \u003e Account Policies \u003e Password Policy \u003e Enforce password history = 24"
                 },
     "ACCT-13":  {
                     "title":  "Maximum password age at most 365 days",
                     "description":  "Passwords must expire: 1 to 365 days, not 0 (never expires).",
-                    "fixHint":  "secpol.msc \u003e Maximum password age = 1 to 365 days (0 disables expiration)."
+                    "fixHint":  "secpol.msc \u003e Maximum password age = 1 to 365 days (0 disables expiration).",
+                    "gui":  "secpol.msc \u003e Account Policies \u003e Password Policy \u003e Maximum password age = 365 or less (0/never not allowed)"
                 },
     "ACCT-14":  {
                     "title":  "Reversibly encrypted passwords off",
                     "description":  "Passwords must not be stored using reversible encryption.",
-                    "fixHint":  "Default is Disabled. If set: secpol.msc \u003e Store passwords using reversible encryption = Disabled."
+                    "fixHint":  "Default is Disabled. If set: secpol.msc \u003e Store passwords using reversible encryption = Disabled.",
+                    "gui":  "secpol.msc \u003e Account Policies \u003e Password Policy \u003e Store passwords using reversible encryption = Disabled"
                 },
     "ACCT-15":  {
                     "title":  "Account lockout threshold: at most 5 bad attempts",
                     "description":  "Account is locked after 1 to 5 failed logons (not 0).",
-                    "fixHint":  "secpol.msc \u003e Account lockout policy \u003e Threshold = 1 to 5 (0 = never lock)."
+                    "fixHint":  "secpol.msc \u003e Account lockout policy \u003e Threshold = 1 to 5 (0 = never lock).",
+                    "gui":  "secpol.msc \u003e Account Policies \u003e Account Lockout Policy \u003e Account lockout threshold = 1 to 5 (not 0)"
                 },
     "ACCT-16":  {
                     "title":  "Account lockout duration 15 minutes",
                     "description":  "Locked accounts stay locked for at least 15 minutes (0 = until manually unlocked).",
-                    "fixHint":  "secpol.msc \u003e Account lockout duration = 15 minutes or more (0 = until manually unlocked)."
+                    "fixHint":  "secpol.msc \u003e Account lockout duration = 15 minutes or more (0 = until manually unlocked).",
+                    "gui":  "secpol.msc \u003e Account Policies \u003e Account Lockout Policy \u003e Account lockout duration = 15+ minutes (0 = until admin unlock)"
                 },
     "ACCT-17":  {
                     "title":  "Counter reset after 15 minutes",
                     "description":  "The bad-attempt counter resets after 15 minutes.",
-                    "fixHint":  "secpol.msc \u003e Reset counter after = 15 minutes."
+                    "fixHint":  "secpol.msc \u003e Reset counter after = 15 minutes.",
+                    "gui":  "secpol.msc \u003e Account Policies \u003e Account Lockout Policy \u003e Reset account lockout counter after = 15+ minutes"
                 },
     "ACCT-18":  {
                     "title":  "Administrator account lockable",
                     "description":  "The built-in administrator account should be lockable too.",
-                    "fixHint":  "secpol.msc \u003e Allow administrator account lockout = Enabled."
+                    "fixHint":  "secpol.msc \u003e Allow administrator account lockout = Enabled.",
+                    "gui":  "secpol.msc \u003e Account Policies \u003e Account Lockout Policy \u003e Allow administrator account lockout = Enabled"
                 },
     "SVC-01":  {
                    "title":  "Remote Registry disabled",
@@ -289,12 +440,19 @@
     "SVC-02":  {
                    "title":  "Print Spooler only if needed (verify manually)",
                    "description":  "The spooler service was a repeated attack vector (PrintNightmare). Disable without printers, otherwise leave Automatic.",
-                   "fixHint":  "services.msc \u003e Print Spooler: Disabled when no printer/printing is needed. (Deliberate judgment call: only you know whether printing happens.)"
+                   "fixHint":  "services.msc \u003e Print Spooler: Disabled when no printer/printing is needed. (Deliberate judgment call: only you know whether printing happens.)",
+                   "gui":  "services.msc \u003e Print Spooler",
+                   "steps":  [
+                                 "If no printer is needed: PowerShell (admin): Set-Service -Name Spooler -StartupType Disabled; Stop-Service -Name Spooler -Force",
+                                 "With a printer: leave startup type Manual and watch print services (the spooler is a frequent malware attack surface).",
+                                 "Verify: re-scan; the finding is a deliberate manual trade-off (rule is manual by design)."
+                             ]
                },
     "SVC-03":  {
                    "title":  "Xbox services disabled (baseline)",
                    "description":  "Xbox services unnecessary on work devices are disabled per baseline.",
-                   "fixHint":  "services.msc \u003e Xbox services (Accessory Management, Auth Manager, Game Save, Networking) = Disabled."
+                   "fixHint":  "services.msc \u003e Xbox services (Accessory Management, Auth Manager, Game Save, Networking) = Disabled.",
+                   "gui":  "services.msc: XboxGipSvc, XblAuthManager, XblGameSave, XboxNetApiSvc \u003e Startup type Disabled"
                },
     "MS-001":  {
                    "title":  "Prevent enabling lock screen camera",
@@ -2373,22 +2531,22 @@
                },
     "MS-416":  {
                    "title":  "Service: Xbox Accessory Management Service (Disabled)",
-                   "description":  "Microsoft recommendation (Security Baseline 25H2): Service 'Xbox Accessory Management Service' startup type Disabled.",
+                   "description":  "Microsoft recommendation (Security Baseline 25H2): Service \u0027Xbox Accessory Management Service\u0027 startup type Disabled.",
                    "fixHint":  "services.msc: \u0027Xbox Accessory Management Service\u0027 Startup type = Disabled."
                },
     "MS-417":  {
                    "title":  "Service: Xbox Live Auth Manager (Disabled)",
-                   "description":  "Microsoft recommendation (Security Baseline 25H2): Service 'Xbox Live Auth Manager' startup type Disabled.",
+                   "description":  "Microsoft recommendation (Security Baseline 25H2): Service \u0027Xbox Live Auth Manager\u0027 startup type Disabled.",
                    "fixHint":  "services.msc: \u0027Xbox Live Auth Manager\u0027 Startup type = Disabled."
                },
     "MS-418":  {
                    "title":  "Service: Xbox Live Game Save (Disabled)",
-                   "description":  "Microsoft recommendation (Security Baseline 25H2): Service 'Xbox Live Game Save' startup type Disabled.",
+                   "description":  "Microsoft recommendation (Security Baseline 25H2): Service \u0027Xbox Live Game Save\u0027 startup type Disabled.",
                    "fixHint":  "services.msc: \u0027Xbox Live Game Save\u0027 Startup type = Disabled."
                },
     "MS-419":  {
                    "title":  "Service: Xbox Live Networking Service (Disabled)",
-                   "description":  "Microsoft recommendation (Security Baseline 25H2): Service 'Xbox Live Networking Service' startup type Disabled.",
+                   "description":  "Microsoft recommendation (Security Baseline 25H2): Service \u0027Xbox Live Networking Service\u0027 startup type Disabled.",
                    "fixHint":  "services.msc: \u0027Xbox Live Networking Service\u0027 Startup type = Disabled."
                },
     "L2A-01":  {
@@ -2514,173 +2672,312 @@
     "PS-01":  {
                   "title":  "PowerShell transcription enabled",
                   "description":  "Session transcripts are logged (forensics, complement to Script Block Logging).",
-                  "fixHint":  "GPO: enable PowerShell transcription (EnableTranscripting=1)."
+                  "fixHint":  "GPO: enable PowerShell transcription (EnableTranscripting=1).",
+                  "gui":  "GPO: Computer Configuration \u003e Administrative Templates \u003e Windows Components \u003e Windows PowerShell \u003e Turn on PowerShell Transcription"
               },
     "PS-02":  {
                   "title":  "PowerShell module logging enabled",
                   "description":  "Module load events are logged (detecting malicious modules).",
-                  "fixHint":  "GPO: enable module logging (EnableModuleLogging=1)."
+                  "fixHint":  "GPO: enable module logging (EnableModuleLogging=1).",
+                  "gui":  "GPO: Computer Configuration \u003e Administrative Templates \u003e Windows Components \u003e Windows PowerShell \u003e Turn on Module Logging"
               },
     "OFF-01":  {
                    "title":  "Excel: all macros disabled without notification",
                    "description":  "VBA macros in Excel are fully blocked (VBAWarnings=4). Not applicable without Office.",
-                   "fixHint":  "GPO/Office policy: Excel \u003e Security \u003e VBA macro notification settings = Disable all without notification."
+                   "fixHint":  "GPO/Office policy: Excel \u003e Security \u003e VBA macro notification settings = Disable all without notification.",
+                   "gui":  "GPO: Microsoft Excel \u003e Security \u003e Disable all macros without notification",
+                   "steps":  [
+                                 "GPO: Computer Configuration \u003e Administrative Templates \u003e Microsoft Excel \u003e Security Settings \u003e Disable all macros without notification (VBAWarnings = 4).",
+                                 "PowerShell: New-ItemProperty HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Excel\\Security -Name VBAWarnings -Value 4 -PropertyType DWord -Force (Office 16.0 = 2016/2019/365, adjust path for 15.0).",
+                                 "Restart Excel afterwards.",
+                                 "Verify: re-scan."
+                             ]
                },
     "OFF-02":  {
                    "title":  "Word: all macros disabled without notification",
                    "description":  "VBA macros in Word are fully blocked (VBAWarnings=4). Not applicable without Office.",
-                   "fixHint":  "GPO/Office policy: Word \u003e Security \u003e VBA macro notification settings = Disable all without notification."
+                   "fixHint":  "GPO/Office policy: Word \u003e Security \u003e VBA macro notification settings = Disable all without notification.",
+                   "gui":  "GPO: Microsoft Word \u003e Security \u003e Disable all macros without notification",
+                   "steps":  [
+                                 "GPO: Computer Configuration \u003e Administrative Templates \u003e Microsoft Word \u003e Security Settings \u003e Disable all macros without notification (VBAWarnings = 4).",
+                                 "PowerShell: New-ItemProperty HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Word\\Security -Name VBAWarnings -Value 4 -PropertyType DWord -Force (Office 16.0 = 2016/2019/365, adjust path for 15.0).",
+                                 "Restart Word afterwards.",
+                                 "Verify: re-scan."
+                             ]
                },
     "OFF-03":  {
                    "title":  "PowerPoint: all macros disabled without notification",
                    "description":  "VBA macros in PowerPoint are fully blocked (VBAWarnings=4). Not applicable without Office.",
-                   "fixHint":  "GPO/Office policy: PowerPoint \u003e Security \u003e VBA macro notification settings = Disable all without notification."
+                   "fixHint":  "GPO/Office policy: PowerPoint \u003e Security \u003e VBA macro notification settings = Disable all without notification.",
+                   "gui":  "GPO: Microsoft PowerPoint \u003e Security \u003e Disable all macros without notification",
+                   "steps":  [
+                                 "GPO: Computer Configuration \u003e Administrative Templates \u003e Microsoft PowerPoint \u003e Security Settings \u003e Disable all macros without notification (VBAWarnings = 4).",
+                                 "PowerShell: New-ItemProperty HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\PowerPoint\\Security -Name VBAWarnings -Value 4 -PropertyType DWord -Force (Office 16.0 = 2016/2019/365, adjust path for 15.0).",
+                                 "Restart PowerPoint afterwards.",
+                                 "Verify: re-scan."
+                             ]
                },
     "OFF-04":  {
                    "title":  "Access: all macros disabled without notification",
                    "description":  "VBA macros in Access are fully blocked (VBAWarnings=4). Not applicable without Office.",
-                   "fixHint":  "GPO/Office policy: Access \u003e Security \u003e VBA macro notification settings = Disable all without notification."
+                   "fixHint":  "GPO/Office policy: Access \u003e Security \u003e VBA macro notification settings = Disable all without notification.",
+                   "gui":  "GPO: Microsoft Access \u003e Security \u003e Disable all macros without notification",
+                   "steps":  [
+                                 "GPO: Computer Configuration \u003e Administrative Templates \u003e Microsoft Access \u003e Security Settings \u003e Disable all macros without notification (VBAWarnings = 4).",
+                                 "PowerShell: New-ItemProperty HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Access\\Security -Name VBAWarnings -Value 4 -PropertyType DWord -Force (Office 16.0 = 2016/2019/365, adjust path for 15.0).",
+                                 "Restart Access afterwards.",
+                                 "Verify: re-scan."
+                             ]
                },
     "OFF-05":  {
                    "title":  "Excel: block internet macros",
                    "description":  "Macros in files from the internet are blocked in Excel. Not applicable without Office.",
-                   "fixHint":  "GPO: Excel \u003e Block macros from running in Office files from the Internet = Enabled."
+                   "fixHint":  "GPO: Excel \u003e Block macros from running in Office files from the Internet = Enabled.",
+                   "gui":  "GPO: Microsoft Excel \u003e Security \u003e Block macros from the internet",
+                   "steps":  [
+                                 "GPO: Computer Configuration \u003e Administrative Templates \u003e Microsoft Excel \u003e Security Settings \u003e Block execution of macros from the internet.",
+                                 "PowerShell: New-ItemProperty HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Excel\\Security -Name BlockContentExecutionFromInternet -Value 1 -PropertyType DWord -Force (check version 16.0/15.0); then restart Excel.",
+                                 "Verify: re-scan."
+                             ]
                },
     "OFF-06":  {
                    "title":  "Word: block internet macros",
                    "description":  "Macros in files from the internet are blocked in Word. Not applicable without Office.",
-                   "fixHint":  "GPO: Word \u003e Block macros from running in Office files from the Internet = Enabled."
+                   "fixHint":  "GPO: Word \u003e Block macros from running in Office files from the Internet = Enabled.",
+                   "gui":  "GPO: Microsoft Word \u003e Security \u003e Block macros from the internet",
+                   "steps":  [
+                                 "GPO: Computer Configuration \u003e Administrative Templates \u003e Microsoft Word \u003e Security Settings \u003e Block execution of macros from the internet.",
+                                 "PowerShell: New-ItemProperty HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Word\\Security -Name BlockContentExecutionFromInternet -Value 1 -PropertyType DWord -Force (check version 16.0/15.0); then restart Word.",
+                                 "Verify: re-scan."
+                             ]
                },
     "OFF-07":  {
                    "title":  "PowerPoint: block internet macros",
                    "description":  "Macros in files from the internet are blocked in PowerPoint. Not applicable without Office.",
-                   "fixHint":  "GPO: PowerPoint \u003e Block macros from running in Office files from the Internet = Enabled."
+                   "fixHint":  "GPO: PowerPoint \u003e Block macros from running in Office files from the Internet = Enabled.",
+                   "gui":  "GPO: Microsoft PowerPoint \u003e Security \u003e Block macros from the internet",
+                   "steps":  [
+                                 "GPO: Computer Configuration \u003e Administrative Templates \u003e Microsoft PowerPoint \u003e Security Settings \u003e Block execution of macros from the internet.",
+                                 "PowerShell: New-ItemProperty HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\PowerPoint\\Security -Name BlockContentExecutionFromInternet -Value 1 -PropertyType DWord -Force (check version 16.0/15.0); then restart PowerPoint.",
+                                 "Verify: re-scan."
+                             ]
                },
     "OFF-08":  {
                    "title":  "Access: block internet macros",
                    "description":  "Macros in files from the internet are blocked in Access. Not applicable without Office.",
-                   "fixHint":  "GPO: Access \u003e Block macros from running in Office files from the Internet = Enabled."
+                   "fixHint":  "GPO: Access \u003e Block macros from running in Office files from the Internet = Enabled.",
+                   "gui":  "GPO: Microsoft Access \u003e Security \u003e Block macros from the internet",
+                   "steps":  [
+                                 "GPO: Computer Configuration \u003e Administrative Templates \u003e Microsoft Access \u003e Security Settings \u003e Block execution of macros from the internet.",
+                                 "PowerShell: New-ItemProperty HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Access\\Security -Name BlockContentExecutionFromInternet -Value 1 -PropertyType DWord -Force (check version 16.0/15.0); then restart Access.",
+                                 "Verify: re-scan."
+                             ]
                },
     "TLS-01":  {
                    "title":  ".NET: strong cryptography enforced (64-bit)",
                    "description":  ".NET Framework uses strong TLS cryptography (SchUseStrongCrypto). Secure by default since 4.6.",
-                   "fixHint":  "Set SchUseStrongCrypto=1 (DWORD) explicitly. A missing value = secure default since .NET 4.6."
+                   "fixHint":  "Set SchUseStrongCrypto=1 (DWORD) explicitly. A missing value = secure default since .NET 4.6.",
+                   "gui":  "No GUI path; .NET registry (64-bit): SchUseStrongCrypto = 1"
                },
     "TLS-02":  {
                    "title":  ".NET: strong cryptography enforced (32-bit)",
                    "description":  ".NET Framework (WoW64) uses strong TLS cryptography.",
-                   "fixHint":  "Set SchUseStrongCrypto=1 (DWORD) explicitly in the WoW64 branch."
+                   "fixHint":  "Set SchUseStrongCrypto=1 (DWORD) explicitly in the WoW64 branch.",
+                   "gui":  "No GUI path; .NET registry (32-bit/WoW64): SchUseStrongCrypto = 1"
                },
     "TLS-03":  {
                    "title":  ".NET: system default TLS (64-bit)",
                    "description":  ".NET follows OS TLS defaults instead of its own.",
-                   "fixHint":  "Set SystemDefaultTlsVersions=1 (DWORD) explicitly."
+                   "fixHint":  "Set SystemDefaultTlsVersions=1 (DWORD) explicitly.",
+                   "gui":  "No GUI path; .NET registry (64-bit): SystemDefaultTlsVersions = 1"
                },
     "TLS-04":  {
                    "title":  ".NET: system default TLS (32-bit)",
                    "description":  ".NET (WoW64) follows OS TLS defaults.",
-                   "fixHint":  "Set SystemDefaultTlsVersions=1 (DWORD) explicitly in the WoW64 branch."
+                   "fixHint":  "Set SystemDefaultTlsVersions=1 (DWORD) explicitly in the WoW64 branch.",
+                   "gui":  "No GUI path; .NET registry (32-bit/WoW64): SystemDefaultTlsVersions = 1"
                },
     "NTLM-01":  {
                     "title":  "Incoming NTLM traffic is audited",
                     "description":  "Incoming NTLM authentication is logged for all accounts (not just domain accounts).",
                     "fixHint":  "secpol.msc \u003e Network security: Restrict NTLM: Audit Incoming NTLM Traffic = Enable auditing for all accounts (2).",
-                    "note":  "As of 25H2, Windows additionally logs NTLM to the Operational log (channel Microsoft-Windows-NTLM/Operational)."
+                    "note":  "As of 25H2, Windows additionally logs NTLM to the Operational log (channel Microsoft-Windows-NTLM/Operational).",
+                    "gui":  "secpol.msc \u003e Security Options \u003e Network security: Restrict NTLM: Audit Incoming NTLM Traffic = All accounts"
                 },
     "NTLM-02":  {
                     "title":  "Outgoing NTLM traffic audited or blocked",
                     "description":  "Outgoing NTLM traffic is at least \u0027Audit all\u0027 (1), better \u0027Deny all\u0027 (2).",
                     "fixHint":  "secpol.msc \u003e Network security: outgoing NTLM traffic = Audit all (1) or Deny all (2, test first).",
-                    "note":  "As of 25H2, Windows additionally logs NTLM to the Operational log (channel Microsoft-Windows-NTLM/Operational)."
+                    "note":  "As of 25H2, Windows additionally logs NTLM to the Operational log (channel Microsoft-Windows-NTLM/Operational).",
+                    "gui":  "secpol.msc \u003e Security Options \u003e Network security: Restrict NTLM: Outgoing NTLM traffic to remote servers = Audit all (or higher)"
                 },
     "LAP-01":  {
                    "title":  "Local admin password rotated (max. 60 days)",
                    "description":  "Built-in admin account (SID 500): disabled or password at most 60 days old - e.g. via Windows LAPS.",
-                   "fixHint":  "Set up Windows LAPS (local admin password management) or disable the account."
+                   "fixHint":  "Set up Windows LAPS (local admin password management) or disable the account.",
+                   "gui":  "Settings \u003e Accounts \u003e Windows LAPS / Intune",
+                   "steps":  [
+                                 "Windows LAPS is built into Windows 11: Settings \u003e Accounts \u003e enable Windows LAPS (password backup to AD DS or Entra ID).",
+                                 "On managed devices: Intune policy Local admin password solution (LAPS) or GPO LAPS password backup.",
+                                 "Verify: password age via Windows LAPS/reports; re-scan (takes effect with the next policy cycle)."
+                             ]
                },
     "NTP-01":  {
                    "title":  "Windows Time service running",
                    "description":  "The W32Time service is active (Kerberos needs max. 5 min. clock skew).",
-                   "fixHint":  "services.msc \u003e Windows Time = Automatic + Started."
+                   "fixHint":  "services.msc \u003e Windows Time = Automatic + Started.",
+                   "gui":  "services.msc \u003e Windows Time (W32Time) \u003e Startup type: Automatic + start the service"
                },
     "NTP-02":  {
                    "title":  "Time sync via NTP (stand-alone)",
                    "description":  "Stand-alone devices sync via NTP (no domain mode).",
-                   "fixHint":  "W32Time\\Parameters\\Type = NTP (stand-alone). Domain uses NT5DS (Enterprise view)."
+                   "fixHint":  "W32Time\\Parameters\\Type = NTP (stand-alone). Domain uses NT5DS (Enterprise view).",
+                   "gui":  "Settings \u003e Time \u0026 language \u003e Date \u0026 time: sync with NTP server"
                },
     "NTP-03":  {
                    "title":  "Time sync via domain hierarchy (Enterprise)",
                    "description":  "Domain devices sync via NT5DS (domain hierarchy).",
-                   "fixHint":  "W32Time\\Parameters\\Type = NT5DS (domain). Stand-alone uses NTP."
+                   "fixHint":  "W32Time\\Parameters\\Type = NT5DS (domain). Stand-alone uses NTP.",
+                   "gui":  "Domain members sync automatically via the domain hierarchy (NT5DS)"
                },
     "WDAC-01":  {
                     "title":  "Application allowlisting active (WDAC or AppLocker)",
                     "description":  "Deny-by-default for executable software via WDAC policy or AppLocker rules. Cannot pass without an approval concept.",
-                    "fixHint":  "Introduce a WDAC policy (also possible on Pro) or AppLocker rules (Enterprise) with documented approval."
+                    "fixHint":  "Introduce a WDAC policy (also possible on Pro) or AppLocker rules (Enterprise) with documented approval.",
+                    "gui":  "GPO \u003e Application Control Policies (AppLocker/WDAC)",
+                    "steps":  [
+                                  "AppLocker as a starting point: GPO \u003e Computer Configuration \u003e Windows Settings \u003e Application Control Policies \u003e AppLocker; create exe/dll/msi/script rules from the default rules.",
+                                  "Alternatively WDAC: derive a policy from the Microsoft example baselines, test, sign and deploy it as a code integrity policy.",
+                                  "Caution: overly strict rules block apps or boot - first test in audit mode (event log).",
+                                  "Verify: re-scan; the AppLocker service (AppIDSvc) must run."
+                              ]
                 },
     "SO-01":  {
                   "title":  "Logon notice text configured",
                   "description":  "Legal notice before logon (title and text set).",
-                  "fixHint":  "secpol.msc \u003e Security Options \u003e Interactive logon: message text/title for logon attempts."
+                  "fixHint":  "secpol.msc \u003e Security Options \u003e Interactive logon: message text/title for logon attempts.",
+                  "gui":  "secpol.msc \u003e Security Options \u003e Interactive logon: message title/text for users",
+                  "steps":  [
+                                "secpol.msc \u003e Local Policies \u003e Security Options: set the interactive logon message title and text (follow legal/org requirements).",
+                                "PowerShell (admin): New-ItemProperty HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System -Name legalnoticecaption -Value \u003ctitle\u003e -PropertyType String -Force; same for legalnoticetext.",
+                                "Verify: re-scan (the finding requires a non-empty notice text)."
+                            ]
               },
     "SO-02":  {
                   "title":  "Last username not displayed",
                   "description":  "The logon screen does not show the last logged-on user.",
-                  "fixHint":  "secpol.msc \u003e Interactive logon: Do not display last user name = Enabled."
+                  "fixHint":  "secpol.msc \u003e Interactive logon: Do not display last user name = Enabled.",
+                  "gui":  "secpol.msc \u003e Security Options \u003e Interactive logon: Do not display last user name = Enabled"
               },
     "SVC-04":  {
                    "title":  "SSDP Discovery disabled",
                    "description":  "The SSDP Discovery service (UPnP discovery) is disabled.",
-                   "fixHint":  "services.msc \u003e SSDP Discovery = Disabled. Harmless without UPnP need."
+                   "fixHint":  "services.msc \u003e SSDP Discovery = Disabled. Harmless without UPnP need.",
+                   "gui":  "services.msc \u003e SSDP Discovery (SSDPSRV) \u003e Startup type: Disabled"
                },
     "SVC-05":  {
                    "title":  "UPnP Device Host disabled",
                    "description":  "The UPnP Device Host service is disabled.",
-                   "fixHint":  "services.msc \u003e UPnP Device Host = Disabled."
+                   "fixHint":  "services.msc \u003e UPnP Device Host = Disabled.",
+                   "gui":  "services.msc \u003e UPnP Device Host (upnphost) \u003e Startup type: Disabled"
                },
     "GPO-01":  {
                    "title":  "Domain GPOs are applied",
                    "description":  "The device receives policy from domain GPOs (Enterprise context only, informational).",
-                   "fixHint":  "Only relevant for domain-joined devices (gpresult /R to verify)."
+                   "fixHint":  "Only relevant for domain-joined devices (gpresult /R to verify).",
+                   "gui":  "gpedit/gpresult",
+                   "steps":  [
+                                 "Check whether domain GPOs arrive: gpupdate /force (admin) and gpresult /r (admin).",
+                                 "Without a domain this finding does not apply (the rule targets enterprise devices).",
+                                 "Verify: re-scan after gpupdate."
+                             ]
                },
     "CERT-01":  {
                     "title":  "No expired root certificates",
                     "description":  "The machine root store contains no expired certificates.",
-                    "fixHint":  "Remove expired roots (certlm.msc \u003e Trusted Root Certification Authorities)."
+                    "fixHint":  "Remove expired roots (certlm.msc \u003e Trusted Root Certification Authorities).",
+                    "gui":  "certmgr.msc \u003e Trusted Root Certification Authorities",
+                    "steps":  [
+                                  "certmgr.msc \u003e Trusted Root Certification Authorities: manually remove expired/retired root certificates.",
+                                  "Alternative: install Windows updates; the Microsoft root program block list (CTL) updates automatically.",
+                                  "Verify: re-scan."
+                              ]
                 },
     "DEF-07":  {
                    "title":  "Defender antimalware service active",
                    "description":  "The antimalware service (AMService) is running (effective status).",
-                   "fixHint":  "Check Windows Security \u003e Virus \u0026 threat protection; a third-party AV may be the reason."
+                   "fixHint":  "Check Windows Security \u003e Virus \u0026 threat protection; a third-party AV may be the reason.",
+                   "gui":  "Windows Security \u003e Virus protection",
+                   "steps":  [
+                                 "The WinDefend service must run; it is system-protected and cannot be lowered on purpose.",
+                                 "Open Windows Security and make sure real-time protection is on; with third-party AV check which engine is active.",
+                                 "Verify: (Get-MpComputerStatus).AMServiceEnabled; re-scan."
+                             ]
                },
     "DEF-08":  {
                    "title":  "Defender antivirus engine active",
                    "description":  "The antivirus engine is enabled (effective status).",
-                   "fixHint":  "Check Windows Security \u003e Virus \u0026 threat protection."
+                   "fixHint":  "Check Windows Security \u003e Virus \u0026 threat protection.",
+                   "gui":  "Windows Security \u003e Virus protection",
+                   "steps":  [
+                                 "Open Windows Security and make sure Defender is active or a registered third-party AV takes over.",
+                                 "PowerShell (admin): Set-MpPreference -DisableAntiVirus $false",
+                                 "Verify: (Get-MpComputerStatus).AntivirusEnabled; re-scan."
+                             ]
                },
     "DEF-09":  {
                    "title":  "Defender network protection engine active",
                    "description":  "Network Inspection System (NIS) is running (effective status).",
-                   "fixHint":  "Check Windows Security \u003e Firewall \u0026 network protection or Defender policy."
+                   "fixHint":  "Check Windows Security \u003e Firewall \u0026 network protection or Defender policy.",
+                   "gui":  "Windows Security \u003e Virus protection",
+                   "steps":  [
+                                 "Windows Security \u003e Virus protection \u003e Manage settings: keep real-time protection and cloud protection on (Network Inspection System).",
+                                 "PowerShell (admin): Set-MpPreference -DisableIOAVProtection $false",
+                                 "Verify: (Get-MpComputerStatus).NISEnabled; re-scan."
+                             ]
                },
     "FW-D1":  {
                   "title":  "No legacy service shares (Telnet/TFTP/rsh)",
                   "description":  "No enabled inbound allow rules for outdated plaintext services (name-based heuristic).",
-                  "fixHint":  "wf.msc \u003e Inbound Rules: disable or delete legacy rules (Telnet/TFTP/rsh)."
+                  "fixHint":  "wf.msc \u003e Inbound Rules: disable or delete legacy rules (Telnet/TFTP/rsh).",
+                  "gui":  "Windows Defender Firewall \u003e Advanced settings",
+                  "steps":  [
+                                "List rules: Get-NetFirewallRule | Where-Object { $_.DisplayName -match \u0027Telnet|TFTP|rsh|Finger\u0027 } (admin).",
+                                "Remove unneeded rules: Remove-NetFirewallRule -DisplayName \u003crule name\u003e (admin).",
+                                "Verify: re-scan."
+                            ]
               },
     "FW-D2":  {
                   "title":  "Review Edge Traversal exceptions",
                   "description":  "Number of enabled allow rules with Edge Traversal (Teredo tunnel) - should be 0, review list.",
-                  "fixHint":  "wf.msc \u003e Inbound Rules: set Edge Traversal to Block/Defer unless justifiably needed."
+                  "fixHint":  "wf.msc \u003e Inbound Rules: set Edge Traversal to Block/Defer unless justifiably needed.",
+                  "gui":  "Windows Defender Firewall \u003e Advanced settings",
+                  "steps":  [
+                                "List exceptions: Get-NetFirewallRule | Where-Object { $_.EdgeTraversalPolicy -eq \u0027Allow\u0027 } (admin).",
+                                "Check each exception; otherwise: Set-NetFirewallRule -Name \u003cname\u003e -EdgeTraversalPolicy Block (admin).",
+                                "Verify: re-scan."
+                            ]
               },
     "SHR-01":  {
                    "title":  "No share with Everyone full access",
                    "description":  "No (non-administrative) share grants Everyone/Guests full access.",
-                   "fixHint":  "fsmgmt.msc \u003e Shares: remove Everyone full access (requires admin to verify)."
+                   "fixHint":  "fsmgmt.msc \u003e Shares: remove Everyone full access (requires admin to verify).",
+                   "gui":  "Computer Management \u003e Shares",
+                   "steps":  [
+                                 "List shares and permissions: Get-SmbShare | Get-SmbShareAccess (admin).",
+                                 "Remove Everyone from full access: Revoke-SmbShareAccess -Name \u003cshare\u003e -AccountName Everyone (admin).",
+                                 "Verify: re-scan."
+                             ]
                },
     "SHR-02":  {
                    "title":  "No unexpected hidden shares",
                    "description":  "Besides C$, ADMIN$, IPC$ and print$ there are no hidden shares.",
-                   "fixHint":  "fsmgmt.msc \u003e remove unexpected $-shares (requires admin to verify)."
+                   "fixHint":  "fsmgmt.msc \u003e remove unexpected $-shares (requires admin to verify).",
+                   "gui":  "Computer Management \u003e Shares",
+                   "steps":  [
+                                 "List hidden shares: Get-SmbShare (admin; C$, ADMIN$, IPC$, print$ are standard).",
+                                 "Remove unneeded shares: Remove-SmbShare -Name \u003cshare\u003e (admin).",
+                                 "Verify: re-scan."
+                             ]
                }
 }
