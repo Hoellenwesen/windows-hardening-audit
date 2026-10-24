@@ -105,8 +105,8 @@ public sealed partial class CategoryPage : Page
             Expected = r.ExpectedValue ?? "–",
             Fix = r.Rule.FixHint,
             Message = r.Message,
-            FixButton = L.Get("FixButton.Content"),
-            GuideButton = L.Get("GuideButton.Content"),
+            FixButton = L.Get("FixButtonLabel"),
+            GuideButton = L.Get("GuideButtonLabel"),
             FixVisible = RemediationRunner.CanAutoFix(r.Rule)
                 && r.Status is CheckStatus.Failed or CheckStatus.Warning
                 ? Visibility.Visible : Visibility.Collapsed,
@@ -131,12 +131,22 @@ public sealed partial class CategoryPage : Page
                 Title = L.Get("FixAdminTitle"),
                 Content = L.Get("FixAdminText"),
                 PrimaryButtonText = L.Get("FixAdminOk"),
-                CloseButtonText = L.Get("CancelButton.Content"),
+                CloseButtonText = L.Get("DialogCancel"),
                 XamlRoot = XamlRoot,
             };
             if (await admin.ShowAsync() == ContentDialogResult.Primary)
             {
-                try { CheckRunner.RelaunchAsAdmin(); } catch { }
+                try
+                {
+                    CheckRunner.RelaunchAsAdmin();
+                    // New admin instance starts: close this one so only one window stays open.
+                    Application.Current.Exit();
+                }
+                catch (System.ComponentModel.Win32Exception)
+                {
+                    // User cancelled UAC – stay open.
+                }
+                catch { }
             }
             return;
         }
@@ -151,7 +161,7 @@ public sealed partial class CategoryPage : Page
             Title = L.Get("FixConfirmTitle"),
             Content = new TextBlock { Text = lines, TextWrapping = TextWrapping.Wrap },
             PrimaryButtonText = L.Get("FixApply"),
-            CloseButtonText = L.Get("CancelButton.Content"),
+            CloseButtonText = L.Get("DialogCancel"),
             XamlRoot = XamlRoot,
         };
         if (await confirm.ShowAsync() != ContentDialogResult.Primary) return;
@@ -209,7 +219,7 @@ public sealed partial class CategoryPage : Page
         }
         rows.Add((L.Get("GuideVerify"), null));
 
-        var copyLabel = L.Get("CopyButton.Content");
+        var copyLabel = L.Get("CopyButtonLabel");
         var copiedNote = L.Get("CopiedNote");
         var status = new TextBlock
         {

@@ -170,8 +170,8 @@
   <data name="ResetButton.Content"><value>Einstellungen zurücksetzen</value></data>
   <data name="ResetDone"><value>Einstellungen auf Systemstandard zurückgesetzt.</value></data>
   <data name="SettingsVersionHeader.Text"><value>Version</value></data>
-  <data name="FixButton.Content"><value>Automatisch beheben</value></data>
-  <data name="GuideButton.Content"><value>Manuelle Behebung</value></data>
+  <data name="FixButtonLabel"><value>Automatisch beheben</value></data>
+  <data name="GuideButtonLabel"><value>Manuelle Behebung</value></data>
   <data name="FixApply"><value>Anwenden</value></data>
   <data name="FixConfirmTitle"><value>Behebung anwenden?</value></data>
   <data name="FixConfirmText"><value>{0} (Ist: {1} → Soll: {2}) wird geändert. Die bisherigen Werte werden gesichert.</value></data>
@@ -185,6 +185,7 @@
   <data name="GuideTitle"><value>Manuelle Behebung</value></data>
   <data name="GuideVerify"><value>Nach der Änderung: erneut scannen.</value></data>
   <data name="FixRisk"><value>Risiko</value></data>
-  <data name="CopyButton.Content"><value>Kopieren</value></data>
+  <data name="CopyButtonLabel"><value>Kopieren</value></data>
   <data name="CopiedNote"><value>In Zwischenablage kopiert.</value></data>
+  <data name="DialogCancel"><value>Abbrechen</value></data>
 </root>
