@@ -32,7 +32,7 @@
       "provider": "script",
       "operator": "Contains",
       "expected": "Success and Failure",
-      "script": "$o = auditpol /get /subcategory:'Logon' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; ($o | Select-String '0cce9215-69ae-11d9-bed3-505054503030').Line"
+      "script": "$g='0cce9215-69ae-11d9-bed3-505054503030'; $s='{' + $g + '}'; $o=@(auditpol /get /subcategory:$s /r); if($LASTEXITCODE -ne 0){exit 1}; $l=@($o | Where-Object { [string]$_ -match [regex]::Escape($g) } | Select-Object -First 1); if($l.Count -eq 0){exit 1}; $v=([string]$l[0]).Split(',')[4].Trim(); $y=($v -match 'Success|Erfolg'); $n=($v -match 'Failure|Fehler'); if($y -and $n){'Success and Failure'} elseif($y){'Success'} elseif($n){'Failure'} elseif($v -match 'No Auditing|Keine'){'No Auditing'} else {exit 1}"
     },
     "fixHint": "auditpol /set /subcategory:Logon /success:enable /failure:enable (Admin).",
     "profil": "L1",
@@ -52,7 +52,7 @@
       "provider": "script",
       "operator": "Contains",
       "expected": "Success",
-      "script": "$o = auditpol /get /subcategory:'Logoff' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; ($o | Select-String '0cce9216-69ae-11d9-bed3-505054503030').Line"
+      "script": "$g='0cce9216-69ae-11d9-bed3-505054503030'; $s='{' + $g + '}'; $o=@(auditpol /get /subcategory:$s /r); if($LASTEXITCODE -ne 0){exit 1}; $l=@($o | Where-Object { [string]$_ -match [regex]::Escape($g) } | Select-Object -First 1); if($l.Count -eq 0){exit 1}; $v=([string]$l[0]).Split(',')[4].Trim(); $y=($v -match 'Success|Erfolg'); $n=($v -match 'Failure|Fehler'); if($y -and $n){'Success and Failure'} elseif($y){'Success'} elseif($n){'Failure'} elseif($v -match 'No Auditing|Keine'){'No Auditing'} else {exit 1}"
     },
     "fixHint": "auditpol /set /subcategory:Logoff /success:enable (Admin).",
     "profil": "L1",
@@ -72,7 +72,7 @@
       "provider": "script",
       "operator": "Contains",
       "expected": "Success",
-      "script": "$o = auditpol /get /subcategory:'Sensitive Privilege Use' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; ($o | Select-String '0cce9228-69ae-11d9-bed3-505054503030').Line"
+      "script": "$g='0cce9228-69ae-11d9-bed3-505054503030'; $s='{' + $g + '}'; $o=@(auditpol /get /subcategory:$s /r); if($LASTEXITCODE -ne 0){exit 1}; $l=@($o | Where-Object { [string]$_ -match [regex]::Escape($g) } | Select-Object -First 1); if($l.Count -eq 0){exit 1}; $v=([string]$l[0]).Split(',')[4].Trim(); $y=($v -match 'Success|Erfolg'); $n=($v -match 'Failure|Fehler'); if($y -and $n){'Success and Failure'} elseif($y){'Success'} elseif($n){'Failure'} elseif($v -match 'No Auditing|Keine'){'No Auditing'} else {exit 1}"
     },
     "fixHint": "auditpol /set /subcategory:\"Sensitive Privilege Use\" /success:enable /failure:enable.",
     "profil": "L1",

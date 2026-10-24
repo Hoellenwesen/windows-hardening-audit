@@ -96,7 +96,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "False",
-      "script": "try { (Get-LocalUser -Name 'Gast' -ErrorAction Stop).Enabled } catch { try { (Get-LocalUser -Name 'Guest' -ErrorAction Stop).Enabled } catch { 'False' } }"
+      "script": "try { (Get-LocalUser -Name 'Gast' -ErrorAction Stop).Enabled } catch { try { (Get-LocalUser -Name 'Guest' -ErrorAction Stop).Enabled } catch { exit 1 } }"
     },
     "fixHint": "lusrmgr.msc > Benutzer > Gast > Konto ist deaktiviert.",
     "kapitel": "2.3 Security Options",

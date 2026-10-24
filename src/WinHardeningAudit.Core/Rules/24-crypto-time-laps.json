@@ -143,7 +143,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "OK",
-      "script": "$a = Get-LocalUser -ErrorAction Stop | Where-Object { $_.SID -eq 'S-1-5-500' }; if ($null -eq $a -or -not $a.Enabled) { 'OK' } elseif (((Get-Date) - $a.PasswordLastSet).TotalDays -le 60) { 'OK' } else { 'VERALTET' }"
+      "script": "$u=@(Get-LocalUser -ErrorAction Stop | Where-Object { $_.SID -match '-500$' } | Select-Object -First 1); if ($u.Count -eq 0) { exit 1 }; if (-not $u[0].Enabled) { 'OK' } elseif ($null -eq $u[0].PasswordLastSet) { 'VERALTET' } elseif (((Get-Date) - $u[0].PasswordLastSet).TotalDays -le 60) { 'OK' } else { 'VERALTET' }"
     },
     "fixHint": "Windows LAPS einrichten (Kennwortverwaltung lokaler Admins) oder Konto deaktivieren.",
     "profil": "L1",
@@ -225,7 +225,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "Enforced",
-      "script": "$wdac = @(Get-ChildItem 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\CI\\Policy' -ErrorAction Stop | Where-Object { $_.PSChildName -match '^\\{[0-9a-fA-F-]{36}\\}$' }).Count; $al = 0; try { $al = ((Get-AppLockerPolicy -Effective -ErrorAction Stop).RuleCollections | ForEach-Object { @($_.Rules).Count } | Measure-Object -Sum).Sum } catch {}; if ($wdac -gt 0 -or $al -gt 0) { 'Enforced' } else { exit 1 }"
+      "script": "$w=@(Get-ChildItem 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\CI\\Policy' -ErrorAction Stop | Where-Object { $_.PSChildName -match '^\\{[0-9a-fA-F-]{36}\\}$' }).Count; $a=0; try { $a=((Get-AppLockerPolicy -Effective -ErrorAction Stop).RuleCollections | ForEach-Object { @($_.Rules).Count } | Measure-Object -Sum).Sum } catch {}; if ($w -gt 0 -or $a -gt 0) { 'Enforced' } else { 'NotEnforced' }"
     },
     "fixHint": "WDAC-Richtlinie (auch Pro möglich) oder AppLocker-Regeln (Enterprise) mit dokumentierter Freigabe einführen.",
     "profil": "L1",

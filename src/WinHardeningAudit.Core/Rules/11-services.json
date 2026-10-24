@@ -48,7 +48,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "Disabled",
-      "script": "try { $s = (Get-Service -DisplayName 'Xbox*' -ErrorAction Stop | Where-Object { $_.StartType -ne 'Disabled' }); if ($s) { ($s.Name -join ', ') } else { 'Disabled' } } catch { 'Disabled' }"
+      "script": "$n=@('XboxGipSvc','XblAuthManager','XblGameSave','XboxNetApiSvc'); $r=@(Get-Service -ErrorAction Stop | Where-Object { $n -contains $_.Name -and $_.StartType -ne 'Disabled' }); if ($r.Count -eq 0) { 'Disabled' } else { ($r.Name -join ', ') }"
     },
     "fixHint": "services.msc > Xbox-Dienste (Zubehörverwaltung, Auth Manager, Game Save, Netzwerkdienst) = Deaktiviert.",
     "profil": "L1",

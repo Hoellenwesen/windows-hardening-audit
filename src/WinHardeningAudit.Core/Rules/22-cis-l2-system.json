@@ -159,7 +159,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "Disabled",
-      "script": "try { (Get-Service -Name Spooler -ErrorAction Stop).StartType } catch { 'Disabled' }"
+      "script": "try { (Get-Service -Name Spooler -ErrorAction Stop).StartType } catch { exit 1 }"
     },
     "fixHint": "services.msc > Druckwarteschlange = Deaktiviert. Mit Druckerbedarf zurück auf L1-Ermessen (SVC-02).",
     "profil": "L2",
@@ -179,7 +179,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "Disabled",
-      "script": "try { (Get-Service -Name BTAGService -ErrorAction Stop).StartType } catch { 'Disabled' }"
+      "script": "try { (Get-Service -Name BTAGService -ErrorAction Stop).StartType } catch { exit 1 }"
     },
     "fixHint": "services.msc > Bluetooth-Audio-Gatewaydienst = Deaktiviert. Ohne Bluetooth-Hardware automatisch erfüllt.",
     "profil": "L2",
@@ -199,7 +199,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "Disabled",
-      "script": "try { (Get-Service -Name Bthserv -ErrorAction Stop).StartType } catch { 'Disabled' }"
+      "script": "try { (Get-Service -Name Bthserv -ErrorAction Stop).StartType } catch { exit 1 }"
     },
     "fixHint": "services.msc > Bluetooth-Unterstützungsdienst = Deaktiviert. Ohne Bluetooth-Hardware automatisch erfüllt.",
     "profil": "L2",

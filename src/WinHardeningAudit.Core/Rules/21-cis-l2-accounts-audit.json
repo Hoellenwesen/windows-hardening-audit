@@ -96,7 +96,7 @@
       "provider": "script",
       "operator": "Contains",
       "expected": "Success and Failure",
-      "script": "# 0cce922d-69ae-11d9-bed3-505054503030\n$o = auditpol /get /subcategory:'DPAPI Activity' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; ($o | Select-String '0cce922d-69ae-11d9-bed3-505054503030').Line"
+      "script": "$g='0cce922d-69ae-11d9-bed3-505054503030'; $s='{' + $g + '}'; $o=@(auditpol /get /subcategory:$s /r); if($LASTEXITCODE -ne 0){exit 1}; $l=@($o | Where-Object { [string]$_ -match [regex]::Escape($g) } | Select-Object -First 1); if($l.Count -eq 0){exit 1}; $v=([string]$l[0]).Split(',')[4].Trim(); $y=($v -match 'Success|Erfolg'); $n=($v -match 'Failure|Fehler'); if($y -and $n){'Success and Failure'} elseif($y){'Success'} elseif($n){'Failure'} elseif($v -match 'No Auditing|Keine'){'No Auditing'} else {exit 1}"
     },
     "fixHint": "auditpol /set /subcategory:'DPAPI Activity' /success:enable /failure:enable (Admin).",
     "profil": "L2",
@@ -116,7 +116,7 @@
       "provider": "script",
       "operator": "Contains",
       "expected": "Success and Failure",
-      "script": "# 0cce922e-69ae-11d9-bed3-505054503030\n$o = auditpol /get /subcategory:'RPC Events' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; ($o | Select-String '0cce922e-69ae-11d9-bed3-505054503030').Line"
+      "script": "$g='0cce922e-69ae-11d9-bed3-505054503030'; $s='{' + $g + '}'; $o=@(auditpol /get /subcategory:$s /r); if($LASTEXITCODE -ne 0){exit 1}; $l=@($o | Where-Object { [string]$_ -match [regex]::Escape($g) } | Select-Object -First 1); if($l.Count -eq 0){exit 1}; $v=([string]$l[0]).Split(',')[4].Trim(); $y=($v -match 'Success|Erfolg'); $n=($v -match 'Failure|Fehler'); if($y -and $n){'Success and Failure'} elseif($y){'Success'} elseif($n){'Failure'} elseif($v -match 'No Auditing|Keine'){'No Auditing'} else {exit 1}"
     },
     "fixHint": "auditpol /set /subcategory:'RPC Events' /success:enable /failure:enable (Admin). Erzeugt spürbares Log-Volumen.",
     "profil": "L2",
@@ -136,7 +136,7 @@
       "provider": "script",
       "operator": "Contains",
       "expected": "Success and Failure",
-      "script": "# 0cce924a-69ae-11d9-bed3-505054503030\n$o = auditpol /get /subcategory:'Token Right Adjusted Events' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; ($o | Select-String '0cce924a-69ae-11d9-bed3-505054503030').Line"
+      "script": "$g='0cce924a-69ae-11d9-bed3-505054503030'; $s='{' + $g + '}'; $o=@(auditpol /get /subcategory:$s /r); if($LASTEXITCODE -ne 0){exit 1}; $l=@($o | Where-Object { [string]$_ -match [regex]::Escape($g) } | Select-Object -First 1); if($l.Count -eq 0){exit 1}; $v=([string]$l[0]).Split(',')[4].Trim(); $y=($v -match 'Success|Erfolg'); $n=($v -match 'Failure|Fehler'); if($y -and $n){'Success and Failure'} elseif($y){'Success'} elseif($n){'Failure'} elseif($v -match 'No Auditing|Keine'){'No Auditing'} else {exit 1}"
     },
     "fixHint": "auditpol /set /subcategory:'Token Right Adjusted Events' /success:enable /failure:enable (Admin).",
     "profil": "L2",
@@ -156,7 +156,7 @@
       "provider": "script",
       "operator": "Contains",
       "expected": "Failure",
-      "script": "# 0cce922c-69ae-11d9-bed3-505054503030\n$o = auditpol /get /subcategory:'Process Termination' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; ($o | Select-String '0cce922c-69ae-11d9-bed3-505054503030').Line"
+      "script": "$g='0cce922c-69ae-11d9-bed3-505054503030'; $s='{' + $g + '}'; $o=@(auditpol /get /subcategory:$s /r); if($LASTEXITCODE -ne 0){exit 1}; $l=@($o | Where-Object { [string]$_ -match [regex]::Escape($g) } | Select-Object -First 1); if($l.Count -eq 0){exit 1}; $v=([string]$l[0]).Split(',')[4].Trim(); $y=($v -match 'Success|Erfolg'); $n=($v -match 'Failure|Fehler'); if($y -and $n){'Success and Failure'} elseif($y){'Success'} elseif($n){'Failure'} elseif($v -match 'No Auditing|Keine'){'No Auditing'} else {exit 1}"
     },
     "fixHint": "auditpol /set /subcategory:'Process Termination' /failure:enable (Admin).",
     "profil": "L2",
@@ -176,7 +176,7 @@
       "provider": "script",
       "operator": "NotEquals",
       "expected": "No Auditing",
-      "script": "# 0cce923b-69ae-11d9-bed3-505054503030\n$o = auditpol /get /subcategory:'Directory Service Access' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; (($o | Select-String '0cce923b-69ae-11d9-bed3-505054503030').Line.Split(',')[4]).Trim()"
+      "script": "$g='0cce923b-69ae-11d9-bed3-505054503030'; $s='{' + $g + '}'; $o=@(auditpol /get /subcategory:$s /r); if($LASTEXITCODE -ne 0){exit 1}; $l=@($o | Where-Object { [string]$_ -match [regex]::Escape($g) } | Select-Object -First 1); if($l.Count -eq 0){exit 1}; $v=([string]$l[0]).Split(',')[4].Trim(); $y=($v -match 'Success|Erfolg'); $n=($v -match 'Failure|Fehler'); if($y -and $n){'Success and Failure'} elseif($y){'Success'} elseif($n){'Failure'} elseif($v -match 'No Auditing|Keine'){'No Auditing'} else {exit 1}"
     },
     "fixHint": "auditpol /set /subcategory:'Directory Service Access' /success:enable /failure:enable (Admin, Domäne).",
     "profil": "L2",
@@ -196,7 +196,7 @@
       "provider": "script",
       "operator": "NotEquals",
       "expected": "No Auditing",
-      "script": "# 0cce923c-69ae-11d9-bed3-505054503030\n$o = auditpol /get /subcategory:'Directory Service Changes' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; (($o | Select-String '0cce923c-69ae-11d9-bed3-505054503030').Line.Split(',')[4]).Trim()"
+      "script": "$g='0cce923c-69ae-11d9-bed3-505054503030'; $s='{' + $g + '}'; $o=@(auditpol /get /subcategory:$s /r); if($LASTEXITCODE -ne 0){exit 1}; $l=@($o | Where-Object { [string]$_ -match [regex]::Escape($g) } | Select-Object -First 1); if($l.Count -eq 0){exit 1}; $v=([string]$l[0]).Split(',')[4].Trim(); $y=($v -match 'Success|Erfolg'); $n=($v -match 'Failure|Fehler'); if($y -and $n){'Success and Failure'} elseif($y){'Success'} elseif($n){'Failure'} elseif($v -match 'No Auditing|Keine'){'No Auditing'} else {exit 1}"
     },
     "fixHint": "auditpol /set /subcategory:'Directory Service Changes' /success:enable /failure:enable (Admin, Domäne).",
     "profil": "L2",
@@ -216,7 +216,7 @@
       "provider": "script",
       "operator": "Contains",
       "expected": "Success and Failure",
-      "script": "# 0cce9240-69ae-11d9-bed3-505054503030\n$o = auditpol /get /subcategory:'Kerberos Service Ticket Operations' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; ($o | Select-String '0cce9240-69ae-11d9-bed3-505054503030').Line"
+      "script": "$g='0cce9240-69ae-11d9-bed3-505054503030'; $s='{' + $g + '}'; $o=@(auditpol /get /subcategory:$s /r); if($LASTEXITCODE -ne 0){exit 1}; $l=@($o | Where-Object { [string]$_ -match [regex]::Escape($g) } | Select-Object -First 1); if($l.Count -eq 0){exit 1}; $v=([string]$l[0]).Split(',')[4].Trim(); $y=($v -match 'Success|Erfolg'); $n=($v -match 'Failure|Fehler'); if($y -and $n){'Success and Failure'} elseif($y){'Success'} elseif($n){'Failure'} elseif($v -match 'No Auditing|Keine'){'No Auditing'} else {exit 1}"
     },
     "fixHint": "auditpol /set /subcategory:'Kerberos Service Ticket Operations' /success:enable /failure:enable (Admin, Domäne).",
     "profil": "L2",
@@ -236,7 +236,7 @@
       "provider": "script",
       "operator": "Contains",
       "expected": "Failure",
-      "script": "# 0cce9226-69ae-11d9-bed3-505054503030\n$o = auditpol /get /subcategory:'Filtering Platform Connection' /r; if ($LASTEXITCODE -ne 0) { exit 1 }; ($o | Select-String '0cce9226-69ae-11d9-bed3-505054503030').Line"
+      "script": "$g='0cce9226-69ae-11d9-bed3-505054503030'; $s='{' + $g + '}'; $o=@(auditpol /get /subcategory:$s /r); if($LASTEXITCODE -ne 0){exit 1}; $l=@($o | Where-Object { [string]$_ -match [regex]::Escape($g) } | Select-Object -First 1); if($l.Count -eq 0){exit 1}; $v=([string]$l[0]).Split(',')[4].Trim(); $y=($v -match 'Success|Erfolg'); $n=($v -match 'Failure|Fehler'); if($y -and $n){'Success and Failure'} elseif($y){'Success'} elseif($n){'Failure'} elseif($v -match 'No Auditing|Keine'){'No Auditing'} else {exit 1}"
     },
     "fixHint": "auditpol /set /subcategory:'Filtering Platform Connection' /failure:enable (Admin).",
     "profil": "L2",

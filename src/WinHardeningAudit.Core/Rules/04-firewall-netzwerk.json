@@ -71,7 +71,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "Disabled",
-      "script": "try { (Get-WindowsOptionalFeature -Online -FeatureName SMB1Protocol -ErrorAction Stop).State } catch { 'Disabled' }"
+      "script": "if ((Get-SmbServerConfiguration -ErrorAction Stop).EnableSMB1Protocol) { 'Enabled' } else { 'Disabled' }"
     },
     "fixHint": "Optionale Features > SMB 1.0/CIFS entfernen. Fehlt die Komponente ganz (ab 26H2 möglich), gilt der Check als erfüllt.",
     "kapitel": "CIS 18.4 SMBv1",

@@ -53,7 +53,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "4",
-      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Excel\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings; if ($null -eq $v) { $v = (Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Office\\16.0\\Excel\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings }; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
+      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0') -and !(Test-Path 'HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Excel\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings; if ($null -eq $v) { $v = (Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Office\\16.0\\Excel\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings }; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
     },
     "fixHint": "GPO/Office-Richtlinie: Excel > Sicherheit > VBA-Makrobenachrichtigungseinstellungen = Alle ohne Benachrichtigung deaktivieren.",
     "profil": "L1",
@@ -73,7 +73,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "4",
-      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Word\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings; if ($null -eq $v) { $v = (Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Office\\16.0\\Word\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings }; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
+      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0') -and !(Test-Path 'HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Word\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings; if ($null -eq $v) { $v = (Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Office\\16.0\\Word\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings }; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
     },
     "fixHint": "GPO/Office-Richtlinie: Word > Sicherheit > VBA-Makrobenachrichtigungseinstellungen = Alle ohne Benachrichtigung deaktivieren.",
     "profil": "L1",
@@ -93,7 +93,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "4",
-      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\PowerPoint\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings; if ($null -eq $v) { $v = (Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Office\\16.0\\PowerPoint\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings }; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
+      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0') -and !(Test-Path 'HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\PowerPoint\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings; if ($null -eq $v) { $v = (Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Office\\16.0\\PowerPoint\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings }; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
     },
     "fixHint": "GPO/Office-Richtlinie: PowerPoint > Sicherheit > VBA-Makrobenachrichtigungseinstellungen = Alle ohne Benachrichtigung deaktivieren.",
     "profil": "L1",
@@ -113,7 +113,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "4",
-      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Access\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings; if ($null -eq $v) { $v = (Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Office\\16.0\\Access\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings }; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
+      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0') -and !(Test-Path 'HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Access\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings; if ($null -eq $v) { $v = (Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Office\\16.0\\Access\\Security' -Name VBAWarnings -ErrorAction SilentlyContinue).VBAWarnings }; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
     },
     "fixHint": "GPO/Office-Richtlinie: Access > Sicherheit > VBA-Makrobenachrichtigungseinstellungen = Alle ohne Benachrichtigung deaktivieren.",
     "profil": "L1",
@@ -133,7 +133,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "1",
-      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Excel\\Security' -Name blockcontentexecutionfrominternet -ErrorAction SilentlyContinue).blockcontentexecutionfrominternet; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
+      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0') -and !(Test-Path 'HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Excel\\Security' -Name blockcontentexecutionfrominternet -ErrorAction SilentlyContinue).blockcontentexecutionfrominternet; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
     },
     "fixHint": "GPO: Excel > Blockieren, dass Makros in Office-Dateien aus dem Internet ausgeführt werden = Aktiviert.",
     "profil": "L1",
@@ -153,7 +153,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "1",
-      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Word\\Security' -Name blockcontentexecutionfrominternet -ErrorAction SilentlyContinue).blockcontentexecutionfrominternet; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
+      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0') -and !(Test-Path 'HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Word\\Security' -Name blockcontentexecutionfrominternet -ErrorAction SilentlyContinue).blockcontentexecutionfrominternet; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
     },
     "fixHint": "GPO: Word > Blockieren, dass Makros in Office-Dateien aus dem Internet ausgeführt werden = Aktiviert.",
     "profil": "L1",
@@ -173,7 +173,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "1",
-      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\PowerPoint\\Security' -Name blockcontentexecutionfrominternet -ErrorAction SilentlyContinue).blockcontentexecutionfrominternet; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
+      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0') -and !(Test-Path 'HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\PowerPoint\\Security' -Name blockcontentexecutionfrominternet -ErrorAction SilentlyContinue).blockcontentexecutionfrominternet; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
     },
     "fixHint": "GPO: PowerPoint > Blockieren, dass Makros in Office-Dateien aus dem Internet ausgeführt werden = Aktiviert.",
     "profil": "L1",
@@ -193,7 +193,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "1",
-      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Access\\Security' -Name blockcontentexecutionfrominternet -ErrorAction SilentlyContinue).blockcontentexecutionfrominternet; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
+      "script": "if (!(Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Office\\16.0') -and !(Test-Path 'HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Office\\16.0')) { 'N/A' } else { $v = (Get-ItemProperty 'HKCU:\\Software\\Policies\\Microsoft\\Office\\16.0\\Access\\Security' -Name blockcontentexecutionfrominternet -ErrorAction SilentlyContinue).blockcontentexecutionfrominternet; if ($null -eq $v) { 'Nicht konfiguriert' } else { [string]$v } }"
     },
     "fixHint": "GPO: Access > Blockieren, dass Makros in Office-Dateien aus dem Internet ausgeführt werden = Aktiviert.",
     "profil": "L1",

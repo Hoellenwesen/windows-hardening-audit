@@ -92,7 +92,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "1",
-      "script": "(Get-MpPreference -ErrorAction Stop).AttackSurfaceReductionRules_Actions[(Get-MpPreference -ErrorAction Stop).AttackSurfaceReductionRules_Ids.IndexOf('75668c1f-73b5-4cf0-bb93-3ecf5cb7cc84')]"
+      "script": "$p=Get-MpPreference -ErrorAction Stop; $ids=@($p.AttackSurfaceReductionRules_Ids); $acts=@($p.AttackSurfaceReductionRules_Actions); $i=-1; for ($k=0; $k -lt $ids.Count; $k++) { if ($ids[$k] -eq '75668c1f-73b5-4cf0-bb93-3ecf5cb7cc84') { $i=$k; break } }; if ($i -lt 0) { 'NotConfigured' } else { [string]$acts[$i] }"
     },
     "fixHint": "GPO/Intune: ASR-Regeln konfigurieren (Block-Modus statt Audit).",
     "kapitel": "MS Defender ASR",

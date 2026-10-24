@@ -11,7 +11,7 @@
       "provider": "script",
       "operator": "NotEquals",
       "expected": "Keine",
-      "script": "try { $g = @(Get-ChildItem 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Group Policy\\State\\Machine\\GPO-List' -ErrorAction Stop | Get-ItemProperty -ErrorAction Stop | Where-Object { $_.DisplayName -ne 'Local Group Policy' } | Select-Object -ExpandProperty DisplayName); if ($g.Count -eq 0) { 'Keine' } else { ($g -join '; ') } } catch { exit 1 }"
+      "script": "try { $g=@(Get-ChildItem 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Group Policy\\State\\Machine\\GPO-List' -ErrorAction Stop | Get-ItemProperty -ErrorAction Stop | Where-Object { $_.GPOID -match '^\\{[0-9a-fA-F-]{36}\\}$' } | Select-Object -ExpandProperty DisplayName); if ($g.Count -eq 0) { 'Keine' } else { ($g -join '; ') } } catch { exit 1 }"
     },
     "fixHint": "Nur relevant für domänengebundene Geräte (gpresult /R zur Kontrolle).",
     "profil": "L1",

@@ -52,7 +52,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "Disabled",
-      "script": "try { (Get-Service -Name SSDPSRV -ErrorAction Stop).StartType } catch { 'Disabled' }"
+      "script": "try { (Get-Service -Name SSDPSRV -ErrorAction Stop).StartType } catch { exit 1 }"
     },
     "fixHint": "services.msc > SSDP-Suche = Deaktiviert. Ohne UPnP-Bedarf unbedenklich.",
     "profil": "L1",
@@ -72,7 +72,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "Disabled",
-      "script": "try { (Get-Service -Name upnphost -ErrorAction Stop).StartType } catch { 'Disabled' }"
+      "script": "try { (Get-Service -Name upnphost -ErrorAction Stop).StartType } catch { exit 1 }"
     },
     "fixHint": "services.msc > UPnP-Gerätehost = Deaktiviert.",
     "profil": "L1",

@@ -31,7 +31,7 @@
       "provider": "script",
       "operator": "Equals",
       "expected": "True",
-      "script": "try { $t = Get-Tpm -ErrorAction Stop; if ($t.TpmPresent -eq $false) { 'N/A' } elseif ($t.TpmReady -eq $true) { 'True' } else { exit 1 } } catch { exit 1 }"
+      "script": "try { $t=Get-Tpm -ErrorAction Stop; if ($t.TpmPresent -eq $false) { 'N/A' } elseif ($t.TpmReady -eq $true) { 'True' } elseif ($null -eq $t.TpmPresent -or [string]::IsNullOrWhiteSpace([string]$t.TpmPresent)) { exit 1 } else { 'False' } } catch { exit 1 }"
     },
     "fixHint": "UEFI: TPM/Security Device aktivieren; tpm.msc prüfen. Ohne TPM-Chip (z.B. VM) nicht anwendbar.",
     "profil": "L1",
