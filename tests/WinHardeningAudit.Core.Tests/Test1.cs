@@ -815,4 +815,46 @@ public sealed class RemediationTests
         Assert.IsEmpty(missingGui, "EN overlay without GUI path: " + string.Join(",", missingGui));
         Assert.IsEmpty(missingSteps, "EN overlay without steps: " + string.Join(",", missingSteps));
     }
+
+    [TestMethod]
+    public void TryExtractCommand_Finds_Copyable_Commands()
+    {
+        Assert.AreEqual("Set-MpPreference -DisableRealtimeMonitoring $false",
+            RemediationScript.TryExtractCommand("PowerShell (Admin): Set-MpPreference -DisableRealtimeMonitoring $false"));
+        Assert.AreEqual("Set-MpPreference -MAPSReporting Advanced; Set-X -Y",
+            RemediationScript.TryExtractCommand("PowerShell: Set-MpPreference -MAPSReporting Advanced; Set-X -Y"));
+        Assert.AreEqual("Set-ItemProperty X -Value 1",
+            RemediationScript.TryExtractCommand("PowerShell (Admin): Set-ItemProperty X -Value 1; Neustart."));
+        Assert.AreEqual("New-ItemProperty HKCU:\\Software\\X -Name V -Value 4 -PropertyType DWord -Force",
+            RemediationScript.TryExtractCommand("PowerShell: New-ItemProperty HKCU:\\Software\\X -Name V -Value 4 -PropertyType DWord -Force (Office 16.0 = 2016, adjust path)."));
+        Assert.AreEqual("Set-MpPreference -DisableBehaviorMonitoring $false",
+            RemediationScript.TryExtractCommand("PowerShell (Admin): Set-MpPreference -DisableBehaviorMonitoring $false (blocked when tamper protection is on)."));
+        Assert.AreEqual("Get-NetFirewallRule | Where-Object { $_.Enabled }",
+            RemediationScript.TryExtractCommand("Get-NetFirewallRule | Where-Object { $_.Enabled } (admin)."));
+        Assert.AreEqual("auditpol /set /subcategory:x /success:enable",
+            RemediationScript.TryExtractCommand("auditpol /set /subcategory:x /success:enable"));
+        Assert.IsNull(RemediationScript.TryExtractCommand(
+            "Settings > Windows Update > check for updates (internet required)."));
+        Assert.IsNull(RemediationScript.TryExtractCommand(
+            "GPO: Computer Configuration > Administrative Templates > configure the rule."));
+        Assert.IsNull(RemediationScript.TryExtractCommand(""));
+    }
+
+    [TestMethod]
+    public void Every_Manual_Step_With_PowerShell_Command_Yields_Copyable_Command()
+    {
+        var bad = new List<string>();
+        foreach (var r in L1().Where(r => r.Remediation?.Mode == "manual"))
+        {
+            foreach (var s in r.Remediation!.Steps)
+            {
+                // Only steps that actually embed a command ("PowerShell ...: <cmd>").
+                var ps = s.IndexOf("PowerShell", StringComparison.OrdinalIgnoreCase);
+                if (ps < 0 || s.IndexOf(':', ps) < 0) continue;
+                if (RemediationScript.TryExtractCommand(s) is not { Length: > 0 })
+                    bad.Add($"{r.Id}: no command extracted from [{s}]");
+            }
+        }
+        Assert.IsEmpty(bad, "PowerShell steps without copyable command:\n" + string.Join("\n", bad));
+    }
 }

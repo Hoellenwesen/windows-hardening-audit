@@ -170,8 +170,8 @@
   <data name="ResetButton.Content"><value>Reset settings</value></data>
   <data name="ResetDone"><value>Settings reset to system default.</value></data>
   <data name="SettingsVersionHeader.Text"><value>Version</value></data>
-  <data name="FixButton.Content"><value>Fix</value></data>
-  <data name="GuideButton.Content"><value>Instructions</value></data>
+  <data name="FixButton.Content"><value>Fix automatically</value></data>
+  <data name="GuideButton.Content"><value>Manual remediation</value></data>
   <data name="FixApply"><value>Apply</value></data>
   <data name="FixConfirmTitle"><value>Apply fix?</value></data>
   <data name="FixConfirmText"><value>{0} (actual: {1} → target: {2}) will be changed. Previous values are backed up.</value></data>
@@ -185,4 +185,6 @@
   <data name="GuideTitle"><value>Manual remediation</value></data>
   <data name="GuideVerify"><value>After the change: re-scan.</value></data>
   <data name="FixRisk"><value>Risk</value></data>
+  <data name="CopyButton.Content"><value>Copy</value></data>
+  <data name="CopiedNote"><value>Copied to clipboard.</value></data>
 </root>

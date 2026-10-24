@@ -402,6 +402,78 @@ public static class RemediationScript
 
     // ---- display (language-neutral technical summary for the guide dialog) ----
 
+    /// <summary>
+    /// Extracts a copyable command from a guide step, or null when the step is prose.
+    /// Handles "PowerShell ...: &lt;command&gt;" prefixes and bare command lines.
+    /// Strips narrative suffixes ("; Neustart", "; danach ...") and prose
+    /// parentheses so the result can be pasted into a console as-is.
+    /// </summary>
+    public static string? TryExtractCommand(string step)
+    {
+        if (string.IsNullOrWhiteSpace(step)) return null;
+        var s = step.Trim();
+        string? candidate = null;
+        var ps = s.IndexOf("PowerShell", StringComparison.OrdinalIgnoreCase);
+        if (ps >= 0)
+        {
+            var colon = s.IndexOf(':', ps);
+            if (colon >= 0 && colon + 1 < s.Length)
+                candidate = s[(colon + 1)..].Trim();
+        }
+        else
+        {
+            foreach (var prefix in new[]
+            {
+                "Get-", "Set-", "New-", "Remove-", "Revoke-", "Enable-", "Disable-",
+                "Update-", "Start-", "Stop-", "Test-", "Confirm-", "auditpol", "secedit",
+                "gpupdate", "gpresult", "net ", "wevtutil", "edge://", "certmgr",
+                "tpm.msc", "services.msc", "lusrmgr", "compmgmt", "eventvwr",
+            })
+            {
+                if (s.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    candidate = s;
+                    break;
+                }
+            }
+            // "Do X: <command>" prose prefix with the command at the end.
+            if (candidate is null)
+            {
+                var lastColon = s.LastIndexOf(':');
+                if (lastColon >= 0 && lastColon + 1 < s.Length)
+                {
+                    var tail = s[(lastColon + 1)..].Trim();
+                    foreach (var prefix in new[]
+                    {
+                        "Get-", "Set-", "New-", "Remove-", "Revoke-", "Enable-", "Disable-",
+                        "Update-", "auditpol", "secedit",
+                    })
+                    {
+                        if (tail.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                        {
+                            candidate = tail;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (string.IsNullOrWhiteSpace(candidate)) return null;
+        var cmd = candidate.Trim();
+        // Cut narrative suffixes: "; Neustart", "; danach ...", "; restart ...".
+        var cut = System.Text.RegularExpressions.Regex.Match(
+            cmd, @";\s*(neustart|danach|restart|then)\b.*$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (cut.Success) cmd = cmd[..cut.Index].Trim();
+        // Strip prose parentheses (they contain whitespace; code parens like
+        // "(Get-MpComputerStatus)" have none and are kept).
+        cmd = System.Text.RegularExpressions.Regex.Replace(cmd, @"\([^()]*\s[^()]*\)", "").Trim();
+        // Strip a trailing "(...)" remark such as "(Admin)".
+        cmd = System.Text.RegularExpressions.Regex.Replace(cmd, @"\s*\([^()]*\)\.?$", "").Trim();
+        cmd = System.Text.RegularExpressions.Regex.Replace(cmd, @"\s{2,}", " ").Trim();
+        cmd = cmd.TrimEnd('.').Trim();
+        return cmd.Length > 0 ? cmd : null;
+    }
+
     public static string Describe(RemediationAction a) => a.Type switch
     {
         "registry" => $"Registry: {a.Key}\\{a.ValueName} = {a.Value} ({a.ValueType})",

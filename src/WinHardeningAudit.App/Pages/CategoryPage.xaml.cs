@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Windows.ApplicationModel.DataTransfer;
 using WinHardeningAudit.Core.Engine;
 using WinHardeningAudit.Core.Models;
 using WinHardeningAudit_App.Services;
@@ -189,32 +190,70 @@ public sealed partial class CategoryPage : Page
         var rem = result?.Rule.Remediation;
         if (rem is null) return;
 
-        var lines = new List<string>();
-        if (!string.IsNullOrWhiteSpace(rem.Gui)) lines.Add("• " + rem.Gui);
+        // Rows of (display text, copyable command or null).
+        var rows = new List<(string Text, string? Copy)>();
+        if (!string.IsNullOrWhiteSpace(rem.Gui)) rows.Add(("• " + rem.Gui, null));
         if (rem.Mode == "manual")
         {
             for (var i = 0; i < rem.Steps.Count; i++)
-                lines.Add($"{i + 1}. {rem.Steps[i]}");
+                rows.Add(($"{i + 1}. {rem.Steps[i]}", RemediationScript.TryExtractCommand(rem.Steps[i])));
         }
         else
         {
             foreach (var a in rem.Actions)
-                lines.Add("• " + RemediationScript.Describe(a));
+            {
+                string? copy = null;
+                try { copy = RemediationScript.Apply(a); } catch { }
+                rows.Add(("• " + RemediationScript.Describe(a), copy));
+            }
         }
-        lines.Add(L.Get("GuideVerify"));
+        rows.Add((L.Get("GuideVerify"), null));
+
+        var copyLabel = L.Get("CopyButton.Content");
+        var copiedNote = L.Get("CopiedNote");
+        var status = new TextBlock
+        {
+            FontSize = 12,
+            Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+        };
+        var list = new StackPanel { Spacing = 8 };
+        foreach (var (text, copy) in rows)
+        {
+            var grid = new Grid { ColumnSpacing = 8 };
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            var tb = new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap };
+            Grid.SetColumn(tb, 0);
+            grid.Children.Add(tb);
+            if (!string.IsNullOrWhiteSpace(copy))
+            {
+                var cmd = copy;
+                var btn = new Button { Content = copyLabel, Tag = cmd, VerticalAlignment = VerticalAlignment.Top };
+                Grid.SetColumn(btn, 1);
+                btn.Click += (_, _) =>
+                {
+                    try
+                    {
+                        var pkg = new DataPackage();
+                        pkg.SetText(cmd);
+                        Clipboard.SetContent(pkg);
+                        status.Text = copiedNote;
+                    }
+                    catch
+                    {
+                        status.Text = cmd;
+                    }
+                };
+                grid.Children.Add(btn);
+            }
+            list.Children.Add(grid);
+        }
+        list.Children.Add(status);
 
         var dialog = new ContentDialog
         {
             Title = $"{L.Get("GuideTitle")}: {result!.Rule.Id}",
-            Content = new ScrollViewer
-            {
-                MaxHeight = 420,
-                Content = new TextBlock
-                {
-                    Text = string.Join("\n\n", lines),
-                    TextWrapping = TextWrapping.Wrap,
-                },
-            },
+            Content = new ScrollViewer { MaxHeight = 480, Content = list },
             CloseButtonText = "OK",
             XamlRoot = XamlRoot,
         };
