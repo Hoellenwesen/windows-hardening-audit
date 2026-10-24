@@ -47,7 +47,7 @@
     "description": "Legacy-Apps werden pro-Benutzer virtualisiert statt systemweit zu schreiben.",
     "category": "updates-maintenance",
     "source": "CIS",
-    "sourceId": "CIS 2.3.x (L1)",
+    "sourceId": "CIS 2.3.17.8 (L1)",
     "severity": 1,
     "check": {
       "provider": "registry",

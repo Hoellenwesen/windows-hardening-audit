@@ -172,9 +172,9 @@
                    "fixHint":  "auditpol /set /subcategory:\"Sensitive Privilege Use\" /success:enable /failure:enable."
                },
     "AUD-05":  {
-                   "title":  "Security event log size \u003e= 64 MB",
-                   "description":  "Logs that are too small get overwritten too quickly.",
-                   "fixHint":  "GPO: set Security event log size to 196608 KB or more."
+                   "title":  "Security event log size \u003e= 192 MB",
+                   "description":  "The Security log must be at least 196,608 KB (192 MB), otherwise events get overwritten too quickly.",
+                   "fixHint":  "GPO: set Security event log size to 196608 KB (192 MB) or more."
                },
     "SYS-01":  {
                    "title":  "AutoPlay/AutoRun disabled",
@@ -252,9 +252,9 @@
                     "fixHint":  "secpol.msc \u003e Enforce password history = 24."
                 },
     "ACCT-13":  {
-                    "title":  "Maximum password age 60 days",
-                    "description":  "Change passwords at least every 60 days (local accounts).",
-                    "fixHint":  "secpol.msc \u003e Maximum password age = 60 days."
+                    "title":  "Maximum password age at most 365 days",
+                    "description":  "Passwords must expire: 1 to 365 days, not 0 (never expires).",
+                    "fixHint":  "secpol.msc \u003e Maximum password age = 1 to 365 days (0 disables expiration)."
                 },
     "ACCT-14":  {
                     "title":  "Reversibly encrypted passwords off",
@@ -262,14 +262,14 @@
                     "fixHint":  "Default is Disabled. If set: secpol.msc \u003e Store passwords using reversible encryption = Disabled."
                 },
     "ACCT-15":  {
-                    "title":  "Account lockout threshold: 5 bad attempts",
-                    "description":  "Account is locked after 5 failed logons.",
-                    "fixHint":  "secpol.msc \u003e Account lockout policy \u003e Threshold = 5."
+                    "title":  "Account lockout threshold: at most 5 bad attempts",
+                    "description":  "Account is locked after 1 to 5 failed logons (not 0).",
+                    "fixHint":  "secpol.msc \u003e Account lockout policy \u003e Threshold = 1 to 5 (0 = never lock)."
                 },
     "ACCT-16":  {
                     "title":  "Account lockout duration 15 minutes",
-                    "description":  "Locked accounts stay locked for at least 15 minutes.",
-                    "fixHint":  "secpol.msc \u003e Account lockout duration = 15 minutes."
+                    "description":  "Locked accounts stay locked for at least 15 minutes (0 = until manually unlocked).",
+                    "fixHint":  "secpol.msc \u003e Account lockout duration = 15 minutes or more (0 = until manually unlocked)."
                 },
     "ACCT-17":  {
                     "title":  "Counter reset after 15 minutes",
@@ -2583,8 +2583,8 @@
                },
     "NTLM-01":  {
                     "title":  "Incoming NTLM traffic is audited",
-                    "description":  "Incoming NTLM authentication is logged (at least domain accounts).",
-                    "fixHint":  "secpol.msc \u003e Network security: Audit incoming NTLM traffic = Enable auditing for domain accounts (1) or higher.",
+                    "description":  "Incoming NTLM authentication is logged for all accounts (not just domain accounts).",
+                    "fixHint":  "secpol.msc \u003e Network security: Restrict NTLM: Audit Incoming NTLM Traffic = Enable auditing for all accounts (2).",
                     "note":  "As of 25H2, Windows additionally logs NTLM to the Operational log (channel Microsoft-Windows-NTLM/Operational)."
                 },
     "NTLM-02":  {

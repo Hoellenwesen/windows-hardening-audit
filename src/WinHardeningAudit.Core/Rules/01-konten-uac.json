@@ -26,7 +26,7 @@
     "description": "Consent-Prompt auf Secure Desktop (Verhalten 2 = Zustimmung anfordern).",
     "category": "accounts-uac",
     "source": "CIS",
-    "sourceId": "CIS 2.3.1.1 (L1)",
+    "sourceId": "CIS 2.3.17.2 (L1)",
     "severity": 3,
     "check": {
       "provider": "registry",
@@ -47,7 +47,7 @@
     "description": "UAC-Eingabeaufforderung auf Secure Desktop anzeigen.",
     "category": "accounts-uac",
     "source": "CIS",
-    "sourceId": "CIS 2.3.1.2 (L1)",
+    "sourceId": "CIS 2.3.17.7 (L1)",
     "severity": 2,
     "check": {
       "provider": "registry",
@@ -68,7 +68,7 @@
     "description": "Konten mit leerem Kennwort dürfen sich nur lokal anmelden.",
     "category": "accounts-uac",
     "source": "CIS",
-    "sourceId": "CIS 2.3.1.5 (L1)",
+    "sourceId": "CIS 2.3.1.2 (L1)",
     "severity": 3,
     "check": {
       "provider": "registry",
@@ -90,7 +90,7 @@
     "description": "Das eingebaute Gastkonto muss deaktiviert sein.",
     "category": "accounts-uac",
     "source": "MS Baseline + CIS",
-    "sourceId": "CIS 2.2.2 (L1)",
+    "sourceId": "CIS 2.3.1.1 (L1)",
     "severity": 3,
     "check": {
       "provider": "script",

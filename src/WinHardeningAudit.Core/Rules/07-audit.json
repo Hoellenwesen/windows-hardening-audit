@@ -5,7 +5,7 @@
     "description": "Protokolliert ausgeführte Script-Blöcke (wichtig für Forensik).",
     "category": "audit-logging",
     "source": "MS Baseline + CIS",
-    "sourceId": "CIS 18.9 (L1)",
+    "sourceId": "CIS 18.10.88.1 (L2)",
     "severity": 2,
     "check": {
       "provider": "registry",
@@ -15,8 +15,8 @@
       "expected": "1"
     },
     "fixHint": "GPO: Administrative Vorlagen > Windows-Komponenten > PowerShell > Scriptblock-Protokollierung.",
-    "profil": "L1",
-    "kapitel": "18.9 PowerShell Logging",
+    "profil": "L2",
+    "kapitel": "18.10.88 PowerShell Logging",
     "giltAb": "24H2",
     "ziel": "both"
   },
@@ -26,7 +26,7 @@
     "description": "Unterkategorie 'Logon' muss Erfolg und Fehler auditieren (GUID-Abgleich, sprachunabhängig).",
     "category": "audit-logging",
     "source": "CIS",
-    "sourceId": "CIS 17.1 (L1)",
+    "sourceId": "CIS 17.5.4 (L1)",
     "severity": 2,
     "check": {
       "provider": "script",
@@ -46,7 +46,7 @@
     "description": "Unterkategorie 'Logoff' sollte mindestens Erfolg protokollieren (GUID-Abgleich, sprachunabhängig).",
     "category": "audit-logging",
     "source": "CIS",
-    "sourceId": "CIS 17.1 (L1)",
+    "sourceId": "CIS 17.5.3 (L1)",
     "severity": 1,
     "check": {
       "provider": "script",
@@ -66,7 +66,7 @@
     "description": "Erkennt Missbrauch sensibler Rechte (z.B. Debug, Backup). GUID-Abgleich, sprachunabhängig.",
     "category": "audit-logging",
     "source": "CIS",
-    "sourceId": "CIS 17.5 (L1)",
+    "sourceId": "CIS 17.8.1 (L1)",
     "severity": 1,
     "check": {
       "provider": "script",
@@ -82,21 +82,21 @@
   },
   {
     "id": "AUD-05",
-    "title": "Security-Eventlog Größe >= 64 MB",
-    "description": "Zu kleine Logs werden zu schnell überschrieben.",
+    "title": "Security-Eventlog Größe >= 192 MB",
+    "description": "Der Security-Log muss mindestens 196.608 KB (192 MB) groß sein, sonst werden Ereignisse zu schnell überschrieben.",
     "category": "audit-logging",
     "source": "CIS",
-    "sourceId": "CIS 19.x (L1)",
+    "sourceId": "CIS 18.10.26.2.2 (L1)",
     "severity": 1,
     "check": {
       "provider": "script",
       "operator": "GreaterOrEqual",
-      "expected": "67108864",
+      "expected": "201326592",
       "script": "(Get-WinEvent -ListLog Security -ErrorAction Stop).MaximumSizeInBytes"
     },
-    "fixHint": "GPO: Ereignisprotokollgröße Security auf 196608 KB+ setzen.",
+    "fixHint": "GPO: Ereignisprotokollgröße Security auf 196608 KB (192 MB) oder mehr setzen.",
     "profil": "L1",
-    "kapitel": "19.x Event Log",
+    "kapitel": "18.10.26 Event Log",
     "giltAb": "24H2",
     "ziel": "both"
   }

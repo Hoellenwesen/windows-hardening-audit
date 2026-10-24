@@ -5,7 +5,7 @@
     "description": "Das OS-Volume sollte vollständig verschlüsselt sein.",
     "category": "bitlocker-encryption",
     "source": "MS Baseline + CIS",
-    "sourceId": "CIS 2.10 (L1)",
+    "sourceId": "CIS 18.10.10 (BL-Add-on)",
     "severity": 4,
     "check": {
       "provider": "script",
@@ -45,7 +45,7 @@
     "description": "Verhindert Klartext-Credential-Ablage in LSASS (Standard seit 8.1 bereits aus).",
     "category": "bitlocker-encryption",
     "source": "MS Baseline + CIS",
-    "sourceId": "CIS 18.x / MS Security Guide",
+    "sourceId": "CIS 18.4.7 (L1)",
     "severity": 4,
     "check": {
       "provider": "registry",

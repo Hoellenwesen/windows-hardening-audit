@@ -90,19 +90,19 @@
   {
     "id": "NTLM-01",
     "title": "Eingehender NTLM-Verkehr wird auditiert",
-    "description": "Eingehende NTLM-Authentifizierung wird protokolliert (mind. Domänenkonten).",
+    "description": "Eingehende NTLM-Authentifizierung wird für alle Konten protokolliert (nicht nur Domänenkonten).",
     "category": "accounts-uac",
     "source": "CIS",
-    "sourceId": "CIS 2.3.11 (L1)",
+    "sourceId": "CIS 2.3.11.11 (L1)",
     "severity": 3,
     "check": {
       "provider": "registry",
       "key": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa\\MSV1_0",
       "valueName": "AuditReceivingNTLMTraffic",
       "operator": "GreaterOrEqual",
-      "expected": "1"
+      "expected": "2"
     },
-    "fixHint": "secpol.msc > Netzwerksicherheit: Eingehenden NTLM-Verkehr überwachen = Für Domänenkonten aktivieren (1) oder höher.",
+    "fixHint": "secpol.msc > Netzwerksicherheit: Eingehenden NTLM-Verkehr überwachen = Für alle Konten aktivieren (2).",
     "profil": "L1",
     "kapitel": "2.3 NTLM",
     "giltAb": "24H2",

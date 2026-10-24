@@ -5,7 +5,7 @@
     "description": "Windows Defender Firewall für Domänennetzwerke.",
     "category": "firewall-network",
     "source": "MS Baseline + CIS",
-    "sourceId": "CIS 9.1 (L1)",
+    "sourceId": "CIS 9.1.1 (L1)",
     "severity": 3,
     "check": {
       "provider": "script",
@@ -25,7 +25,7 @@
     "description": "Windows Defender Firewall für private Netzwerke.",
     "category": "firewall-network",
     "source": "MS Baseline + CIS",
-    "sourceId": "CIS 9.2 (L1)",
+    "sourceId": "CIS 9.2.1 (L1)",
     "severity": 3,
     "check": {
       "provider": "script",
@@ -45,7 +45,7 @@
     "description": "Windows Defender Firewall für öffentliche Netzwerke.",
     "category": "firewall-network",
     "source": "MS Baseline + CIS",
-    "sourceId": "CIS 9.3 (L1)",
+    "sourceId": "CIS 9.3.1 (L1)",
     "severity": 3,
     "check": {
       "provider": "script",
@@ -65,7 +65,7 @@
     "description": "Veraltetes, unsicheres SMBv1-Protokoll muss aus sein.",
     "category": "firewall-network",
     "source": "MS Baseline + CIS",
-    "sourceId": "CIS 18.4 / MS STIG",
+    "sourceId": "CIS 18.4.3 (L1)",
     "severity": 3,
     "check": {
       "provider": "script",
@@ -86,7 +86,7 @@
     "description": "Schützt vor SMB-Relay/Man-in-the-Middle.",
     "category": "firewall-network",
     "source": "MS Baseline",
-    "sourceId": "LanmanWorkstation RequireSecuritySignature",
+    "sourceId": "CIS 2.3.8.1 (L1)",
     "severity": 2,
     "check": {
       "provider": "registry",

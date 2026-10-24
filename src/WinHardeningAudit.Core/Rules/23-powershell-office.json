@@ -25,8 +25,8 @@
     "title": "PowerShell Modul-Protokollierung aktiviert",
     "description": "Modul-Ladevorgänge werden protokolliert (Erkennung bösartiger Module).",
     "category": "audit-logging",
-    "source": "CIS",
-    "sourceId": "CIS 18.9 (L1)",
+    "source": "Best Practice",
+    "sourceId": "PowerShell Module Logging",
     "severity": 2,
     "check": {
       "provider": "registry",
