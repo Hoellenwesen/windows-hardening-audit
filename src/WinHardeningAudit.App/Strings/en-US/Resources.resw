@@ -10,7 +10,7 @@
   <data name="ScanButton.Content"><value>Scan now</value></data>
   <data name="CancelButton.Content"><value>Cancel</value></data>
   <data name="ProfileBox.Header"><value>Profile</value></data>
-  <data name="ProfileTip.Content"><value>CIS = Center for Internet Security Benchmark (Level 1: essential hardening, Level 2: defense-in-depth for high-security environments). MS = Microsoft Security Baseline for Windows 11 25H2.</value></data>
+  <data name="ProfileTip.Content"><value>CIS = Center for Internet Security Benchmark, based on CIS Microsoft Windows 11 v5.0.0. Level 1 is a curated subset of 91 of the ~390 L1 recommendations; Level 2 = defense-in-depth for high-security environments. MS = Microsoft Security Baseline for Windows 11 25H2.</value></data>
   <data name="TargetBox.Header"><value>Target</value></data>
   <data name="L2Banner.Title"><value>CIS Level 2 preview</value></data>
   <data name="ScoreLabel.Text"><value>Score</value></data>
@@ -34,7 +34,7 @@
   <data name="AboutTitle.Text"><value>About – Best Practices &amp; Sources</value></data>
   <data name="AboutIntro.Text"><value>This app reads the local hardening state (registry, secedit, Defender, BitLocker, firewall and audit APIs) and compares it against recognized best practices – passed / failed / manual review, each with a severity.</value></data>
   <data name="AboutSourcesHeader.Text"><value>Best practices used</value></data>
-  <data name="AboutCisBody.Text"><value>Level 1: essential hardening without loss of functionality. Level 2: defense-in-depth for high-security environments. Stand-alone / Enterprise profiles via the target selector. Only technical target values are checked – no CIS texts adopted. (cisecurity.org/cis-benchmarks)</value></data>
+  <data name="AboutCisBody.Text"><value>Based on CIS Microsoft Windows 11 Benchmark v5.0.0. Level 1: essential hardening without loss of functionality (curated subset of 91 of the ~390 L1 recommendations). Level 2: defense-in-depth for high-security environments. Stand-alone / Enterprise profiles via the target selector. Only technical target values are checked - no CIS texts adopted. (cisecurity.org/cis-benchmarks)</value></data>
   <data name="AboutMsBody.Text"><value>Machine-imported from the Security Compliance Toolkit (GPO registry, SecEdit, Advanced Audit, firewall, services; as of build 26200.6584). Checks GPO enforcement – deviations are expected on devices without an applied baseline. Deltas possible on 26H2. (aka.ms/SCT)</value></data>
   <data name="AboutStigBody.Text"><value>Cross-reference for target values and severity classification. (cyber.mil/STIGs)</value></data>
   <data name="AboutMethodHeader.Text"><value>Methodology</value></data>

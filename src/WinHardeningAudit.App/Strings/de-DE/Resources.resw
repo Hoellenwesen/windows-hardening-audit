@@ -10,7 +10,7 @@
   <data name="ScanButton.Content"><value>Jetzt prüfen</value></data>
   <data name="CancelButton.Content"><value>Abbrechen</value></data>
   <data name="ProfileBox.Header"><value>Profil</value></data>
-  <data name="ProfileTip.Content"><value>CIS = Center for Internet Security Benchmark (Level 1: essenzielle Härtung, Level 2: Defense-in-Depth für Hochsicherheitsumgebungen). MS = Microsoft Security Baseline für Windows 11 25H2.</value></data>
+  <data name="ProfileTip.Content"><value>CIS = Center for Internet Security Benchmark, Basis: CIS Microsoft Windows 11 v5.0.0. Level 1 ist eine kuratierte Auswahl von 91 der rund 390 L1-Empfehlungen; Level 2 = Defense-in-Depth für Hochsicherheitsumgebungen. MS = Microsoft Security Baseline für Windows 11 25H2.</value></data>
   <data name="TargetBox.Header"><value>Ziel</value></data>
   <data name="L2Banner.Title"><value>CIS-Level-2-Vorschau</value></data>
   <data name="ScoreLabel.Text"><value>Score</value></data>
@@ -34,7 +34,7 @@
   <data name="AboutTitle.Text"><value>Über – Best Practices &amp; Quellen</value></data>
   <data name="AboutIntro.Text"><value>Diese App liest den lokalen Härtungszustand (Registry, secedit, Defender, BitLocker, Firewall und Audit-APIs) und vergleicht ihn mit anerkannten Best Practices – erfüllt / nicht erfüllt / manuell prüfen, jeweils mit Schweregrad.</value></data>
   <data name="AboutSourcesHeader.Text"><value>Verwendete Best Practices</value></data>
-  <data name="AboutCisBody.Text"><value>Level 1: essenzielle Härtung ohne Funktionseinschränkung. Level 2: Defense-in-Depth für Hochsicherheitsumgebungen. Stand-alone-/Enterprise-Profile über die Ziel-Auswahl. Es werden nur technische Zielwerte geprüft – keine CIS-Texte übernommen. (cisecurity.org/cis-benchmarks)</value></data>
+  <data name="AboutCisBody.Text"><value>Basis: CIS Microsoft Windows 11 Benchmark v5.0.0. Level 1: essenzielle Härtung ohne Funktionseinschränkung (kuratierte Auswahl von 91 der rund 390 L1-Empfehlungen). Level 2: Defense-in-Depth für Hochsicherheitsumgebungen. Stand-alone-/Enterprise-Profile über die Ziel-Auswahl. Es werden nur technische Zielwerte geprüft – keine CIS-Texte übernommen. (cisecurity.org/cis-benchmarks)</value></data>
   <data name="AboutMsBody.Text"><value>Maschinell importiert aus dem Security Compliance Toolkit (GPO-Registry, SecEdit, Advanced Audit, Firewall, Dienste; Stand Build 26200.6584). Prüft GPO-Durchsetzung – Abweichungen auf Geräten ohne angewendete Baseline sind erwartet. Deltas auf 26H2 möglich. (aka.ms/SCT)</value></data>
   <data name="AboutStigBody.Text"><value>Querverweis für Zielwerte und Schweregrad-Einstufung. (cyber.mil/STIGs)</value></data>
   <data name="AboutMethodHeader.Text"><value>Methodik</value></data>

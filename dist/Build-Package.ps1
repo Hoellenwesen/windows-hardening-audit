@@ -33,7 +33,7 @@ Copy-Item -LiteralPath (Join-Path $root 'dist\Start.bat') -Destination $pkgdir
 $rules = Get-ChildItem -LiteralPath (Join-Path $pkgdir 'Rules') -Filter *.json -Recurse | Where-Object { $_.DirectoryName -notmatch '[\\/]l10n$' }
 $n = 0
 foreach ($f in $rules) { $n += (Get-Content -LiteralPath $f.FullName -Raw -Encoding UTF8 | ConvertFrom-Json).Count }
-$ver = "Windows Hardening Audit $Version ($stamp)`r`nRules: $n in $($rules.Count) files`r`nBased on: MS Security Baseline Win11 v25H2 + CIS Benchmark v5.x + DISA STIG V2R9`r`nPrerequisites: .NET 10 Desktop Runtime (x64), Windows App Runtime 2.5`r`n"
+$ver = "Windows Hardening Audit $Version ($stamp)`r`nRules: $n in $($rules.Count) files`r`nBased on: MS Security Baseline Win11 v25H2 + CIS Benchmark v5.0.0 + DISA STIG V2R9`r`nPrerequisites: .NET 10 Desktop Runtime (x64), Windows App Runtime 2.5`r`n"
 Set-Content -LiteralPath (Join-Path $pkgdir 'Version.txt') -Value $ver -Encoding UTF8
 Write-Output $ver
 

@@ -60,6 +60,11 @@ Rule sources: `MS Baseline`, `CIS`, `STIG`, and generated `MS-W11-25H2` sets.
 Each rule carries `id`, `title`, `description`, `category`, `severity`, `profil`, `ziel`,
 `kapitel`, `giltAb`, `fixHint`, and an optional `notiz26H2`.
 
+CIS reference: **CIS Microsoft Windows 11 Benchmark v5.0.0**. The `L1` profile is a
+curated subset (91 rules, ~390 L1 recommendations in the full benchmark); `sourceId`
+names the exact control number. Rules that are L2 in the benchmark (e.g. `AUD-01`,
+`SVC-01`) live in the `L2` profile only.
+
 ## Requirements
 
 Target systems (audit + portable package):

@@ -17,6 +17,18 @@ public sealed class CompareTests
     [DataRow("3", "7", "LessOrEqual", true)]
     [DataRow("10", "7", "LessOrEqual", false)]
     [DataRow("1", "1", "GreaterOrEqual", true)]
+    [DataRow("3", "1..5", "Between", true)]
+    [DataRow("1", "1..5", "Between", true)]
+    [DataRow("5", "1..5", "Between", true)]
+    [DataRow("0", "1..5", "Between", false)]
+    [DataRow("6", "1..5", "Between", false)]
+    [DataRow("0", "0,15..", "Between", true)]
+    [DataRow("14", "0,15..", "Between", false)]
+    [DataRow("15", "0,15..", "Between", true)]
+    [DataRow("999", "0,15..", "Between", true)]
+    [DataRow("-1", "1..365", "Between", false)]
+    [DataRow("365", "1..365", "Between", true)]
+    [DataRow("n/a", "1..5", "Between", false)]
     public void Compare_Works(string actual, string expected, string op, bool want)
     {
         Assert.AreEqual(want, RegistryProvider.Compare(actual, expected, op));
@@ -102,6 +114,10 @@ public sealed class SeceditTests
     [DataRow("*S-1-5-32-544,*S-1-5-11,*S-1-5-32-545", "S-1-5-11,S-1-5-32-544", "ContainsAll", true)]
     [DataRow("60", "60", "LessOrEqual", true)]
     [DataRow("90", "60", "LessOrEqual", false)]
+    [DataRow("3", "1..5", "Between", true)]
+    [DataRow("0", "1..5", "Between", false)]
+    [DataRow("-1", "1..365", "Between", false)]
+    [DataRow("0", "0,15..", "Between", true)]
     public void CompareSecedit_Works(string actual, string expected, string op, bool want)
     {
         Assert.AreEqual(want, SeceditProvider.CompareSecedit(actual, expected, op));
@@ -462,6 +478,54 @@ public sealed class RuleScriptRegressionTests
         var r = ShippedRules().Single(x => x.Id == "LAP-01");
         Assert.DoesNotContain("S-1-5-500", r.Check.Script!, "LAP-01 nutzt die nie existierende SID S-1-5-500");
         Assert.Contains("-500$", r.Check.Script!, "LAP-01 muss die RID des lokalen Kontos prüfen");
+    }
+
+    [TestMethod]
+    public void CisSourceIds_Are_Precise()
+    {
+        // "CIS 5.x", "CIS 19.x" oder eine Gruppenebene ("CIS 2.3.7") sind keine belastbaren Kontrollnummern.
+        var bad = new List<string>();
+        foreach (var r in ShippedRules().Where(x => x.Profil == "L1"))
+        {
+            if (!(r.Source?.Contains("CIS", StringComparison.OrdinalIgnoreCase) ?? false)) continue;
+            var sid = r.SourceId ?? "";
+            if (sid.Contains('x') || sid.Contains('X'))
+                bad.Add($"{r.Id}: Platzhalter [{sid}]");
+            else if (System.Text.RegularExpressions.Regex.IsMatch(sid, @"^CIS \d")
+                     && !System.Text.RegularExpressions.Regex.IsMatch(sid,
+                         @"^CIS \d+(\.\d+)+( / \d+(\.\d+)+)? \((L[12]|BL-Add-on)\)$"))
+                bad.Add($"{r.Id}: Format [{sid}]");
+        }
+        Assert.IsEmpty(bad, "CIS-Kontrollnummer unpräzise: " + string.Join(", ", bad));
+    }
+
+    [TestMethod]
+    public void L1_Profile_Contains_No_L2_Controls()
+    {
+        // Beide sind in CIS Windows 11 v5.0.0 L2 (5.24 bzw. 18.10.88.1).
+        var l1 = ShippedRules().Where(r => r.Profil == "L1").Select(r => r.Id).ToHashSet(StringComparer.Ordinal);
+        Assert.DoesNotContain("AUD-01", l1, "AUD-01 (Script Block Logging) ist L2");
+        Assert.DoesNotContain("SVC-01", l1, "SVC-01 (RemoteRegistry) ist L2");
+    }
+
+    [TestMethod]
+    public void Account_Policies_Use_Cis_Ranges()
+    {
+        var rules = ShippedRules().ToDictionary(r => r.Id, StringComparer.Ordinal);
+        Assert.AreEqual("Between", rules["ACCT-15"].Check.Operator);
+        Assert.AreEqual("1..5", rules["ACCT-15"].Check.Expected, "CIS 1.2.2 erlaubt 1-5, nicht nur exakt 5");
+        Assert.AreEqual("Between", rules["ACCT-13"].Check.Operator);
+        Assert.AreEqual("1..365", rules["ACCT-13"].Check.Expected, "CIS 1.1.2 erlaubt 1-365 und schließt -1/0 aus");
+        Assert.AreEqual("Between", rules["ACCT-16"].Check.Operator);
+        Assert.AreEqual("0,15..", rules["ACCT-16"].Check.Expected, "Dauer 0 (bis Admin entsperrt) ist konform");
+    }
+
+    [TestMethod]
+    public void Cis_Thresholds_Match_V5()
+    {
+        var rules = ShippedRules().ToDictionary(r => r.Id, StringComparer.Ordinal);
+        Assert.AreEqual("2", rules["NTLM-01"].Check.Expected, "CIS 2.3.11.11 verlangt 'alle Konten' (2)");
+        Assert.AreEqual("201326592", rules["AUD-05"].Check.Expected, "CIS 18.10.26.2.2 verlangt 196608 KB = 201326592 Bytes");
     }
 
     [TestMethod]
