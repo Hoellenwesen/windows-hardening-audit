@@ -363,6 +363,123 @@ public sealed class LocalizationTests
 }
 
 [TestClass]
+public sealed class RuleScriptRegressionTests
+{
+    private static List<RuleDefinition> ShippedRules()
+    {
+        var dir = Path.Combine(AppContext.BaseDirectory, "Rules");
+        if (!Directory.Exists(dir))
+            dir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "WinHardeningAudit.Core", "Rules"));
+        return CheckRunner.LoadRulesFromDirectory(dir);
+    }
+
+    private static IEnumerable<RuleDefinition> ScriptRules()
+        => ShippedRules().Where(r => r.Check.Provider == "script" && !string.IsNullOrWhiteSpace(r.Check.Script));
+
+    [TestMethod]
+    public void Shipped_Rule_Count_Does_Not_Shrink()
+    {
+        Assert.IsGreaterThanOrEqualTo(536, ShippedRules().Count, "Regeln verloren gegangen");
+    }
+
+    [TestMethod]
+    public void No_Service_Lookup_By_Localized_DisplayName()
+    {
+        // Anzeigenamen von Diensten sind Ressourcen-Strings (@...dll,-100) und damit sprachabhängig.
+        var bad = ScriptRules()
+            .Where(r => r.Check.Script!.Contains("Get-Service -DisplayName", StringComparison.OrdinalIgnoreCase))
+            .Select(r => r.Id).ToList();
+        Assert.IsEmpty(bad, "Dienst-Lookup über Anzeigename: " + string.Join(", ", bad));
+    }
+
+    [TestMethod]
+    public void No_Localized_Strings_As_Filters()
+    {
+        var bad = ScriptRules()
+            .Where(r => r.Check.Script!.Contains("Local Group Policy", StringComparison.OrdinalIgnoreCase))
+            .Select(r => r.Id).ToList();
+        Assert.IsEmpty(bad, "Lokalisierter String als Filter: " + string.Join(", ", bad));
+    }
+
+    [TestMethod]
+    public void No_Catch_Block_That_Returns_The_Expected_Value()
+    {
+        // Ein catch, das den Sollwert liefert, macht aus jedem Fehler (z. B. fehlende Elevation) ein "Passed".
+        var bad = new List<string>();
+        foreach (var r in ScriptRules())
+        {
+            foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(r.Check.Script!, @"catch\s*\{\s*'([^']*)'\s*\}"))
+            {
+                if (string.Equals(m.Groups[1].Value.Trim(), (r.Check.Expected ?? "").Trim(), StringComparison.OrdinalIgnoreCase))
+                    bad.Add($"{r.Id} (catch {{ {m.Groups[1].Value} }})");
+            }
+        }
+        Assert.IsEmpty(bad, "catch liefert den Sollwert: " + string.Join(", ", bad));
+    }
+
+    [TestMethod]
+    public void Auditpol_Uses_Guid_And_Normalizes_Localized_Settings()
+    {
+        var rules = ScriptRules()
+            .Where(r => r.Check.Script!.Contains("auditpol", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        Assert.IsGreaterThanOrEqualTo(30, rules.Count, "auditpol-Regeln fehlen");
+        foreach (var r in rules)
+        {
+            var s = r.Check.Script!;
+            Assert.IsFalse(System.Text.RegularExpressions.Regex.IsMatch(s, @"/subcategory:'[A-Za-z]"),
+                $"{r.Id}: Subkategorie über Anzeigename statt GUID");
+            Assert.IsTrue(System.Text.RegularExpressions.Regex.IsMatch(s, @"0cce[0-9a-fA-F]{4}-"),
+                $"{r.Id}: keine Subkategorie-GUID im Skript");
+            Assert.IsTrue(s.Contains("Erfolg", StringComparison.Ordinal) && s.Contains("Fehler", StringComparison.Ordinal)
+                          && s.Contains("Keine", StringComparison.Ordinal),
+                $"{r.Id}: keine Normalisierung der deutschen Inclusion-Setting-Werte");
+        }
+    }
+
+    [TestMethod]
+    public void Scripts_Must_Not_Contain_Double_Quotes()
+    {
+        // ScriptProvider.Escape() ersetzt " still durch ' – ein Skript mit " würde unbemerkt verfälscht.
+        var bad = ScriptRules().Where(r => r.Check.Script!.Contains('"')).Select(r => r.Id).ToList();
+        Assert.IsEmpty(bad, "Skript mit doppeltem Anführungszeichen: " + string.Join(", ", bad));
+    }
+
+    [TestMethod]
+    public void Svc03_Only_Checks_Baseline_Services()
+    {
+        // Die MS-Baseline deaktiviert nur die vier Xbox-Dienste; "Xbox Service" läuft per Default auf Automatic.
+        var s = ShippedRules().Single(x => x.Id == "SVC-03").Check.Script!;
+        foreach (var name in new[] { "XboxGipSvc", "XblAuthManager", "XblGameSave", "XboxNetApiSvc" })
+            Assert.Contains(name, s, $"SVC-03 prüft {name} nicht");
+        Assert.DoesNotContain("XboxService", s, "SVC-03 prüft 'Xbox Service', der nicht in der Baseline steht");
+        Assert.DoesNotContain("^(Xbox|Xbl)", s, "SVC-03 darf nicht per Präfix filtern");
+    }
+
+    [TestMethod]
+    public void Lap01_Checks_Machine_Relative_Rid_500()
+    {
+        var r = ShippedRules().Single(x => x.Id == "LAP-01");
+        Assert.DoesNotContain("S-1-5-500", r.Check.Script!, "LAP-01 nutzt die nie existierende SID S-1-5-500");
+        Assert.Contains("-500$", r.Check.Script!, "LAP-01 muss die RID des lokalen Kontos prüfen");
+    }
+
+    [TestMethod]
+    public void Secedit_Privilege_Rights_Use_Sid_Values()
+    {
+        var bad = ShippedRules()
+            .Where(r => r.Check.Provider == "secedit"
+                        && string.Equals(r.Check.Key, "PrivilegeRights", StringComparison.OrdinalIgnoreCase)
+                        && !string.IsNullOrWhiteSpace(r.Check.Expected))
+            .Where(r => !System.Text.RegularExpressions.Regex.IsMatch(r.Check.Expected!,
+                @"^\*?S-1-5-[\d-]+(,\s*\*?S-1-5-[\d-]+)*$"))
+            .Select(r => $"{r.Id}=[{r.Check.Expected}]")
+            .ToList();
+        Assert.IsEmpty(bad, "Privilege-Rights-Sollwert ist keine SID-Liste: " + string.Join(", ", bad));
+    }
+}
+
+[TestClass]
 public sealed class OverlayTests
 {
     private static string WriteTmpRules()
