@@ -48,6 +48,11 @@
                                 <TextBlock TextWrapping="Wrap"><Run Text="{Binding LabelDesc}" FontWeight="SemiBold"/><Run Text="{Binding Description}" /></TextBlock>
                                 <TextBlock TextWrapping="Wrap"><Run Text="{Binding LabelActual}" FontWeight="SemiBold"/><Run Text="{Binding Actual}" /><Run Text="{Binding LabelExpected}" FontWeight="SemiBold"/><Run Text="{Binding Expected}" /></TextBlock>
                                 <TextBlock TextWrapping="Wrap"><Run Text="{Binding LabelFix}" FontWeight="SemiBold"/><Run Text="{Binding Fix}" /></TextBlock>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Content="{Binding FixButton}" Tag="{Binding RuleId}" Click="FixButton_Click" Visibility="{Binding FixVisible}" Style="{StaticResource AccentButtonStyle}" />
+                                    <Button Content="{Binding GuideButton}" Tag="{Binding RuleId}" Click="GuideButton_Click" Visibility="{Binding GuideVisible}" />
+                                </StackPanel>
+                                <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{Binding FixNote}" TextWrapping="Wrap" Visibility="{Binding FixNoteVisible}" />
                                 <TextBlock TextWrapping="Wrap" FontStyle="Italic"><Run Text="{Binding NotizZeile}" /></TextBlock>
                                 <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{Binding Message}" TextWrapping="Wrap" />
                             </StackPanel>

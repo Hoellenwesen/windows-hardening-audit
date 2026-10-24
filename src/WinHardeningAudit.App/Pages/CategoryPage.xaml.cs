@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using WinHardeningAudit.Core.Engine;
 using WinHardeningAudit.Core.Models;
 using WinHardeningAudit_App.Services;
 
@@ -78,6 +79,7 @@ public sealed partial class CategoryPage : Page
         };
         return new
         {
+            RuleId = r.Rule.Id,
             StatusText = statusText,
             StatusColor = color,
             SeverityText = ScanService.SeverityLabel(r.Rule.Severity),
@@ -102,6 +104,120 @@ public sealed partial class CategoryPage : Page
             Expected = r.ExpectedValue ?? "–",
             Fix = r.Rule.FixHint,
             Message = r.Message,
+            FixButton = L.Get("FixButton.Content"),
+            GuideButton = L.Get("GuideButton.Content"),
+            FixVisible = RemediationRunner.CanAutoFix(r.Rule)
+                && r.Status is CheckStatus.Failed or CheckStatus.Warning
+                ? Visibility.Visible : Visibility.Collapsed,
+            GuideVisible = r.Rule.Remediation is not null ? Visibility.Visible : Visibility.Collapsed,
+            FixNote = r.Rule.Remediation?.RequiresReboot == true && r.Rule.Remediation.Mode == "auto"
+                ? "⚠ " + L.Get("FixRebootNote") : "",
+            FixNoteVisible = r.Rule.Remediation?.RequiresReboot == true && r.Rule.Remediation.Mode == "auto"
+                ? Visibility.Visible : Visibility.Collapsed,
         };
+    }
+
+    private async void FixButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string ruleId }) return;
+        var result = ScanService.Current.VisibleResults().FirstOrDefault(r => r.Rule.Id == ruleId);
+        if (result is null) return;
+
+        if (!CheckRunner.IsElevated())
+        {
+            var admin = new ContentDialog
+            {
+                Title = L.Get("FixAdminTitle"),
+                Content = L.Get("FixAdminText"),
+                PrimaryButtonText = L.Get("FixAdminOk"),
+                CloseButtonText = L.Get("CancelButton.Content"),
+                XamlRoot = XamlRoot,
+            };
+            if (await admin.ShowAsync() == ContentDialogResult.Primary)
+            {
+                try { CheckRunner.RelaunchAsAdmin(); } catch { }
+            }
+            return;
+        }
+
+        var rem = result.Rule.Remediation!;
+        var lines = L.F("FixConfirmText", result.Rule.Title,
+            result.ActualValue ?? "–", result.ExpectedValue ?? "–")
+            + $"\n\n{L.Get("FixRisk")}: {rem.Risk}";
+        if (rem.RequiresReboot) lines += "\n⚠ " + L.Get("FixRebootNote");
+        var confirm = new ContentDialog
+        {
+            Title = L.Get("FixConfirmTitle"),
+            Content = new TextBlock { Text = lines, TextWrapping = TextWrapping.Wrap },
+            PrimaryButtonText = L.Get("FixApply"),
+            CloseButtonText = L.Get("CancelButton.Content"),
+            XamlRoot = XamlRoot,
+        };
+        if (await confirm.ShowAsync() != ContentDialogResult.Primary) return;
+
+        RemediationOutcome outcome;
+        try
+        {
+            outcome = await ScanService.Current.ApplyFixAsync(ruleId);
+        }
+        catch (Exception ex)
+        {
+            outcome = new RemediationOutcome { Message = ex.Message };
+        }
+
+        var done = new ContentDialog
+        {
+            Title = result.Rule.Title,
+            Content = new TextBlock
+            {
+                Text = outcome.Success
+                    ? L.Get("FixSuccess") + (outcome.RequiresReboot ? "\n⚠ " + L.Get("FixRebootNote") : "")
+                    : (outcome.Blocked ? L.F("FixBlocked", outcome.Message) : L.F("FixFailed", outcome.Message)),
+                TextWrapping = TextWrapping.Wrap,
+            },
+            CloseButtonText = "OK",
+            XamlRoot = XamlRoot,
+        };
+        await done.ShowAsync();
+        Refresh();
+    }
+
+    private async void GuideButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string ruleId }) return;
+        var result = ScanService.Current.VisibleResults().FirstOrDefault(r => r.Rule.Id == ruleId);
+        var rem = result?.Rule.Remediation;
+        if (rem is null) return;
+
+        var lines = new List<string>();
+        if (!string.IsNullOrWhiteSpace(rem.Gui)) lines.Add("• " + rem.Gui);
+        if (rem.Mode == "manual")
+        {
+            for (var i = 0; i < rem.Steps.Count; i++)
+                lines.Add($"{i + 1}. {rem.Steps[i]}");
+        }
+        else
+        {
+            foreach (var a in rem.Actions)
+                lines.Add("• " + RemediationScript.Describe(a));
+        }
+        lines.Add(L.Get("GuideVerify"));
+
+        var dialog = new ContentDialog
+        {
+            Title = $"{L.Get("GuideTitle")}: {result!.Rule.Id}",
+            Content = new ScrollViewer
+            {
+                MaxHeight = 420,
+                Content = new TextBlock
+                {
+                    Text = string.Join("\n\n", lines),
+                    TextWrapping = TextWrapping.Wrap,
+                },
+            },
+            CloseButtonText = "OK",
+            XamlRoot = XamlRoot,
+        };
+        await dialog.ShowAsync();
     }
 }

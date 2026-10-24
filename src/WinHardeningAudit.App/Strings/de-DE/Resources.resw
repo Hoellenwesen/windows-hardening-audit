@@ -170,4 +170,19 @@
   <data name="ResetButton.Content"><value>Einstellungen zurücksetzen</value></data>
   <data name="ResetDone"><value>Einstellungen auf Systemstandard zurückgesetzt.</value></data>
   <data name="SettingsVersionHeader.Text"><value>Version</value></data>
+  <data name="FixButton.Content"><value>Beheben</value></data>
+  <data name="GuideButton.Content"><value>Anleitung</value></data>
+  <data name="FixApply"><value>Anwenden</value></data>
+  <data name="FixConfirmTitle"><value>Behebung anwenden?</value></data>
+  <data name="FixConfirmText"><value>{0} (Ist: {1} → Soll: {2}) wird geändert. Die bisherigen Werte werden gesichert.</value></data>
+  <data name="FixRebootNote"><value>Neustart erforderlich, damit die Änderung wirksam wird.</value></data>
+  <data name="FixAdminTitle"><value>Admin-Rechte erforderlich</value></data>
+  <data name="FixAdminText"><value>Diese Behebung braucht Admin-Rechte. App als Administrator neu starten?</value></data>
+  <data name="FixAdminOk"><value>Als Admin neu starten</value></data>
+  <data name="FixSuccess"><value>Behoben – bitte diesen Check erneut prüfen.</value></data>
+  <data name="FixFailed"><value>Behebung fehlgeschlagen: {0}</value></data>
+  <data name="FixBlocked"><value>Behebung nicht möglich: {0}</value></data>
+  <data name="GuideTitle"><value>Manuelle Behebung</value></data>
+  <data name="GuideVerify"><value>Nach der Änderung: erneut scannen.</value></data>
+  <data name="FixRisk"><value>Risiko</value></data>
 </root>

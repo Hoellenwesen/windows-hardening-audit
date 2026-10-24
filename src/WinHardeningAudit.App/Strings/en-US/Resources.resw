@@ -170,4 +170,19 @@
   <data name="ResetButton.Content"><value>Reset settings</value></data>
   <data name="ResetDone"><value>Settings reset to system default.</value></data>
   <data name="SettingsVersionHeader.Text"><value>Version</value></data>
+  <data name="FixButton.Content"><value>Fix</value></data>
+  <data name="GuideButton.Content"><value>Instructions</value></data>
+  <data name="FixApply"><value>Apply</value></data>
+  <data name="FixConfirmTitle"><value>Apply fix?</value></data>
+  <data name="FixConfirmText"><value>{0} (actual: {1} → target: {2}) will be changed. Previous values are backed up.</value></data>
+  <data name="FixRebootNote"><value>Restart required for the change to take effect.</value></data>
+  <data name="FixAdminTitle"><value>Admin rights required</value></data>
+  <data name="FixAdminText"><value>This fix requires admin rights. Restart the app as administrator?</value></data>
+  <data name="FixAdminOk"><value>Restart as admin</value></data>
+  <data name="FixSuccess"><value>Fixed – please re-check this item.</value></data>
+  <data name="FixFailed"><value>Fix failed: {0}</value></data>
+  <data name="FixBlocked"><value>Fix not possible: {0}</value></data>
+  <data name="GuideTitle"><value>Manual remediation</value></data>
+  <data name="GuideVerify"><value>After the change: re-scan.</value></data>
+  <data name="FixRisk"><value>Risk</value></data>
 </root>
