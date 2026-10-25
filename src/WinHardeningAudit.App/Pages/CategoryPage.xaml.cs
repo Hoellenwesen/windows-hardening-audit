@@ -53,6 +53,9 @@ public sealed partial class CategoryPage : Page
         SummaryText.Text = t == 0
             ? L.F("CatSummaryNone", ScanService.ProfileLabel(svc.Profile), ScanService.TargetLabel(svc.Target))
             : L.F("CatSummary", p, t, f, items.Count, ScanService.ProfileLabel(svc.Profile), ScanService.TargetLabel(svc.Target));
+        var fixable = RemediationPlanner.CollectFixable(items);
+        BulkButton.Content = $"{L.Get("BulkFixButton")} ({fixable.Count})";
+        BulkButton.Visibility = fixable.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         ResultList.ItemsSource = items.Select(ToRow).ToList();
     }
 
@@ -107,8 +110,12 @@ public sealed partial class CategoryPage : Page
             Message = r.Message,
             FixButton = L.Get("FixButtonLabel"),
             GuideButton = L.Get("GuideButtonLabel"),
+            UndoButton = L.Get("UndoButtonLabel"),
             FixVisible = RemediationRunner.CanAutoFix(r.Rule)
                 && r.Status is CheckStatus.Failed or CheckStatus.Warning
+                ? Visibility.Visible : Visibility.Collapsed,
+            UndoVisible = RemediationRunner.CanAutoFix(r.Rule)
+                && RemediationRunner.LatestBackup(r.Rule.Id) is not null
                 ? Visibility.Visible : Visibility.Collapsed,
             GuideVisible = r.Rule.Remediation is not null ? Visibility.Visible : Visibility.Collapsed,
             FixNote = r.Rule.Remediation?.RequiresReboot == true && r.Rule.Remediation.Mode == "auto"
@@ -212,6 +219,186 @@ public sealed partial class CategoryPage : Page
         "medium" => L.Get("RiskMedium"),
         _ => L.Get("RiskLow"),
     };
+
+    private async void UndoButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string ruleId }) return;
+        var result = ScanService.Current.VisibleResults().FirstOrDefault(r => r.Rule.Id == ruleId);
+        if (result?.Rule.Remediation is null) return;
+        var backupPath = RemediationRunner.LatestBackup(ruleId);
+        if (backupPath is null) return;
+
+        var when = backupPath;
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(await System.IO.File.ReadAllTextAsync(backupPath));
+            if (doc.RootElement.TryGetProperty("Timestamp", out var ts)
+                && ts.TryGetDateTimeOffset(out var dto))
+                when = dto.LocalDateTime.ToString("g");
+        }
+        catch { }
+
+        var confirm = new ContentDialog
+        {
+            Title = L.Get("UndoConfirmTitle"),
+            Content = new TextBlock
+            {
+                Text = L.F("UndoConfirmText", result.Rule.Title, when),
+                TextWrapping = TextWrapping.Wrap,
+            },
+            PrimaryButtonText = L.Get("UndoButtonLabel"),
+            CloseButtonText = L.Get("DialogCancel"),
+            XamlRoot = XamlRoot,
+        };
+        if (await confirm.ShowAsync() != ContentDialogResult.Primary) return;
+
+        RemediationOutcome outcome;
+        try
+        {
+            outcome = await ScanService.Current.UndoFixAsync(ruleId);
+        }
+        catch (Exception ex)
+        {
+            outcome = new RemediationOutcome { Message = ex.Message };
+        }
+
+        var done = new ContentDialog
+        {
+            Title = result.Rule.Title,
+            Content = new TextBlock
+            {
+                Text = outcome.Success
+                    ? L.Get("UndoSuccess")
+                    : (outcome.Blocked ? L.F("FixBlocked", outcome.Message) : L.F("FixFailed", outcome.Message)),
+                TextWrapping = TextWrapping.Wrap,
+            },
+            CloseButtonText = L.Get("DialogOk"),
+            XamlRoot = XamlRoot,
+        };
+        await done.ShowAsync();
+        Refresh();
+    }
+
+    private async void BulkButton_Click(object sender, RoutedEventArgs e)
+    {
+        var svc = ScanService.Current;
+        var items = svc.ForCategory(_category,
+            onlyOpen: OnlyOpenToggle?.IsChecked == true,
+            onlySevere: OnlySevereToggle?.IsChecked == true,
+            search: SearchBox?.Text,
+            sort: ScanService.SortFromLabel(SortBox?.SelectedItem as string ?? "")).ToList();
+        var fixable = RemediationPlanner.CollectFixable(items);
+        if (fixable.Count == 0)
+        {
+            var none = new ContentDialog
+            {
+                Title = L.Get("BulkTitle"),
+                Content = L.Get("BulkNone"),
+                CloseButtonText = L.Get("DialogOk"),
+                XamlRoot = XamlRoot,
+            };
+            await none.ShowAsync();
+            return;
+        }
+
+        if (!CheckRunner.IsElevated())
+        {
+            var admin = new ContentDialog
+            {
+                Title = L.Get("FixAdminTitle"),
+                Content = L.Get("FixAdminText"),
+                PrimaryButtonText = L.Get("FixAdminOk"),
+                CloseButtonText = L.Get("DialogCancel"),
+                XamlRoot = XamlRoot,
+            };
+            if (await admin.ShowAsync() == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    CheckRunner.RelaunchAsAdmin();
+                    Application.Current.Exit();
+                }
+                catch (System.ComponentModel.Win32Exception) { }
+                catch (Exception ex)
+                {
+                    var err = new ContentDialog
+                    {
+                        Title = L.Get("FixAdminTitle"),
+                        Content = L.F("AdminRestartFailed", ex.Message),
+                        CloseButtonText = L.Get("DialogOk"),
+                        XamlRoot = XamlRoot,
+                    };
+                    await err.ShowAsync();
+                }
+            }
+            return;
+        }
+
+        var boxes = fixable.Select(r => new CheckBox
+        {
+            Content = $"{r.Rule.Title} ({r.Rule.Id}) — {L.Get("DetailActual")}: {r.ActualValue ?? "–"} → {L.Get("DetailExpected")}: {r.ExpectedValue ?? "–"}",
+            Tag = r.Rule.Id,
+            IsChecked = true,
+        }).ToList();
+        var picker = new ContentDialog
+        {
+            Title = $"{L.Get("BulkTitle")}: {ScanService.CategoryLabel(_category)}",
+            Content = new ScrollViewer
+            {
+                MaxHeight = 420,
+                Content = new StackPanel
+                {
+                    Spacing = 4,
+                    Children = { new TextBlock { Text = L.Get("FixRebootNote"), TextWrapping = TextWrapping.Wrap }, },
+                },
+            },
+            PrimaryButtonText = L.Get("FixApply"),
+            CloseButtonText = L.Get("DialogCancel"),
+            XamlRoot = XamlRoot,
+        };
+        var stack = (StackPanel)((ScrollViewer)picker.Content).Content;
+        foreach (var box in boxes) stack.Children.Add(box);
+        if (await picker.ShowAsync() != ContentDialogResult.Primary) return;
+        var selected = boxes.Where(b => b.IsChecked == true).Select(b => (string)b.Tag!).ToList();
+        if (selected.Count == 0) return;
+
+        var ok = 0;
+        var failed = new List<string>();
+        var reboot = false;
+        foreach (var id in selected)
+        {
+            try
+            {
+                var outcome = await svc.ApplyFixAsync(id);
+                if (outcome.Success)
+                {
+                    ok++;
+                    reboot |= outcome.RequiresReboot;
+                }
+                else
+                {
+                    failed.Add($"{id}: {outcome.Message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                failed.Add($"{id}: {ex.Message}");
+            }
+        }
+
+        var summary = L.F("BulkResult", ok, selected.Count);
+        if (reboot) summary += "\n⚠ " + L.Get("FixRebootNote");
+        if (failed.Count > 0) summary += "\n\n" + string.Join("\n", failed);
+        var done = new ContentDialog
+        {
+            Title = L.Get("BulkTitle"),
+            Content = new TextBlock { Text = summary, TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true },
+            CloseButtonText = L.Get("DialogOk"),
+            XamlRoot = XamlRoot,
+        };
+        await done.ShowAsync();
+        Refresh();
+    }
 
     private async void GuideButton_Click(object sender, RoutedEventArgs e)
     {

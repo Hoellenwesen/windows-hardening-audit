@@ -182,12 +182,14 @@ Each L1 finding shows up to two buttons on the category page:
 
 - **Automatisch beheben** — only for `mode: auto` findings with status Failed/Warning. Applies the typed actions (registry, service, account, auditpol, event log, firewall profile, SMB, `net accounts`, secedit), backs the previous values up to `%LOCALAPPDATA%\WinHardeningAudit\fixes\<timestamp>-<ruleId>.json`, then re-checks just that rule. Rules with `requiresReboot` show a restart note.
 - **Manuelle Behebung** — for every L1 rule with a `remediation` block. Opens the guide split into **Variante A: Grafische Oberfläche** (GUI path plus prose steps) and **Variante B: Befehlszeile** (every command with its own **Kopieren/Copy** button; narrative suffixes are stripped so the text pastes into a console as-is). Auto rules show the GUI path plus one technical line per action (whose exact fix script is likewise copyable); manual rules show the numbered steps (German in the rule file, English via the `en.json` overlay).
+- **Rückgängig** — per finding, shown once a backup exists (`%LOCALAPPDATA%\WinHardeningAudit\fixes\<timestamp>-<ruleId>.json`). Restores the backed-up previous values and re-checks the rule.
+- **Rubrik beheben** — header button per category for all fixable open findings in the current view (L1 + `auto` + Failed/Warning, honoring profile/target/search filters). Checkbox dialog (deselectable), then a summary (x of y fixed, failures by name, reboot note if needed).
 
-Fixing requires admin rights: without elevation the button offers "Restart as admin" (uses the existing `RelaunchAsAdmin`). Undo and bulk-fix are intentionally deferred (Phase 2/3) — backups are already written for that.
+Fixing requires admin rights: without elevation the buttons offer "Restart as admin" (uses the existing `RelaunchAsAdmin`), and the old instance exits so only one window stays open.
 
 ## Localization
 
-- UI languages: English (`en-US`) and German (`de-DE`), 185 resource keys each with enforced key parity (see tests).
+- UI languages: English (`en-US`) and German (`de-DE`), 204 resource keys each with enforced key parity (see tests).
 - Default is the **system language** (Windows ResourceLoader); a manual override (System / English / German) lives on the About page and is persisted in `%APPDATA%\WinHardeningAudit\settings.json` (file-based, since the portable package runs unpackaged). Changing it takes effect after restart (Restart button on the About page).
 - Categories, targets, profiles, sort orders, and provider `ManualKind` values are language-neutral keys (`accounts-uac`, `both`, `l1`, `severity`, `discretion`, …); display names always come from resources. Engine messages default to English and switch to German via the app overlay when the UI language is German.
 - Rule content texts (titles, descriptions, recommendations, 26H2 notes) ship in German in the rule files; English is merged at load time from the sidecar overlay `Rules/l10n/en.json` (536/536 IDs covered, German fallback for missing entries). `LoadRulesFromDirectory` skips the `l10n/` folder when scanning for rules.

@@ -1001,4 +1001,60 @@ public sealed class RemediationTests
         }
         Assert.IsEmpty(bad, "PowerShell steps without copyable command:\n" + string.Join("\n", bad));
     }
+
+    [TestMethod]
+    public void LatestBackup_Finds_Newest_File_Per_Rule()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "wha-test-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        RemediationRunner.BackupDirOverride = dir;
+        try
+        {
+            Assert.IsNull(RemediationRunner.LatestBackup("ACCT-02"), "Empty dir must yield null");
+            File.WriteAllText(Path.Combine(dir, "20260101-120000-ACCT-02.json"), "{}");
+            File.WriteAllText(Path.Combine(dir, "20260201-120000-ACCT-02.json"), "{}");
+            File.WriteAllText(Path.Combine(dir, "20260301-120000-OTHER.json"), "{}");
+            var latest = RemediationRunner.LatestBackup("ACCT-02");
+            Assert.IsNotNull(latest);
+            Assert.Contains("20260201-120000-ACCT-02.json", latest);
+            Assert.IsNull(RemediationRunner.LatestBackup("ACCT-03"), "Other rules must not match");
+        }
+        finally
+        {
+            RemediationRunner.BackupDirOverride = null;
+            try { Directory.Delete(dir, true); } catch { }
+        }
+    }
+
+    [TestMethod]
+    public void CollectFixable_Selects_Only_Actionable_L1_Findings()
+    {
+        CheckResult R(string id, string profil, string mode, CheckStatus status) => new()
+        {
+            Rule = new RuleDefinition
+            {
+                Id = id, Title = id, Category = "accounts-uac", Profil = profil,
+                Remediation = new RemediationSpec
+                {
+                    Mode = mode,
+                    Actions = mode == "auto"
+                        ? new List<RemediationAction> { new() { Type = "registry" } }
+                        : new List<RemediationAction>(),
+                },
+            },
+            Status = status,
+        };
+        var results = new[]
+        {
+            R("A1", "L1", "auto", CheckStatus.Failed),   // in
+            R("A2", "L1", "auto", CheckStatus.Warning),  // in
+            R("P1", "L1", "auto", CheckStatus.Passed),    // out: already ok
+            R("M1", "L1", "manual", CheckStatus.Failed),  // out: manual
+            R("L1", "L2", "auto", CheckStatus.Failed),    // out: not L1
+            R("MS", "MS", "auto", CheckStatus.Failed),    // out: not L1
+            R("E1", "L1", "auto", CheckStatus.Error),     // out: not actionable
+        };
+        var fixable = RemediationPlanner.CollectFixable(results).Select(r => r.Rule.Id).ToList();
+        CollectionAssert.AreEquivalent(new[] { "A1", "A2" }, fixable);
+    }
 }

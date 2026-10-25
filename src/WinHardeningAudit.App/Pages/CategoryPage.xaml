@@ -23,6 +23,7 @@
             <ToggleButton x:Name="OnlySevereToggle" x:Uid="OnlySevereToggle" Content="Critical/High only" Checked="Filter_Changed" Unchecked="Filter_Changed" />
             <TextBox x:Name="SearchBox" x:Uid="SearchBox" Width="280" PlaceholderText="Search …" TextChanged="Filter_Changed" />
             <ComboBox x:Name="SortBox" x:Uid="SortBox" Header="Sort order" SelectionChanged="Filter_Changed_Selection" MinWidth="180" />
+            <Button x:Name="BulkButton" Click="BulkButton_Click" Style="{StaticResource AccentButtonStyle}" />
         </StackPanel>
 
         <ListView x:Name="ResultList" Grid.Row="3" SelectionMode="None">
@@ -50,6 +51,7 @@
                                 <TextBlock TextWrapping="Wrap"><Run Text="{Binding LabelFix}" FontWeight="SemiBold"/><Run Text="{Binding Fix}" /></TextBlock>
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <Button Content="{Binding FixButton}" Tag="{Binding RuleId}" Click="FixButton_Click" Visibility="{Binding FixVisible}" Style="{StaticResource AccentButtonStyle}" />
+                                    <Button Content="{Binding UndoButton}" Tag="{Binding RuleId}" Click="UndoButton_Click" Visibility="{Binding UndoVisible}" />
                                     <Button Content="{Binding GuideButton}" Tag="{Binding RuleId}" Click="GuideButton_Click" Visibility="{Binding GuideVisible}" />
                                 </StackPanel>
                                 <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{Binding FixNote}" TextWrapping="Wrap" Visibility="{Binding FixNoteVisible}" />

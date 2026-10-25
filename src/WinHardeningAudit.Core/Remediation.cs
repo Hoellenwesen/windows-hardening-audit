@@ -19,8 +19,26 @@ public sealed record RemediationOutcome
 public static class RemediationRunner
 {
     public static string BackupDir
-        => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                        "WinHardeningAudit", "fixes");
+        => BackupDirOverride
+            ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                            "WinHardeningAudit", "fixes");
+
+    /// <summary>Test hook: redirect backup storage (unit tests must not touch the real profile).</summary>
+    public static string? BackupDirOverride { get; set; }
+
+    /// <summary>Newest backup file for a rule, or null when no fix was applied yet.</summary>
+    public static string? LatestBackup(string ruleId)
+    {
+        try
+        {
+            var dir = BackupDir;
+            if (!Directory.Exists(dir)) return null;
+            return Directory.EnumerateFiles(dir, $"*-{ruleId}.json")
+                .OrderByDescending(f => f, StringComparer.OrdinalIgnoreCase)
+                .FirstOrDefault();
+        }
+        catch { return null; }
+    }
 
     public static bool CanAutoFix(RuleDefinition rule)
         => rule.Profil == "L1" && rule.Remediation is { Mode: "auto" } && rule.Remediation.Actions.Count > 0;
@@ -155,6 +173,17 @@ public sealed record RemediationBackup
 }
 
 public sealed record RemediationBackupEntry(string Type, string Snapshot, string UndoScript);
+
+/// <summary>Pure selection logic for bulk remediation ("fix this category").</summary>
+public static class RemediationPlanner
+{
+    /// <summary>Failed/Warning L1 findings with a one-click fix, in scan order.</summary>
+    public static List<CheckResult> CollectFixable(IEnumerable<CheckResult> results)
+        => results
+            .Where(r => r.Status is CheckStatus.Failed or CheckStatus.Warning
+                        && RemediationRunner.CanAutoFix(r.Rule))
+            .ToList();
+}
 
 /// <summary>Generates the PowerShell commands for apply, snapshot (backup) and undo.</summary>
 public static class RemediationScript

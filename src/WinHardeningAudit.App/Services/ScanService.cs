@@ -266,41 +266,60 @@ public sealed class ScanService
             ?? throw new InvalidOperationException($"Unknown rule: {ruleId}");
         var outcome = await RemediationRunner.ApplyAsync(current.Rule, ct);
         if (!outcome.Success) return outcome;
+        await RecheckAndReplaceAsync(ruleId, ct);
+        return outcome with { RequiresReboot = outcome.RequiresReboot || current.Rule.Remediation?.RequiresReboot == true };
+    }
+
+    /// <summary>Restores the newest backup of a rule, then re-checks just that rule.</summary>
+    public async Task<RemediationOutcome> UndoFixAsync(string ruleId, CancellationToken ct = default)
+    {
+        if (Report is null) throw new InvalidOperationException(L.Get("ErrNoReport"));
+        var current = Report.Results.FirstOrDefault(r => r.Rule.Id == ruleId)
+            ?? throw new InvalidOperationException($"Unknown rule: {ruleId}");
+        var backupPath = RemediationRunner.LatestBackup(ruleId);
+        if (backupPath is null)
+            return new RemediationOutcome { Success = false, Blocked = true, Message = "no backup" };
+        var outcome = await RemediationRunner.UndoAsync(backupPath, ct);
+        if (!outcome.Success) return outcome;
+        await RecheckAndReplaceAsync(ruleId, ct);
+        return outcome;
+    }
+
+    private async Task RecheckAndReplaceAsync(string ruleId, CancellationToken ct)
+    {
+        var current = Report!.Results.First(r => r.Rule.Id == ruleId);
         var fresh = await new CheckRunner().RunAsync(new[] { current.Rule }, ct);
         var updated = fresh.Results.FirstOrDefault();
-        if (updated is not null)
+        if (updated is null) return;
+        var list = Report.Results.ToList();
+        var idx = list.FindIndex(r => r.Rule.Id == ruleId);
+        if (idx >= 0) list[idx] = updated;
+        var passed = list.Count(r => r.Status == CheckStatus.Passed);
+        var failed = list.Count(r => r.Status == CheckStatus.Failed);
+        Report = new ScanReport
         {
-            var list = Report.Results.ToList();
-            var idx = list.FindIndex(r => r.Rule.Id == ruleId);
-            if (idx >= 0) list[idx] = updated;
-            var passed = list.Count(r => r.Status == CheckStatus.Passed);
-            var failed = list.Count(r => r.Status == CheckStatus.Failed);
-            Report = new ScanReport
+            Timestamp = Report.Timestamp,
+            MachineName = Report.MachineName,
+            OsVersion = Report.OsVersion,
+            IsElevated = CheckRunner.IsElevated(),
+            Results = list
+                .OrderByDescending(r => r.Rule.Severity)
+                .ThenBy(r => r.Status == CheckStatus.Passed ? 1 : 0)
+                .ToList(),
+            Summary = new ScanSummary
             {
-                Timestamp = Report.Timestamp,
-                MachineName = Report.MachineName,
-                OsVersion = Report.OsVersion,
-                IsElevated = CheckRunner.IsElevated(),
-                Results = list
-                    .OrderByDescending(r => r.Rule.Severity)
-                    .ThenBy(r => r.Status == CheckStatus.Passed ? 1 : 0)
-                    .ToList(),
-                Summary = new ScanSummary
-                {
-                    Total = list.Count,
-                    Passed = passed,
-                    Failed = failed,
-                    Manual = list.Count(r => r.Status is CheckStatus.Manual or CheckStatus.NotApplicable or CheckStatus.Warning),
-                    Errors = list.Count(r => r.Status == CheckStatus.Error),
-                    CriticalOpen = list.Count(r => r.Rule.Severity == Severity.Critical && r.Status == CheckStatus.Failed),
-                    HighOpen = list.Count(r => r.Rule.Severity == Severity.High && r.Status == CheckStatus.Failed),
-                    ScorePercent = Math.Round(100.0 * passed / Math.Max(1, passed + failed), 1),
-                },
-                FilterNote = Report.FilterNote,
-            };
-            Changed?.Invoke(this, EventArgs.Empty);
-        }
-        return outcome with { RequiresReboot = outcome.RequiresReboot || current.Rule.Remediation?.RequiresReboot == true };
+                Total = list.Count,
+                Passed = passed,
+                Failed = failed,
+                Manual = list.Count(r => r.Status is CheckStatus.Manual or CheckStatus.NotApplicable or CheckStatus.Warning),
+                Errors = list.Count(r => r.Status == CheckStatus.Error),
+                CriticalOpen = list.Count(r => r.Rule.Severity == Severity.Critical && r.Status == CheckStatus.Failed),
+                HighOpen = list.Count(r => r.Rule.Severity == Severity.High && r.Status == CheckStatus.Failed),
+                ScorePercent = Math.Round(100.0 * passed / Math.Max(1, passed + failed), 1),
+            },
+            FilterNote = Report.FilterNote,
+        };
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     private bool TargetMatches(RuleDefinition r) => _target switch

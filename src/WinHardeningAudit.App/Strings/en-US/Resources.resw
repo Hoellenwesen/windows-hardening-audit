@@ -196,4 +196,12 @@
   <data name="DialogCancel"><value>Cancel</value></data>
   <data name="DialogOk"><value>OK</value></data>
   <data name="FixBackup"><value>Backup: {0}</value></data>
+  <data name="UndoButtonLabel"><value>Undo</value></data>
+  <data name="UndoConfirmTitle"><value>Revert fix?</value></data>
+  <data name="UndoConfirmText"><value>{0} will be restored to the state of {1}.</value></data>
+  <data name="UndoSuccess"><value>Reverted – please re-check this item.</value></data>
+  <data name="BulkFixButton"><value>Fix category</value></data>
+  <data name="BulkTitle"><value>Fix category</value></data>
+  <data name="BulkResult"><value>{0} of {1} fixed.</value></data>
+  <data name="BulkNone"><value>No fixable open findings in this view.</value></data>
 </root>
