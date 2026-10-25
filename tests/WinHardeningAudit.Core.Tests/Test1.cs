@@ -836,6 +836,30 @@ public sealed class RemediationTests
     }
 
     [TestMethod]
+    public void Enc04_Requires_Uefi_Lock_Value()
+    {
+        // Baseline decision: RunAsPPL = 1 (with UEFI lock); 2 (without lock) is not compliant.
+        var rule = ShippedRules().Single(r => r.Id == "ENC-04");
+        Assert.AreEqual("Equals", rule.Check.Operator);
+        Assert.AreEqual("1", rule.Check.Expected);
+        var action = rule.Remediation!.Actions.Single(a => a.Type == "registry");
+        Assert.AreEqual("1", action.Value, "Fix must set the baseline value, not a weaker one");
+    }
+
+    [TestMethod]
+    public void Ntp_Rules_Split_By_Target()
+    {
+        // Same setting, complementary targets: exactly one applies per machine.
+        // In the "Both" view one of them is therefore red by design.
+        var rules = ShippedRules().Where(r => r.Id is "NTP-02" or "NTP-03").ToDictionary(r => r.Id);
+        Assert.AreEqual("standalone", rules["NTP-02"].Ziel);
+        Assert.AreEqual("NTP", rules["NTP-02"].Check.Expected);
+        Assert.AreEqual("enterprise", rules["NTP-03"].Ziel);
+        Assert.AreEqual("NT5DS", rules["NTP-03"].Check.Expected);
+        Assert.AreEqual(rules["NTP-02"].Check.Key, rules["NTP-03"].Check.Key);
+    }
+
+    [TestMethod]
     public void Service_Snapshot_Tracks_Delayed_Start()
     {
         var snap = PowerShellFile.RunAsync(

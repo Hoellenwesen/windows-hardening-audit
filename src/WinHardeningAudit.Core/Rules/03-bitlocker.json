@@ -68,7 +68,7 @@
   {
     "id": "ENC-04",
     "title": "LSA-Schutz (PPL) aktiviert",
-    "description": "LSASS läuft als Protected Process Light.",
+    "description": "LSASS läuft als Protected Process Light (RunAsPPL = 1 mit UEFI-Lock; 2 ohne Lock ist nicht konform).",
     "category": "bitlocker-encryption",
     "source": "MS Baseline",
     "sourceId": "LSA RunAsPPL",
@@ -77,11 +77,11 @@
       "provider": "registry",
       "key": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa",
       "valueName": "RunAsPPL",
-      "operator": "GreaterOrEqual",
+      "operator": "Equals",
       "expected": "1"
     },
     "fixHint": "RunAsPPL=1 (DWORD) + Neustart. Auf älterer HW ggf. prüfen.",
-    "remediation": {"mode":"auto","risk":"medium","requiresReboot":true,"gui":"GPO: Computerkonfiguration > Administrative Vorlagen > System > Lokale Sicherheitsautorität > LSASS als geschützten Prozess ausführen = Aktiviert","actions":[{"type":"registry","valueName":"RunAsPPL","valueType":"dword","key":"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa","value":"2"}]},
+    "remediation": {"mode":"auto","risk":"medium","requiresReboot":true,"gui":"GPO: Computerkonfiguration > Administrative Vorlagen > System > Lokale Sicherheitsautorität > LSASS als geschützten Prozess ausführen = Aktiviert","actions":[{"type":"registry","valueName":"RunAsPPL","valueType":"dword","key":"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa","value":"1"}]},
     "profil": "L1",
     "kapitel": "MS Security Guide (LSA)",
     "giltAb": "24H2",

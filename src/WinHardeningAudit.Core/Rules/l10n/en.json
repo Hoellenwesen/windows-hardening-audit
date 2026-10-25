@@ -1,4 +1,4 @@
-﻿{
+{
     "ACCT-01":  {
                     "title":  "UAC: Admin Approval Mode for administrators",
                     "description":  "All administrators run in Admin Approval Mode.",
@@ -128,7 +128,7 @@
                },
     "ENC-04":  {
                    "title":  "LSA protection (PPL) enabled",
-                   "description":  "LSASS runs as a Protected Process Light.",
+                   "description":  "LSASS runs as a Protected Process Light (RunAsPPL = 1 with UEFI lock; 2 without lock is not compliant).",
                    "fixHint":  "RunAsPPL=1 (DWORD) + restart. Verify on older hardware if needed.",
                    "gui":  "GPO: Computer Configuration \u003e Administrative Templates \u003e System \u003e Local Security Authority \u003e Run LSASS as a protected process = Enabled"
                },
@@ -2831,13 +2831,13 @@
     "NTP-02":  {
                    "title":  "Time sync via NTP (stand-alone)",
                    "description":  "Stand-alone devices sync via NTP (no domain mode).",
-                   "fixHint":  "W32Time\\Parameters\\Type = NTP (stand-alone). Domain uses NT5DS (Enterprise view).",
+                   "fixHint":  "W32Time\\Parameters\\Type = NTP (stand-alone). Domain uses NT5DS (Enterprise view). In the Both target view exactly one of the two rules is red depending on domain join \u2014 by design; fix only in the matching view.",
                    "gui":  "Settings \u003e Time \u0026 language \u003e Date \u0026 time: sync with NTP server"
                },
     "NTP-03":  {
                    "title":  "Time sync via domain hierarchy (Enterprise)",
                    "description":  "Domain devices sync via NT5DS (domain hierarchy).",
-                   "fixHint":  "W32Time\\Parameters\\Type = NT5DS (domain). Stand-alone uses NTP.",
+                   "fixHint":  "W32Time\\Parameters\\Type = NT5DS (domain). Stand-alone uses NTP. In the Both target view exactly one of the two rules is red depending on domain join \u2014 by design; fix only in the matching view.",
                    "gui":  "Domain members sync automatically via the domain hierarchy (NT5DS)"
                },
     "WDAC-01":  {

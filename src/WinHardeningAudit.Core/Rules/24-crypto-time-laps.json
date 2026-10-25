@@ -194,7 +194,7 @@
       "operator": "Equals",
       "expected": "NTP"
     },
-    "fixHint": "W32Time\\Parameters\\Type = NTP (Stand-alone). Domäne nutzt NT5DS (Enterprise-Ansicht).",
+    "fixHint": "W32Time\\Parameters\\Type = NTP (Stand-alone). Domäne nutzt NT5DS (Enterprise-Ansicht). In der Ziel-Ansicht „Beide\" ist je nach Domänen-Join genau eine der beiden Regeln rot — beabsichtigt; beheben nur in der passenden Ansicht.",
     "remediation": {"mode":"auto","risk":"low","gui":"Einstellungen > Zeit und Sprache > Datum/Uhrzeit: mit NTP-Server synchronisieren","actions":[{"type":"registry","valueName":"Type","valueType":"string","key":"HKLM\\SYSTEM\\CurrentControlSet\\Services\\W32Time\\Parameters","value":"NTP"}]},
     "profil": "L1",
     "kapitel": "Zeit-Sync",
@@ -216,7 +216,7 @@
       "operator": "Equals",
       "expected": "NT5DS"
     },
-    "fixHint": "W32Time\\Parameters\\Type = NT5DS (Domäne). Stand-alone nutzt NTP.",
+    "fixHint": "W32Time\\Parameters\\Type = NT5DS (Domäne). Stand-alone nutzt NTP. In der Ziel-Ansicht „Beide\" ist je nach Domänen-Join genau eine der beiden Regeln rot — beabsichtigt; beheben nur in der passenden Ansicht.",
     "remediation": {"mode":"auto","risk":"low","gui":"Domänenmitglieder synchronisieren automatisch mit der Domänenhierarchie (NT5DS)","actions":[{"type":"registry","valueName":"Type","valueType":"string","key":"HKLM\\SYSTEM\\CurrentControlSet\\Services\\W32Time\\Parameters","value":"NT5DS"}]},
     "profil": "L1",
     "kapitel": "Zeit-Sync",

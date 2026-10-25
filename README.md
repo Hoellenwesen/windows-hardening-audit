@@ -56,6 +56,8 @@ Targets:
 - Both
 - Enterprise
 
+Note: `NTP-02` (`standalone`, `Type=NTP`) and `NTP-03` (`enterprise`, `Type=NT5DS`) target the same setting — exactly one applies per machine. In the `Both` view one of them is therefore always red by design; fix only in the matching target view.
+
 Rule sources: `MS Baseline`, `CIS`, `STIG`, and generated `MS-W11-25H2` sets.
 Each rule carries `id`, `title`, `description`, `category`, `severity`, `profil`, `ziel`,
 `kapitel`, `giltAb`, `fixHint`, and an optional `notiz26H2`.
