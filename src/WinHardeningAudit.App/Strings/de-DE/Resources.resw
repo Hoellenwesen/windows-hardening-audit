@@ -194,4 +194,6 @@
   <data name="CopyButtonLabel"><value>Kopieren</value></data>
   <data name="CopiedNote"><value>In Zwischenablage kopiert.</value></data>
   <data name="DialogCancel"><value>Abbrechen</value></data>
+  <data name="DialogOk"><value>OK</value></data>
+  <data name="FixBackup"><value>Sicherung: {0}</value></data>
 </root>

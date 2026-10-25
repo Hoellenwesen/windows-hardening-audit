@@ -35,30 +35,38 @@ public static class RemediationRunner
             return new RemediationOutcome { Success = false, Blocked = true, Message = "admin rights required" };
 
         Directory.CreateDirectory(BackupDir);
-        var stamp = $"{DateTime.Now:yyyyMMdd-HHmmss}";
+        var stamp = $"{DateTime.Now:yyyyMMdd-HHmmssfff}";
         var entries = new List<RemediationBackupEntry>();
+        string? seceditInf = null;
 
         // 1. secedit: full security-policy export as rollback, before anything else.
         if (rem.Actions.Any(a => a.Type == "secedit"))
         {
-            var inf = Path.Combine(BackupDir, $"{stamp}-{rule.Id}.secedit.inf");
-            var export = await PowerShellFile.RunAsync($"secedit /export /cfg \"{inf}\" /areas SECURITYPOLICY; if($LASTEXITCODE -ne 0){{exit 1}}", ct);
+            seceditInf = Path.Combine(BackupDir, $"{stamp}-{rule.Id}.secedit.inf");
+            var export = await PowerShellFile.RunAsync($"secedit /export /cfg \"{seceditInf}\" /areas SECURITYPOLICY; if($LASTEXITCODE -ne 0){{exit 1}}", ct);
             if (!export.Ok)
                 return Fail($"secedit export failed: {export.Text}", null);
             entries.Add(new RemediationBackupEntry(
-                "secedit", JsonSerializer.Serialize(new { inf }),
-                $"$sdb=[IO.Path]::Combine([IO.Path]::GetTempPath(),('wha-undo-' + [guid]::NewGuid().ToString('N') + '.sdb')); secedit /configure /db $sdb /cfg \"{inf}\" /areas SECURITYPOLICY /overwrite"));
+                "secedit", JsonSerializer.Serialize(new { inf = seceditInf }),
+                $"$sdb=[IO.Path]::Combine([IO.Path]::GetTempPath(),('wha-undo-' + [guid]::NewGuid().ToString('N') + '.sdb')); secedit /configure /db $sdb /cfg \"{seceditInf}\" /areas SECURITYPOLICY /overwrite; if($LASTEXITCODE -ne 0){{exit 1}}"));
         }
 
-        // 2. snapshot every action.
-        foreach (var a in rem.Actions)
+        // 2. snapshot every action. secedit needs no per-action snapshot:
+        // the full export above is the rollback.
+        foreach (var a in rem.Actions.Where(a => a.Type != "secedit"))
         {
             var snap = await PowerShellFile.RunAsync(RemediationScript.Snapshot(a), ct);
             if (!snap.Ok)
+            {
+                TryDelete(seceditInf);
                 return Fail($"snapshot failed ({a.Type}): {snap.Text}", null);
+            }
             var undo = RemediationScript.UndoFromSnapshot(a, snap.Text);
             if (string.IsNullOrWhiteSpace(undo))
+            {
+                TryDelete(seceditInf);
                 return Fail($"snapshot unusable ({a.Type}): {snap.Text}", null);
+            }
             entries.Add(new RemediationBackupEntry(a.Type, snap.Text, undo));
         }
 
@@ -75,6 +83,7 @@ public static class RemediationRunner
 
         // 4. apply.
         var log = new StringBuilder();
+        var applied = 0;
         foreach (var a in rem.Actions)
         {
             var result = await PowerShellFile.RunAsync(RemediationScript.Apply(a), ct);
@@ -83,10 +92,11 @@ public static class RemediationRunner
                 return new RemediationOutcome
                 {
                     Success = false,
-                    Message = $"apply failed ({a.Type}): {result.Text}\r\nBackup: {backupPath}",
+                    Message = $"apply failed ({a.Type}): {result.Text}\r\nPartially applied ({applied} of {rem.Actions.Count} actions). Restore from backup: {backupPath}",
                     BackupPath = backupPath,
                     RequiresReboot = rem.RequiresReboot,
                 };
+            applied++;
         }
         return new RemediationOutcome
         {
@@ -115,7 +125,8 @@ public static class RemediationRunner
             return new RemediationOutcome { Success = false, Message = "backup empty" };
 
         var log = new StringBuilder();
-        foreach (var e in backup.Entries)
+        // Undo in reverse order: later actions may depend on earlier ones.
+        foreach (var e in backup.Entries.AsEnumerable().Reverse())
         {
             var result = await PowerShellFile.RunAsync(e.UndoScript, ct);
             log.AppendLine($"[{e.Type}] {(result.Ok ? "ok" : "FAILED")}: {result.Text}");
@@ -127,6 +138,12 @@ public static class RemediationRunner
 
     private static RemediationOutcome Fail(string message, string? backupPath)
         => new() { Success = false, Message = message, BackupPath = backupPath };
+
+    private static void TryDelete(string? path)
+    {
+        if (string.IsNullOrEmpty(path)) return;
+        try { if (File.Exists(path)) File.Delete(path); } catch { }
+    }
 }
 
 public sealed record RemediationBackup
@@ -170,7 +187,7 @@ public static class RemediationScript
 
     private static string SeceditApply(RemediationAction a)
     {
-        var key = a.ValueName!;
+        var key = System.Text.RegularExpressions.Regex.Escape(a.ValueName!);
         var val = a.Value!;
         return $$"""
             $ErrorActionPreference='Stop'
@@ -180,9 +197,10 @@ public static class RemediationScript
             if($LASTEXITCODE -ne 0){ throw ('secedit export failed: ' + $LASTEXITCODE) }
             $lines=[IO.File]::ReadAllLines($inf)
             $found=$false
-            for($i=0;$i -lt $lines.Count;$i++){ if($lines[$i] -match '^{{key}}\s*='){ $lines[$i]='{{key}} = {{val}}'; $found=$true; break } }
+            for($i=0;$i -lt $lines.Count;$i++){ if($lines[$i] -match ('^\s*' + '{{key}}' + '\s*=')){ $lines[$i]='{{key}} = {{val}}'; $found=$true; break } }
             if(-not $found){
-              $j=[array]::IndexOf($lines,'[System Access]')
+              $j=-1
+              for($k=0;$k -lt $lines.Count;$k++){ if($lines[$k] -match '^\s*\[system access\]\s*$'){ $j=$k; break } }
               if($j -ge 0){ $lines=@($lines[0..$j]) + '{{key}} = {{val}}' + @($lines[($j+1)..($lines.Count-1)]) }
               else { $lines=@('[System Access]','{{key}} = {{val}}') + $lines }
             }
@@ -199,7 +217,7 @@ public static class RemediationScript
     public static string Snapshot(RemediationAction a) => a.Type switch
     {
         "registry" => RegistrySnapshot(a),
-        "service" => $"@{{type='service';startType=(Get-Service -Name '{a.Name}' -ErrorAction Stop).StartType.ToString()}} | ConvertTo-Json -Compress",
+        "service" => ServiceSnapshot(a),
         "account" => "try { $e=(Get-LocalUser -Name 'Gast' -ErrorAction Stop).Enabled; $n='Gast' } catch { $e=(Get-LocalUser -Name 'Guest' -ErrorAction Stop).Enabled; $n='Guest' }; @{type='account';name=$n;enabled=$e} | ConvertTo-Json -Compress",
         "auditpol" => AuditpolSnapshot(a),
         "eventlog" => $"@{{type='eventlog';log='{a.Log}';bytes=(Get-WinEvent -ListLog {a.Log} -ErrorAction Stop).MaximumSizeInBytes}} | ConvertTo-Json -Compress",
@@ -209,6 +227,18 @@ public static class RemediationScript
         "secedit" => "exit 0", // handled via the full export in RemediationRunner
         _ => throw new InvalidOperationException($"unknown remediation type '{a.Type}'"),
     };
+
+    private static string ServiceSnapshot(RemediationAction a)
+    {
+        var name = a.Name!;
+        return $$"""
+            $ErrorActionPreference='Stop'
+            $svc=Get-Service -Name '{{name}}' -ErrorAction Stop
+            $delayed=$false
+            try { $delayed=[bool](Get-CimInstance -ClassName Win32_Service -Filter "Name='{{name}}'" -ErrorAction Stop).DelayedAutoStart } catch { }
+            @{type='service';startType=$svc.StartType.ToString();delayed=$delayed} | ConvertTo-Json -Compress
+            """;
+    }
 
     private static string RegistrySnapshot(RemediationAction a)
     {
@@ -280,8 +310,7 @@ public static class RemediationScript
         return a.Type switch
         {
             "registry" => RegistryUndo(a, doc),
-            "service" => string.IsNullOrWhiteSpace(Str(doc, "startType"))
-                ? "" : $"Set-Service -Name '{a.Name}' -StartupType {Str(doc, "startType")} -ErrorAction Stop",
+            "service" => ServiceUndo(a, doc),
             "account" => AccountUndo(doc),
             "auditpol" => AuditpolUndo(a, Str(doc, "setting")),
             "eventlog" => Num(doc, "bytes") is long b ? $"wevtutil sl {a.Log} /ms:{b}; if($LASTEXITCODE -ne 0){{exit 1}}" : "",
@@ -301,11 +330,26 @@ public static class RemediationScript
         {
             var p = PsPath(a.Key!);
             var kind = Str(doc, "kind") is { Length: > 0 } k ? k : "String";
+            // Binary blobs and multi-strings cannot be rebuilt from a JSON snapshot — fail closed.
+            if ((kind is "Binary" or "MultiString" or "Unknown")
+                && doc.TryGetProperty("value", out var vv) && vv.ValueKind != JsonValueKind.String)
+                return "";
             var value = ValueLiteral(doc, "value", kind);
             return $"New-Item -Path '{p}' -Force -ErrorAction Stop | Out-Null; "
                  + $"New-ItemProperty -Path '{p}' -Name '{a.ValueName}' -Value {value} -PropertyType {PsPropertyType(kind)} -Force -ErrorAction Stop | Out-Null";
         }
         return $"Remove-ItemProperty -Path '{PsPath(a.Key!)}' -Name '{a.ValueName}' -ErrorAction SilentlyContinue";
+    }
+
+    private static string ServiceUndo(RemediationAction a, JsonElement doc)
+    {
+        var startType = Str(doc, "startType");
+        if (string.IsNullOrWhiteSpace(startType)) return "";
+        var script = $"Set-Service -Name '{a.Name}' -StartupType {startType} -ErrorAction Stop";
+        if (Bool(doc, "delayed") == true
+            && startType.Equals("Automatic", StringComparison.OrdinalIgnoreCase))
+            script += $"; sc.exe config '{a.Name}' start= delayed-auto; if($LASTEXITCODE -ne 0){{exit 1}}";
+        return script;
     }
 
     private static string AccountUndo(JsonElement doc)
@@ -520,12 +564,22 @@ public static class PowerShellFile
             };
             using var p = Process.Start(psi);
             if (p is null) return (false, "process start failed");
-            var stdout = await p.StandardOutput.ReadToEndAsync(ct);
-            var stderr = await p.StandardError.ReadToEndAsync(ct);
+            string stdout, stderr;
+            try
+            {
+                stdout = await p.StandardOutput.ReadToEndAsync(ct);
+                stderr = await p.StandardError.ReadToEndAsync(ct);
+            }
+            catch (OperationCanceledException) { try { p.Kill(); } catch { } return (false, "cancelled"); }
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             cts.CancelAfter(TimeSpan.FromMinutes(3));
             try { await p.WaitForExitAsync(cts.Token); }
-            catch (OperationCanceledException) { try { p.Kill(); } catch { } return (false, "timeout"); }
+            catch (OperationCanceledException)
+            {
+                try { p.Kill(); } catch { }
+                try { p.WaitForExit(5000); } catch { }
+                return (false, "timeout");
+            }
             var text = (stdout + (stderr.Length > 0 ? "\r\n" + stderr : "")).Trim();
             return (p.ExitCode == 0, text);
         }

@@ -836,6 +836,66 @@ public sealed class RemediationTests
     }
 
     [TestMethod]
+    public void Service_Snapshot_Tracks_Delayed_Start()
+    {
+        var snap = PowerShellFile.RunAsync(
+            RemediationScript.Snapshot(new() { Type = "service", Name = "Spooler" })).GetAwaiter().GetResult();
+        Assert.IsTrue(snap.Ok, "Snapshot failed: " + snap.Text);
+        Assert.Contains("delayed", snap.Text.ToLowerInvariant(), "Snapshot lost DelayedAutoStart: " + snap.Text);
+        var undoDelayed = RemediationScript.UndoFromSnapshot(
+            new() { Type = "service", Name = "Spooler" }, """{"startType":"Automatic","delayed":true}""");
+        Assert.Contains("delayed-auto", undoDelayed, "Delayed start not restored: " + undoDelayed);
+        var undoPlain = RemediationScript.UndoFromSnapshot(
+            new() { Type = "service", Name = "Spooler" }, """{"startType":"Manual","delayed":false}""");
+        Assert.DoesNotContain("delayed-auto", undoPlain, "Spurious delayed-auto: " + undoPlain);
+    }
+
+    [TestMethod]
+    public void SeceditApply_Escapes_Keys_And_Tolerates_Header_Case()
+    {
+        var script = RemediationScript.Apply(new RemediationAction
+            { Type = "secedit", ValueName = "A+B", Value = "1" });
+        Assert.Contains("A\\+B", script, "Regex metacharacters must be escaped");
+        Assert.Contains("system access", script.ToLowerInvariant(), "Section header lookup missing");
+    }
+
+    [TestMethod]
+    public void Binary_Registry_Values_Are_Not_Guessed_Back()
+    {
+        var undo = RemediationScript.UndoFromSnapshot(
+            new() { Type = "registry", Key = "HKLM\\SOFTWARE\\X", ValueName = "V" },
+            """{"existed":true,"value":[1,2,3],"kind":"Binary"}""");
+        Assert.AreEqual("", undo, "Binary blob must fail closed, got: " + undo);
+    }
+
+    [TestMethod]
+    public async Task UndoAsync_Runs_Entries_In_Reverse_Order()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "wha-test-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        try
+        {
+            var log = Path.Combine(dir, "order.txt");
+            var backup = new RemediationBackup
+            {
+                RuleId = "T",
+                Entries = new List<RemediationBackupEntry>
+                {
+                    new("test", "first", $"Add-Content -Path '{log}' -Value 'first'"),
+                    new("test", "second", $"Add-Content -Path '{log}' -Value 'second'"),
+                },
+            };
+            var file = Path.Combine(dir, "backup.json");
+            await File.WriteAllTextAsync(file, System.Text.Json.JsonSerializer.Serialize(backup));
+            var outcome = await RemediationRunner.UndoAsync(file);
+            Assert.IsTrue(outcome.Success, "Undo failed: " + outcome.Message);
+            var lines = (await File.ReadAllLinesAsync(log)).Where(l => l is "first" or "second").ToList();
+            CollectionAssert.AreEqual(new[] { "second", "first" }, lines, "Undo must run LIFO");
+        }
+        finally { try { Directory.Delete(dir, true); } catch { } }
+    }
+
+    [TestMethod]
     public void Snapshot_Of_Missing_Key_Yields_Removal_Undo()
     {
         var action = new RemediationAction

@@ -146,7 +146,17 @@ public sealed partial class CategoryPage : Page
                 {
                     // User cancelled UAC – stay open.
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    var err = new ContentDialog
+                    {
+                        Title = L.Get("FixAdminTitle"),
+                        Content = L.F("AdminRestartFailed", ex.Message),
+                        CloseButtonText = L.Get("DialogOk"),
+                        XamlRoot = XamlRoot,
+                    };
+                    await err.ShowAsync();
+                }
             }
             return;
         }
@@ -176,17 +186,20 @@ public sealed partial class CategoryPage : Page
             outcome = new RemediationOutcome { Message = ex.Message };
         }
 
+        var doneText = outcome.Success
+            ? L.Get("FixSuccess") + (outcome.RequiresReboot ? "\n⚠ " + L.Get("FixRebootNote") : "")
+                + (string.IsNullOrWhiteSpace(outcome.BackupPath) ? "" : "\n" + L.F("FixBackup", outcome.BackupPath))
+            : (outcome.Blocked ? L.F("FixBlocked", outcome.Message) : L.F("FixFailed", outcome.Message));
         var done = new ContentDialog
         {
             Title = result.Rule.Title,
             Content = new TextBlock
             {
-                Text = outcome.Success
-                    ? L.Get("FixSuccess") + (outcome.RequiresReboot ? "\n⚠ " + L.Get("FixRebootNote") : "")
-                    : (outcome.Blocked ? L.F("FixBlocked", outcome.Message) : L.F("FixFailed", outcome.Message)),
+                Text = doneText,
                 TextWrapping = TextWrapping.Wrap,
+                IsTextSelectionEnabled = true,
             },
-            CloseButtonText = "OK",
+            CloseButtonText = L.Get("DialogOk"),
             XamlRoot = XamlRoot,
         };
         await done.ShowAsync();
@@ -307,7 +320,7 @@ public sealed partial class CategoryPage : Page
         {
             Title = $"{L.Get("GuideTitle")}: {result!.Rule.Id}",
             Content = new ScrollViewer { MaxHeight = 480, Content = list },
-            CloseButtonText = "OK",
+            CloseButtonText = L.Get("DialogOk"),
             XamlRoot = XamlRoot,
         };
         await dialog.ShowAsync();
