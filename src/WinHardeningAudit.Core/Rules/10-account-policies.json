@@ -135,7 +135,7 @@
     "source": "CIS Stand-alone",
     "sourceId": "CIS 1.2.3 (L1)",
     "severity": 2,
-    "check": { "provider": "secedit", "key": "SystemAccess", "valueName": "AllowAdministratorLockout", "operator": "Equals", "expected": "1", "missingIs": "Passed" },
+    "check": { "provider": "secedit", "key": "SystemAccess", "valueName": "AllowAdministratorLockout", "operator": "Equals", "expected": "1" },
     "fixHint": "secpol.msc > Administrator-Kontosperrung zulassen = Aktiviert.",
     "remediation": {"mode":"auto","risk":"medium","gui":"secpol.msc > Kontorichtlinien > Kontosperrungsrichtlinie > Kontosperrung für Administratorkonto zulassen = Aktiviert","actions":[{"type":"secedit","valueName":"AllowAdministratorLockout","value":"1"}]},
     "profil": "L1",

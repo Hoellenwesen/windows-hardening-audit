@@ -780,6 +780,62 @@ public sealed class RemediationTests
     }
 
     [TestMethod]
+    public void Apply_Propagates_Native_Tool_Exit_Codes()
+    {
+        var auditpol = RemediationScript.Apply(new RemediationAction
+            { Type = "auditpol", Subcategory = "0cce9215-69ae-11d9-bed3-505054503030", Success = true, Failure = true });
+        Assert.Contains("LASTEXITCODE", auditpol, "auditpol failure would report success");
+        var eventlog = RemediationScript.Apply(new RemediationAction
+            { Type = "eventlog", Log = "Security", MaxSizeBytes = 1 });
+        Assert.Contains("LASTEXITCODE", eventlog, "wevtutil failure would report success");
+        var netacc = RemediationScript.Apply(new RemediationAction
+            { Type = "netaccounts", Switch = "maxpwage", Value = "365" });
+        Assert.Contains("LASTEXITCODE", netacc, "net accounts failure would report success");
+        var secedit = RemediationScript.Apply(new RemediationAction
+            { Type = "secedit", ValueName = "PasswordComplexity", Value = "1" });
+        Assert.Contains("LASTEXITCODE", secedit, "secedit export failure would corrupt policy");
+    }
+
+    [TestMethod]
+    public void Undo_Fails_Closed_On_Unusable_Snapshots()
+    {
+        var cases = new (RemediationAction Action, string Snapshot)[]
+        {
+            (new() { Type = "eventlog", Log = "Security" }, "{}"),
+            (new() { Type = "firewallProfile", Profile = "Domain" }, "{}"),
+            (new() { Type = "smb" }, "{}"),
+            (new() { Type = "account" }, "{}"),
+            (new() { Type = "account" }, """{"name":"","enabled":false}"""),
+            (new() { Type = "service", Name = "Spooler" }, "{}"),
+            (new() { Type = "auditpol", Subcategory = "0cce9215-69ae-11d9-bed3-505054503030" }, "{}"),
+            (new() { Type = "netaccounts", Switch = "maxpwage" }, "{}"),
+        };
+        foreach (var (action, snapshot) in cases)
+        {
+            Assert.AreEqual("", RemediationScript.UndoFromSnapshot(action, snapshot).Trim(),
+                $"Undo must be empty (fail closed) for {action.Type}, got a guessed script");
+        }
+        // Valid snapshots still produce working undo scripts.
+        Assert.Contains("Remove-ItemProperty",
+            RemediationScript.UndoFromSnapshot(
+                new() { Type = "registry", Key = "HKLM\\SOFTWARE\\X", ValueName = "V" }, "{}"));
+        Assert.Contains("wevtutil sl Security /ms:123",
+            RemediationScript.UndoFromSnapshot(
+                new() { Type = "eventlog", Log = "Security" }, """{"type":"eventlog","bytes":123}"""));
+        Assert.Contains("Set-Service -Name 'Spooler' -StartupType Disabled",
+            RemediationScript.UndoFromSnapshot(
+                new() { Type = "service", Name = "Spooler" }, """{"startType":"Disabled"}"""));
+    }
+
+    [TestMethod]
+    public void Missing_AllowAdministratorLockout_Is_Not_Auto_Pass()
+    {
+        var rule = ShippedRules().Single(r => r.Id == "ACCT-18");
+        Assert.AreNotEqual("Passed", rule.Check.MissingIs,
+            "Unconfigured admin lockout must fail, the OS default does not lock the administrator account");
+    }
+
+    [TestMethod]
     public void Snapshot_Of_Missing_Key_Yields_Removal_Undo()
     {
         var action = new RemediationAction

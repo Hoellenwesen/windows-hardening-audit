@@ -122,7 +122,7 @@ public sealed partial class CategoryPage : Page
     {
         if (sender is not Button { Tag: string ruleId }) return;
         var result = ScanService.Current.VisibleResults().FirstOrDefault(r => r.Rule.Id == ruleId);
-        if (result is null) return;
+        if (result?.Rule.Remediation is null) return;
 
         if (!CheckRunner.IsElevated())
         {
@@ -154,7 +154,7 @@ public sealed partial class CategoryPage : Page
         var rem = result.Rule.Remediation!;
         var lines = L.F("FixConfirmText", result.Rule.Title,
             result.ActualValue ?? "–", result.ExpectedValue ?? "–")
-            + $"\n\n{L.Get("FixRisk")}: {rem.Risk}";
+            + $"\n\n{L.Get("FixRisk")}: {RiskLabel(rem.Risk)}";
         if (rem.RequiresReboot) lines += "\n⚠ " + L.Get("FixRebootNote");
         var confirm = new ContentDialog
         {
@@ -192,6 +192,13 @@ public sealed partial class CategoryPage : Page
         await done.ShowAsync();
         Refresh();
     }
+
+    private static string RiskLabel(string risk) => risk switch
+    {
+        "high" => L.Get("RiskHigh"),
+        "medium" => L.Get("RiskMedium"),
+        _ => L.Get("RiskLow"),
+    };
 
     private async void GuideButton_Click(object sender, RoutedEventArgs e)
     {
@@ -250,6 +257,10 @@ public sealed partial class CategoryPage : Page
             }
             list.Children.Add(grid);
         }
+
+        // Rows of (display text, copyable command or null).
+        AddRow($"{L.Get("FixRisk")}: {RiskLabel(rem.Risk)}", null);
+        if (rem.RequiresReboot) AddRow("⚠ " + L.Get("FixRebootNote"), null);
 
         // Variante A: grafische Oberfläche (GUI-Pfad + Schritte ohne Befehle).
         AddHeader(L.Get("GuideGuiHeader"));

@@ -42,7 +42,7 @@ public static class RemediationRunner
         if (rem.Actions.Any(a => a.Type == "secedit"))
         {
             var inf = Path.Combine(BackupDir, $"{stamp}-{rule.Id}.secedit.inf");
-            var export = await PowerShellFile.RunAsync($"secedit /export /cfg \"{inf}\" /areas SECURITYPOLICY", ct);
+            var export = await PowerShellFile.RunAsync($"secedit /export /cfg \"{inf}\" /areas SECURITYPOLICY; if($LASTEXITCODE -ne 0){{exit 1}}", ct);
             if (!export.Ok)
                 return Fail($"secedit export failed: {export.Text}", null);
             entries.Add(new RemediationBackupEntry(
@@ -150,11 +150,11 @@ public static class RemediationScript
         "service" => $"Set-Service -Name '{a.Name}' -StartupType {a.StartType} -ErrorAction Stop"
                      + (a.Start ? $"; Start-Service -Name '{a.Name}' -ErrorAction Stop" : ""),
         "account" => "try { Disable-LocalUser -Name 'Gast' -ErrorAction Stop } catch { Disable-LocalUser -Name 'Guest' -ErrorAction Stop }",
-        "auditpol" => $"auditpol /set /subcategory:'{{{a.Subcategory}}}' /success:{Flag(a.Success)} /failure:{Flag(a.Failure)}",
-        "eventlog" => $"wevtutil sl {a.Log} /ms:{a.MaxSizeBytes}",
+        "auditpol" => $"auditpol /set /subcategory:'{{{a.Subcategory}}}' /success:{Flag(a.Success)} /failure:{Flag(a.Failure)}; if($LASTEXITCODE -ne 0){{exit 1}}",
+        "eventlog" => $"wevtutil sl {a.Log} /ms:{a.MaxSizeBytes}; if($LASTEXITCODE -ne 0){{exit 1}}",
         "firewallProfile" => $"Set-NetFirewallProfile -Profile {a.Profile} -Enabled {(a.Enabled == true ? "True" : "False")} -ErrorAction Stop",
         "smb" => "Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force -ErrorAction Stop",
-        "netaccounts" => $"net accounts /{a.Switch}:{a.Value}",
+        "netaccounts" => $"net accounts /{a.Switch}:{a.Value}; if($LASTEXITCODE -ne 0){{exit 1}}",
         "secedit" => SeceditApply(a),
         _ => throw new InvalidOperationException($"unknown remediation type '{a.Type}'"),
     };
@@ -164,8 +164,8 @@ public static class RemediationScript
     private static string RegistryApply(RemediationAction a)
     {
         var p = PsPath(a.Key!);
-        return $"New-Item -Path '{p}' -Force | Out-Null; "
-             + $"New-ItemProperty -Path '{p}' -Name '{a.ValueName}' -Value {ValueLiteral(a)} -PropertyType {PsPropertyType(a.ValueType)} -Force | Out-Null";
+        return $"New-Item -Path '{p}' -Force -ErrorAction Stop | Out-Null; "
+             + $"New-ItemProperty -Path '{p}' -Name '{a.ValueName}' -Value {ValueLiteral(a)} -PropertyType {PsPropertyType(a.ValueType)} -Force -ErrorAction Stop | Out-Null";
     }
 
     private static string SeceditApply(RemediationAction a)
@@ -177,6 +177,7 @@ public static class RemediationScript
             $inf=[IO.Path]::Combine([IO.Path]::GetTempPath(),('wha-sec-' + [guid]::NewGuid().ToString('N') + '.inf'))
             $sdb=$inf + '.sdb'
             secedit /export /cfg $inf /areas SECURITYPOLICY | Out-Null
+            if($LASTEXITCODE -ne 0){ throw ('secedit export failed: ' + $LASTEXITCODE) }
             $lines=[IO.File]::ReadAllLines($inf)
             $found=$false
             for($i=0;$i -lt $lines.Count;$i++){ if($lines[$i] -match '^{{key}}\s*='){ $lines[$i]='{{key}} = {{val}}'; $found=$true; break } }
@@ -274,15 +275,20 @@ public static class RemediationScript
     public static string UndoFromSnapshot(RemediationAction a, string snapshot)
     {
         var doc = TryParse(snapshot, out var root) ? root : default;
+        // Fail closed: an unusable snapshot must yield an empty script so the
+        // caller aborts instead of running a guessed undo.
         return a.Type switch
         {
             "registry" => RegistryUndo(a, doc),
-            "service" => $"Set-Service -Name '{a.Name}' -StartupType {Str(doc, "startType")}",
+            "service" => string.IsNullOrWhiteSpace(Str(doc, "startType"))
+                ? "" : $"Set-Service -Name '{a.Name}' -StartupType {Str(doc, "startType")} -ErrorAction Stop",
             "account" => AccountUndo(doc),
             "auditpol" => AuditpolUndo(a, Str(doc, "setting")),
-            "eventlog" => $"wevtutil sl {a.Log} /ms:{Num(doc, "bytes")}",
-            "firewallProfile" => $"Set-NetFirewallProfile -Profile {a.Profile} -Enabled {(Bool(doc, "enabled") == true ? "True" : "False")} -ErrorAction Stop",
-            "smb" => $"Set-SmbServerConfiguration -EnableSMB1Protocol {(Bool(doc, "enabled") == true ? "$true" : "$false")} -Force",
+            "eventlog" => Num(doc, "bytes") is long b ? $"wevtutil sl {a.Log} /ms:{b}; if($LASTEXITCODE -ne 0){{exit 1}}" : "",
+            "firewallProfile" => Bool(doc, "enabled") is bool en
+                ? $"Set-NetFirewallProfile -Profile {a.Profile} -Enabled {(en ? "True" : "False")} -ErrorAction Stop" : "",
+            "smb" => Bool(doc, "enabled") is bool sm
+                ? $"Set-SmbServerConfiguration -EnableSMB1Protocol {(sm ? "$true" : "$false")} -Force -ErrorAction Stop" : "",
             "netaccounts" => NetAccountsUndo(a, Str(doc, "value")),
             "secedit" => "exit 0", // handled via the secedit export entry
             _ => throw new InvalidOperationException($"unknown remediation type '{a.Type}'"),
@@ -296,8 +302,8 @@ public static class RemediationScript
             var p = PsPath(a.Key!);
             var kind = Str(doc, "kind") is { Length: > 0 } k ? k : "String";
             var value = ValueLiteral(doc, "value", kind);
-            return $"New-Item -Path '{p}' -Force | Out-Null; "
-                 + $"New-ItemProperty -Path '{p}' -Name '{a.ValueName}' -Value {value} -PropertyType {PsPropertyType(kind)} -Force | Out-Null";
+            return $"New-Item -Path '{p}' -Force -ErrorAction Stop | Out-Null; "
+                 + $"New-ItemProperty -Path '{p}' -Name '{a.ValueName}' -Value {value} -PropertyType {PsPropertyType(kind)} -Force -ErrorAction Stop | Out-Null";
         }
         return $"Remove-ItemProperty -Path '{PsPath(a.Key!)}' -Name '{a.ValueName}' -ErrorAction SilentlyContinue";
     }
@@ -305,29 +311,30 @@ public static class RemediationScript
     private static string AccountUndo(JsonElement doc)
     {
         var name = Str(doc, "name");
-        if (name.Length == 0) name = "Guest";
-        return Bool(doc, "enabled") == true
-            ? $"Enable-LocalUser -Name '{name}'"
-            : $"Disable-LocalUser -Name '{name}'";
+        if (name.Length == 0 || Bool(doc, "enabled") is not bool enabled) return "";
+        return enabled
+            ? $"Enable-LocalUser -Name '{name}' -ErrorAction Stop"
+            : $"Disable-LocalUser -Name '{name}' -ErrorAction Stop";
     }
 
     private static string AuditpolUndo(RemediationAction a, string setting)
     {
+        if (string.IsNullOrWhiteSpace(setting)) return "";
         var succ = setting.Contains("Success", StringComparison.OrdinalIgnoreCase)
                    || setting.Contains("Erfolg", StringComparison.OrdinalIgnoreCase);
         var fail = setting.Contains("Failure", StringComparison.OrdinalIgnoreCase)
                    || setting.Contains("Fehler", StringComparison.OrdinalIgnoreCase);
-        return $"auditpol /set /subcategory:'{{{a.Subcategory}}}' /success:{(succ ? "enable" : "disable")} /failure:{(fail ? "enable" : "disable")}";
+        return $"auditpol /set /subcategory:'{{{a.Subcategory}}}' /success:{(succ ? "enable" : "disable")} /failure:{(fail ? "enable" : "disable")}; if($LASTEXITCODE -ne 0){{exit 1}}";
     }
 
     private static string NetAccountsUndo(RemediationAction a, string value)
     {
         if (string.IsNullOrWhiteSpace(value)) return "";
-        if (long.TryParse(value, out var n)) return $"net accounts /{a.Switch}:{n}";
+        if (long.TryParse(value, out var n)) return $"net accounts /{a.Switch}:{n}; if($LASTEXITCODE -ne 0){{exit 1}}";
         // "Never"/"Niemals" (no expiry) maps to unlimited; other words cannot be restored automatically.
         return value.Trim().ToLowerInvariant() switch
         {
-            "never" or "niemals" or "unlimited" when a.Switch == "maxpwage" => "net accounts /maxpwage:unlimited",
+            "never" or "niemals" or "unlimited" when a.Switch == "maxpwage" => "net accounts /maxpwage:unlimited; if($LASTEXITCODE -ne 0){exit 1}",
             _ => "",
         };
     }

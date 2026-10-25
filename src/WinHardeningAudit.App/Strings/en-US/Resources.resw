@@ -188,6 +188,9 @@
   <data name="GuideNoCli"><value>No command-line steps exist for this finding.</value></data>
   <data name="GuideVerify"><value>After the change: re-scan.</value></data>
   <data name="FixRisk"><value>Risk</value></data>
+  <data name="RiskLow"><value>Low</value></data>
+  <data name="RiskMedium"><value>Medium</value></data>
+  <data name="RiskHigh"><value>High</value></data>
   <data name="CopyButtonLabel"><value>Copy</value></data>
   <data name="CopiedNote"><value>Copied to clipboard.</value></data>
   <data name="DialogCancel"><value>Cancel</value></data>

@@ -188,6 +188,9 @@
   <data name="GuideNoCli"><value>Für diesen Fund gibt es keine Befehlszeilen-Schritte.</value></data>
   <data name="GuideVerify"><value>Nach der Änderung: erneut scannen.</value></data>
   <data name="FixRisk"><value>Risiko</value></data>
+  <data name="RiskLow"><value>Niedrig</value></data>
+  <data name="RiskMedium"><value>Mittel</value></data>
+  <data name="RiskHigh"><value>Hoch</value></data>
   <data name="CopyButtonLabel"><value>Kopieren</value></data>
   <data name="CopiedNote"><value>In Zwischenablage kopiert.</value></data>
   <data name="DialogCancel"><value>Abbrechen</value></data>
